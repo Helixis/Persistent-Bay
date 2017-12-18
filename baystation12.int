@@ -1,0 +1,11 @@
+// BEGIN_INTERNALS
+/*
+LAST_COMPILE_TIME: 1513572452
+DIR: code code\game code\game\objects code\game\objects\effects code\modules code\modules\client code\modules\client\preference_setup code\modules\client\preference_setup\general code\modules\client\preference_setup\global code\modules\mob code\modules\mob\new_player maps maps\random_ruins maps\torch sound sound\items 
+AUTO_FILE_DIR: OFF
+MAP_ICON_TYPE: 0
+LAST_COMPILE_VERSION: 511.1382
+WINDOW: maps\torch\torch-1.dmm;maps\torch\torch-7.dmm;maps\torch\torch-6.dmm;maps\torch\torch-5.dmm;maps\torch\torch-3.dmm;maps\torch\torch-2.dmm;maps\torch\torch-4.dmm
+FILE: maps\torch\torch-2.dmm
+*/
+// END_INTERNALS
