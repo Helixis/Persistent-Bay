@@ -35,16 +35,19 @@ var/list/mining_floors = list()
 	var/image/ore_overlay
 
 	has_resources = 1
-
+	skip_icon_state = 1
 /turf/simulated/mineral/New()
 	if (!mining_walls["[src.z]"])
 		mining_walls["[src.z]"] = list()
 	mining_walls["[src.z]"] += src
+	
+/turf/simulated/mineral/proc/setup()
 	spawn(0)
 		MineralSpread()
 	spawn(2)
 		update_icon(1)
-
+/turf/simulated/mineral/after_load()
+	update_icon(0)
 /turf/simulated/mineral/Destroy()
 	if (mining_walls["[src.z]"])
 		mining_walls["[src.z]"] -= src
@@ -112,7 +115,12 @@ var/list/mining_floors = list()
 		if(emitter_blasts_taken > 2) // 3 blasts per tile
 			mined_ore = 1
 			GetDrilled()
-
+			
+	//Plasma Cutter Blasts
+	else if(istype(Proj, /obj/item/projectile/plasma))
+		mined_ore = 1
+		GetDrilled()
+				
 /turf/simulated/mineral/Bumped(AM)
 	. = ..()
 	if(istype(AM,/mob/living/carbon/human))
@@ -390,7 +398,7 @@ var/list/mining_floors = list()
 
 /turf/simulated/mineral/random
 	name = "Mineral deposit"
-	var/mineralSpawnChanceList = list("Uranium" = 5, "Platinum" = 5, "Iron" = 35, "Carbon" = 35, "Diamond" = 1, "Gold" = 5, "Silver" = 5, "Phoron" = 10)
+	var/mineralSpawnChanceList = list("Uranium" = 5, "Platinum" = 5, "Lead" = 6, "Tungsten" = 2, "Iron" = 35, "Copper" = 35, "Aluminum" = 25, "Sulfur" = 20, "Tin" = 20, "Zinc" = 20, "Ice" = 20, "Dryice" = 15, "Carbon" = 35, "Salt" = 20, "Diamond" = 1, "Gold" = 5, "Silver" = 5, "Phoron" = 10)
 	var/mineralChance = 100 //10 //means 10% chance of this plot changing to a mineral deposit
 
 /turf/simulated/mineral/random/New()
@@ -405,7 +413,7 @@ var/list/mining_floors = list()
 
 /turf/simulated/mineral/random/high_chance
 	mineralChance = 100 //25
-	mineralSpawnChanceList = list("Uranium" = 10, "Platinum" = 10, "Iron" = 20, "Carbon" = 20, "Diamond" = 2, "Gold" = 10, "Silver" = 10, "Phoron" = 20)
+	mineralSpawnChanceList = list("Uranium" = 10, "Platinum" = 10, "Lead" = 12, "Tungsten" = 4, "Iron" = 20, "Copper" = 20, "Aluminum" = 15, "Sulfur" = 10, "Tin" = 10, "Zinc" = 10, "Ice" = 10, "Dryice" = 5, "Carbon" = 20, "Salt" = 10, "Diamond" = 2, "Gold" = 10, "Silver" = 10, "Phoron" = 20)
 
 
 /**********************Asteroid**************************/

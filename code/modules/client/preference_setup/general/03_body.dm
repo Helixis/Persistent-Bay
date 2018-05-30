@@ -37,55 +37,55 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	sort_order = 3
 
 /datum/category_item/player_setup_item/general/body/load_character(var/savefile/S)
-	S["species"]			>> pref.species
-	S["hair_red"]			>> pref.r_hair
-	S["hair_green"]			>> pref.g_hair
-	S["hair_blue"]			>> pref.b_hair
-	S["facial_red"]			>> pref.r_facial
-	S["facial_green"]		>> pref.g_facial
-	S["facial_blue"]		>> pref.b_facial
-	S["skin_tone"]			>> pref.s_tone
-	S["skin_red"]			>> pref.r_skin
-	S["skin_green"]			>> pref.g_skin
-	S["skin_blue"]			>> pref.b_skin
-	S["hair_style_name"]	>> pref.h_style
-	S["facial_style_name"]	>> pref.f_style
-	S["eyes_red"]			>> pref.r_eyes
-	S["eyes_green"]			>> pref.g_eyes
-	S["eyes_blue"]			>> pref.b_eyes
-	S["b_type"]				>> pref.b_type
-	S["disabilities"]		>> pref.disabilities
-	S["organ_data"]			>> pref.organ_data
-	S["rlimb_data"]			>> pref.rlimb_data
-	S["has_cortical_stack"] >> pref.has_cortical_stack
-	S["body_markings"]		>> pref.body_markings
+	from_file(S["species"],pref.species)
+	from_file(S["hair_red"],pref.r_hair)
+	from_file(S["hair_green"],pref.g_hair)
+	from_file(S["hair_blue"],pref.b_hair)
+	from_file(S["facial_red"],pref.r_facial)
+	from_file(S["facial_green"],pref.g_facial)
+	from_file(S["facial_blue"],pref.b_facial)
+	from_file(S["skin_tone"],pref.s_tone)
+	from_file(S["skin_red"],pref.r_skin)
+	from_file(S["skin_green"],pref.g_skin)
+	from_file(S["skin_blue"],pref.b_skin)
+	from_file(S["hair_style_name"],pref.h_style)
+	from_file(S["facial_style_name"],pref.f_style)
+	from_file(S["eyes_red"],pref.r_eyes)
+	from_file(S["eyes_green"],pref.g_eyes)
+	from_file(S["eyes_blue"],pref.b_eyes)
+	from_file(S["b_type"],pref.b_type)
+	from_file(S["disabilities"],pref.disabilities)
+	from_file(S["organ_data"],pref.organ_data)
+	from_file(S["rlimb_data"],pref.rlimb_data)
+	from_file(S["has_cortical_stack"],pref.has_cortical_stack)
+	from_file(S["body_markings"],pref.body_markings)
 	pref.preview_icon = null
 	from_file(S["bgstate"], pref.bgstate)
 
 /datum/category_item/player_setup_item/general/body/save_character(var/savefile/S)
-	S["species"]			<< pref.species
-	S["hair_red"]			<< pref.r_hair
-	S["hair_green"]			<< pref.g_hair
-	S["hair_blue"]			<< pref.b_hair
-	S["facial_red"]			<< pref.r_facial
-	S["facial_green"]		<< pref.g_facial
-	S["facial_blue"]		<< pref.b_facial
-	S["skin_tone"]			<< pref.s_tone
-	S["skin_red"]			<< pref.r_skin
-	S["skin_green"]			<< pref.g_skin
-	S["skin_blue"]			<< pref.b_skin
-	S["hair_style_name"]	<< pref.h_style
-	S["facial_style_name"]	<< pref.f_style
-	S["eyes_red"]			<< pref.r_eyes
-	S["eyes_green"]			<< pref.g_eyes
-	S["eyes_blue"]			<< pref.b_eyes
-	S["b_type"]				<< pref.b_type
-	S["disabilities"]		<< pref.disabilities
-	S["organ_data"]			<< pref.organ_data
-	S["rlimb_data"]			<< pref.rlimb_data
-	S["has_cortical_stack"] << pref.has_cortical_stack
-	S["body_markings"]		<< pref.body_markings
-	to_file(S["bgstate"], pref.bgstate)
+	to_file(S["species"],pref.species)
+	to_file(S["hair_red"],pref.r_hair)
+	to_file(S["hair_green"],pref.g_hair)
+	to_file(S["hair_blue"],pref.b_hair)
+	to_file(S["facial_red"],pref.r_facial)
+	to_file(S["facial_green"],pref.g_facial)
+	to_file(S["facial_blue"],pref.b_facial)
+	to_file(S["skin_tone"],pref.s_tone)
+	to_file(S["skin_red"],pref.r_skin)
+	to_file(S["skin_green"],pref.g_skin)
+	to_file(S["skin_blue"],pref.b_skin)
+	to_file(S["hair_style_name"],pref.h_style)
+	to_file(S["facial_style_name"],pref.f_style)
+	to_file(S["eyes_red"],pref.r_eyes)
+	to_file(S["eyes_green"],pref.g_eyes)
+	to_file(S["eyes_blue"],pref.b_eyes)
+	to_file(S["b_type"],pref.b_type)
+	to_file(S["disabilities"],pref.disabilities)
+	to_file(S["organ_data"],pref.organ_data)
+	to_file(S["rlimb_data"],pref.rlimb_data)
+	to_file(S["has_cortical_stack"],pref.has_cortical_stack)
+	to_file(S["body_markings"],pref.body_markings)
+	to_file(S["bgstate"],pref.bgstate)
 
 /datum/category_item/player_setup_item/general/body/sanitize_character(var/savefile/S)
 	if(!pref.species || !(pref.species in playable_species))
@@ -134,7 +134,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	. += "<table><tr style='vertical-align:top'><td><b>Body</b> "
 	. += "(<a href='?src=\ref[src];random=1'>&reg;</A>)"
 	. += "<br>"
-
+	/**
 	if(config.use_cortical_stacks)
 		. += "Neural lace: "
 		if(mob_species.spawn_flags & SPECIES_NO_LACE)
@@ -143,9 +143,8 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			. += pref.has_cortical_stack ? "present." : "<b>not present.</b>"
 			. += " \[<a href='byond://?src=\ref[src];toggle_stack=1'>toggle</a>\]"
 		. += "<br>"
-
+	**/
 	. += "Species: <a href='?src=\ref[src];show_species=1'>[pref.species]</a><br>"
-	. += "Blood Type: <a href='?src=\ref[src];blood_type=1'>[pref.b_type]</a><br>"
 
 	if(has_flag(mob_species, HAS_A_SKIN_TONE))
 		. += "Skin Tone: <a href='?src=\ref[src];skin_tone=1'>[-pref.s_tone + 35]/[mob_species.max_skin_tone()]</a><br>"
@@ -265,7 +264,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 			pref.g_hair = 0//hex2num(copytext(new_hair, 4, 6))
 			pref.b_hair = 0//hex2num(copytext(new_hair, 6, 8))
 			pref.s_tone = 0
-			pref.age = max(min(pref.age, mob_species.max_age), mob_species.min_age)
+			pref.age = max(min(pref.age, mob_species.max_age-40), mob_species.min_age)
 
 			reset_limbs() // Safety for species with incompatible manufacturers; easier than trying to do it case by case.
 			pref.body_markings.Cut() // Basically same as above.

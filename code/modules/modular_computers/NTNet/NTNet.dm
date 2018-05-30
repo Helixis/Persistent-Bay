@@ -3,6 +3,13 @@ var/global/datum/ntnet/ntnet_global = new()
 
 // This is the NTNet datum. There can be only one NTNet datum in game at once. Modular computers read data from this.
 /datum/ntnet/
+	var/name = "" // network name
+	var/net_uid = "" // the thing the cards connect to, this is DANGEROUS TO CHANGE, BREAKING ALL CONNECTED MACHINES, also their can only be ONE NETWORK OF EACH TYPE
+	var/invisible = 0
+	var/secured = 0
+	var/password = "password"
+	var/datum/world_faction/holder
+	
 	var/list/relays = list()
 	var/list/logs = list()
 	var/list/available_station_software = list()
@@ -73,16 +80,17 @@ var/global/datum/ntnet/ntnet_global = new()
 
 // Checks whether NTNet operates. If parameter is passed checks whether specific function is enabled.
 /datum/ntnet/proc/check_function(var/specific_action = 0)
-	if(!relays || !relays.len) // No relays found. NTNet is down
-		return 0
+//	if(!relays || !relays.len) // No relays found. NTNet is down
+//		return 0
 
-	var/operating = 0
+	var/operating = 1 //0
 
 	// Check all relays. If we have at least one working relay, network is up.
-	for(var/obj/machinery/ntnet_relay/R in relays)
-		if(R.operable())
-			operating = 1
-			break
+	
+//	for(var/obj/machinery/ntnet_relay/R in relays)
+//		if(R.operable())
+//			operating = 1
+//			break
 
 	if(setting_disabled)
 		return 0
@@ -164,11 +172,18 @@ var/global/datum/ntnet/ntnet_global = new()
 		if(NTNET_SOFTWAREDOWNLOAD)
 			setting_softwaredownload = !setting_softwaredownload
 			add_log("Configuration Updated. Wireless network firewall now [setting_softwaredownload ? "allows" : "disallows"] connection to software repositories.")
+			if(setting_softwaredownload)
+				// If you turned it off and on again, rebuild the software list. This fetches new NTNet programs.
+				build_software_lists()
+				add_log("Software repository update complete.")
 		if(NTNET_PEERTOPEER)
 			setting_peertopeer = !setting_peertopeer
 			add_log("Configuration Updated. Wireless network firewall now [setting_peertopeer ? "allows" : "disallows"] peer to peer network traffic.")
 		if(NTNET_COMMUNICATION)
 			setting_communication = !setting_communication
+			if(setting_communication)
+				build_news_list()
+				add_log("News repository updated.")
 			add_log("Configuration Updated. Wireless network firewall now [setting_communication ? "allows" : "disallows"] instant messaging and similar communication services.")
 		if(NTNET_SYSTEMCONTROL)
 			setting_systemcontrol = !setting_systemcontrol

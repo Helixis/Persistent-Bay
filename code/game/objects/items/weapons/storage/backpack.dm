@@ -87,6 +87,12 @@
 	icon_state = "clownpack"
 	item_state_slots = null
 
+/obj/item/weapon/storage/backpack/mime
+	name = "Parcel Parceaux"
+	desc = "A silent backpack made for those silent workers. Silence Co."
+	icon_state = "mimepack"
+	item_state_slots = null
+
 /obj/item/weapon/storage/backpack/medic
 	name = "medical backpack"
 	desc = "It's a backpack especially designed for use in a sterile environment."
@@ -112,8 +118,8 @@
 	item_state_slots = null
 
 /obj/item/weapon/storage/backpack/toxins
-	name = "\improper NanoTrasen backpack"
-	desc = "It's a light backpack modeled for use in laboratories and other scientific institutions. The colors on it denote it as a NanoTrasen backpack."
+	name = "\improper Nanotrasen backpack"
+	desc = "It's a light backpack modeled for use in laboratories and other scientific institutions. The colors on it denote it as a Nanotrasen backpack."
 	icon_state = "ntpack"
 
 /obj/item/weapon/storage/backpack/hydroponics
@@ -135,6 +141,37 @@
 	name = "chemistry backpack"
 	desc = "It's an orange backpack which was designed to hold beakers, pill bottles and bottles."
 	icon_state = "chempack"
+	
+/obj/item/weapon/storage/backpack/fed
+	name = "\improper Federation backpack"
+	desc = "A backpack made out of tough fibers for use in the field."
+	icon_state = "federation_backpack"
+	item_state = "federation_backpack"
+	
+/obj/item/weapon/storage/backpack/fed/cqb
+	name = "\improper Federation CQB backpack"
+	icon_state = "federation_backpack_cqb"
+	item_state = "federation_backpack_cqb"
+
+/obj/item/weapon/storage/backpack/fed/medic
+	name = "\improper Federation medic backpack"
+	icon_state = "federation_backpack_medic"
+	item_state = "federation_backpack_medic"
+
+/obj/item/weapon/storage/backpack/fed/sharpshooter
+	name = "\improper Federation sharpshooter backpack"
+	icon_state = "federation_backpack_sharpshooter"
+	item_state = "federation_backpack_sharpshooter"
+
+/obj/item/weapon/storage/backpack/fed/engineer
+	name = "\improper Federation engineer backpack"
+	icon_state = "federation_backpack_engineer"
+	item_state = "federation_backpack_engineer"
+
+/obj/item/weapon/storage/backpack/fed/squadlead
+	name = "\improper Federation squad leader backpack"
+	icon_state = "federation_backpack_squad_leader"
+	item_state = "federation_backpack_squad_leader"
 
 /*
  * Duffle Types
@@ -261,8 +298,8 @@
 	icon_state = "satchel-gen"
 
 /obj/item/weapon/storage/backpack/satchel_tox
-	name = "\improper NanoTrasen satchel"
-	desc = "Useful for holding research materials. The colors on it denote it as a NanoTrasen bag."
+	name = "\improper Nanotrasen satchel"
+	desc = "Useful for holding research materials. The colors on it denote it as a Nanotrasen bag."
 	icon_state = "satchel-nt"
 
 /obj/item/weapon/storage/backpack/satchel_sec
@@ -346,8 +383,8 @@
 	icon_state = "courierbagviro"
 
 /obj/item/weapon/storage/backpack/messenger/tox
-	name = "\improper NanoTrasen messenger bag"
-	desc = "A backpack worn over one shoulder.  Useful for holding science materials. The colors on it denote it as a NanoTrasen bag."
+	name = "\improper Nanotrasen messenger bag"
+	desc = "A backpack worn over one shoulder.  Useful for holding science materials. The colors on it denote it as a Nanotrasen bag."
 	icon_state = "courierbagnt"
 
 /obj/item/weapon/storage/backpack/messenger/com

@@ -176,8 +176,9 @@
 	var/obj/item/weapon/welder_tank/tank = /obj/item/weapon/welder_tank // where the fuel is stored
 
 /obj/item/weapon/weldingtool/Initialize()
-	if(ispath(tank))
-		tank = new tank
+	if(!map_storage_loaded)
+		if(ispath(tank))
+			tank = new tank
 
 	set_extension(src, /datum/extension/base_icon_state, /datum/extension/base_icon_state, icon_state)
 	update_icon()
@@ -455,9 +456,11 @@
 				to_chat(H, "<span class='danger'>You go blind!</span>")
 				H.eye_blind = 5
 				H.eye_blurry = 5
-				H.disabilities |= NEARSIGHTED
-				spawn(100)
-					H.disabilities &= ~NEARSIGHTED
+				// We don't want this to cure nearsightedness accidentally
+				if(!(H.disabilities & NEARSIGHTED))
+					H.disabilities |= NEARSIGHTED
+					spawn(100)
+						H.disabilities &= ~NEARSIGHTED
 
 /obj/item/weapon/welder_tank
 	name = "welding fuel tank"
@@ -469,8 +472,9 @@
 	var/can_remove = 1
 
 /obj/item/weapon/welder_tank/Initialize()
-	create_reagents(max_fuel)
-	reagents.add_reagent(/datum/reagent/fuel, max_fuel)
+	if(!map_storage_loaded)
+		create_reagents(max_fuel)
+		reagents.add_reagent(/datum/reagent/fuel, max_fuel)
 	. = ..()
 
 /obj/item/weapon/welder_tank/afterattack(obj/O as obj, mob/user as mob, proximity)

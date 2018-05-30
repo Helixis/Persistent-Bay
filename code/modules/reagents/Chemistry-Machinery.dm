@@ -3,8 +3,6 @@
 #define GAS 3
 
 #define BOTTLE_SPRITES list("bottle-1", "bottle-2", "bottle-3", "bottle-4") //list of available bottle sprites
-#define REAGENTS_PER_SHEET 20
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +17,7 @@
 	idle_power_usage = 20
 	clicksound = "button"
 	clickvol = 20
-	var/beaker = null
+	var/obj/item/weapon/reagent_containers/beaker = null
 	var/obj/item/weapon/storage/pill_bottle/loaded_pill_bottle = null
 	var/mode = 0
 	var/condi = 0
@@ -33,6 +31,7 @@
 
 /obj/machinery/chem_master/New()
 	..()
+	reagents = new()
 	component_parts = list()
 	component_parts += new /obj/item/weapon/circuitboard/chem_master(null)
 	component_parts += new /obj/item/weapon/stock_parts/manipulator(null)
@@ -92,7 +91,7 @@
 
 	if (href_list["ejectp"])
 		if(loaded_pill_bottle)
-			loaded_pill_bottle.loc = src.loc
+			loaded_pill_bottle.forceMove(loc)
 			loaded_pill_bottle = null
 	else if(href_list["close"])
 		usr << browse(null, "window=chemmaster")
@@ -100,7 +99,7 @@
 		return
 
 	if(beaker)
-		var/datum/reagents/R = beaker:reagents
+		var/datum/reagents/R = beaker.reagents
 		if (href_list["analyze"])
 			var/dat = ""
 			if(!condi)
@@ -163,7 +162,9 @@
 			return
 		else if (href_list["eject"])
 			if(beaker)
-				beaker:loc = src.loc
+				beaker.forceMove(loc)
+				if(Adjacent(usr) && !issilicon(usr))
+					usr.put_in_hands(beaker)
 				beaker = null
 				reagents.clear_reagents()
 				icon_state = "mixer0"
@@ -237,6 +238,8 @@
 	return src.attack_hand(user)
 
 /obj/machinery/chem_master/attack_hand(mob/user as mob)
+	if(!reagents)
+		reagents = new()
 	if(inoperable())
 		return
 	user.set_machine(src)
@@ -256,7 +259,7 @@
 			dat += "No pill bottle inserted.<BR><BR>"
 		dat += "<A href='?src=\ref[src];close=1'>Close</A>"
 	else
-		var/datum/reagents/R = beaker:reagents
+		var/datum/reagents/R = beaker.reagents
 		dat += "<A href='?src=\ref[src];eject=1'>Eject beaker and Clear Buffer</A><BR>"
 		if(src.loaded_pill_bottle)
 			dat += "<A href='?src=\ref[src];ejectp=1'>Eject Pill Bottle \[[loaded_pill_bottle.contents.len]/[loaded_pill_bottle.max_storage_space]\]</A><BR><BR>"
@@ -322,15 +325,6 @@
 	var/obj/item/weapon/reagent_containers/beaker = null
 	var/limit = 10
 	var/list/holdingitems = list()
-	var/list/sheet_reagents = list(
-		/obj/item/stack/material/iron = /datum/reagent/iron,
-		/obj/item/stack/material/uranium = /datum/reagent/uranium,
-		/obj/item/stack/material/phoron = /datum/reagent/toxin/phoron,
-		/obj/item/stack/material/phoron/fifty = /datum/reagent/toxin/phoron,
-		/obj/item/stack/material/gold = /datum/reagent/gold,
-		/obj/item/stack/material/silver = /datum/reagent/silver,
-		/obj/item/stack/material/mhydrogen = /datum/reagent/hydrazine
-		)
 
 /obj/machinery/reagentgrinder/New()
 	..()
@@ -405,7 +399,13 @@
 		src.updateUsrDialog()
 		return 0
 
-	if(!sheet_reagents[O.type] && (!O.reagents || !O.reagents.total_volume))
+	if(istype(O,/obj/item/stack/material))
+		var/obj/item/stack/material/stack = O
+		var/material/material = stack.material
+		if(!material.chem_products.len)
+			to_chat(user, "\The [material.name] is unable to produce any usable reagents.")
+			return 1
+	else if(!O.reagents || !O.reagents.total_volume)
 		to_chat(user, "\The [O] is not suitable for blending.")
 		return 1
 
@@ -537,16 +537,25 @@
 		if(remaining_volume <= 0)
 			break
 
-		if(sheet_reagents[O.type])
-			var/obj/item/stack/stack = O
-			if(istype(stack))
-				var/amount_to_take = max(0,min(stack.amount,round(remaining_volume/REAGENTS_PER_SHEET)))
-				if(amount_to_take)
-					stack.use(amount_to_take)
-					if(QDELETED(stack))
-						holdingitems -= stack
-					beaker.reagents.add_reagent(sheet_reagents[stack.type], (amount_to_take*REAGENTS_PER_SHEET))
-					continue
+		var/obj/item/stack/material/stack = O
+		if(istype(stack))
+			var/material/material = stack.material
+			if(!material.chem_products.len)
+				break
+
+			var/list/chem_products = material.chem_products
+			var/sheet_volume = 0
+			for(var/chem in chem_products)
+				sheet_volume += chem_products[chem]
+
+			var/amount_to_take = max(0,min(stack.amount,round(remaining_volume/sheet_volume)))
+			if(amount_to_take)
+				stack.use(amount_to_take)
+				if(QDELETED(stack))
+					holdingitems -= stack
+				for(var/chem in chem_products)
+					beaker.reagents.add_reagent(chem, (amount_to_take*chem_products[chem]))
+				continue
 
 		if(O.reagents)
 			O.reagents.trans_to(beaker, min(O.reagents.total_volume, remaining_volume))
@@ -556,4 +565,3 @@
 			if (beaker.reagents.total_volume >= beaker.reagents.maximum_volume)
 				break
 
-#undef REAGENTS_PER_SHEET

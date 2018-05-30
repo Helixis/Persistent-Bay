@@ -153,7 +153,7 @@
 		var/can_slice_here = isturf(src.loc) && ((locate(/obj/structure/table) in src.loc) || (locate(/obj/machinery/optable) in src.loc) || (locate(/obj/item/weapon/tray) in src.loc))
 		var/hide_item = !has_edge(W) || !can_slice_here
 
-		if (hide_item)
+		if (hide_item && user.a_intent != I_HURT)
 			if (W.w_class >= src.w_class || is_robot_module(W))
 				return
 
@@ -2265,13 +2265,14 @@
  */
 /obj/item/weapon/reagent_containers/food/snacks/slice/Initialize()
 	. = ..()
-	if(filled)
-		var/obj/item/weapon/reagent_containers/food/snacks/whole = new whole_path()
-		if(whole && whole.slices_num)
-			var/reagent_amount = whole.reagents.total_volume/whole.slices_num
-			whole.reagents.trans_to_obj(src, reagent_amount)
+	if(!map_storage_loaded)
+		if(filled)
+			var/obj/item/weapon/reagent_containers/food/snacks/whole = new whole_path()
+			if(whole && whole.slices_num)
+				var/reagent_amount = whole.reagents.total_volume/whole.slices_num
+				whole.reagents.trans_to_obj(src, reagent_amount)
 
-		qdel(whole)
+			qdel(whole)
 
 /obj/item/weapon/reagent_containers/food/snacks/sliceable/meatbread
 	name = "meatbread loaf"

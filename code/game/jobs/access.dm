@@ -2,7 +2,7 @@
 
 /obj/var/list/req_access = list()
 /obj/var/list/req_one_access = list()
-
+/obj/var/req_access_faction = ""
 //returns 1 if this mob has sufficient access to use this object
 /obj/proc/allowed(mob/M)
 	//check if it doesn't require any access at all
@@ -10,17 +10,19 @@
 		return 1
 	if(!istype(M))
 		return 0
-	return check_access_list(M.GetAccess())
+	return check_access_list(M.GetAccess(req_access_faction))
 
-/atom/movable/proc/GetAccess()
+/atom/movable/proc/GetAccess(var/faction_uid)
 	var/obj/item/weapon/card/id/id = GetIdCard()
-	return id ? id.GetAccess() : list()
-
+	return id ? id.GetAccess(faction_uid) : list()
+/atom/movable/proc/GetFaction()
+	var/obj/item/weapon/card/id/id = GetIdCard()
+	return id ? id.GetFaction() : ""
 /atom/movable/proc/GetIdCard()
 	return null
 
 /obj/proc/check_access(obj/item/I)
-	return check_access_list(I ? I.GetAccess() : list())
+	return check_access_list(I ? I.GetAccess(req_access_faction) : list())
 
 /obj/proc/check_access_list(var/list/L)
 	if(!req_access)		req_access = list()
@@ -215,12 +217,12 @@
 		if(id)
 			return id
 
-/mob/living/carbon/human/GetAccess()
+/mob/living/carbon/human/GetAccess(var/faction_uid)
 	. = list()
 	for(var/item_slot in HUMAN_ID_CARDS)
 		var/obj/item/I = item_slot
 		if(I)
-			. |= I.GetAccess()
+			. |= I.GetAccess(faction_uid)
 #undef HUMAN_ID_CARDS
 
 /mob/living/silicon/GetIdCard()

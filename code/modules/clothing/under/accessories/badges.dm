@@ -42,7 +42,7 @@
 	desc = "This glowing blue badge marks the holder as a member of corporate security."
 	icon_state = "holobadge"
 	item_state = "holobadge"
-	badge_string = "NanoTrasen Security"
+	badge_string = "Nanotrasen Security"
 	var/emagged //Emagging removes Sec check.
 
 /obj/item/clothing/accessory/badge/holo/cord
@@ -66,20 +66,8 @@
 
 /obj/item/clothing/accessory/badge/holo/attackby(var/obj/item/O as obj, var/mob/user as mob)
 	if(istype(O, /obj/item/weapon/card/id) || istype(O, /obj/item/device/pda))
-
-		var/obj/item/weapon/card/id/id_card = null
-
-		if(istype(O, /obj/item/weapon/card/id))
-			id_card = O
-		else
-			var/obj/item/device/pda/pda = O
-			id_card = pda.id
-
-		if(access_security in id_card.access || emagged)
-			to_chat(user, "You imprint your ID details onto the badge.")
-			set_name(user.real_name)
-		else
-			to_chat(user, "[src] rejects your insufficient access rights.")
+		to_chat(user, "You imprint your ID details onto the badge.")
+		set_name(user.real_name)
 		return
 	..()
 
@@ -115,10 +103,10 @@
 	badge_string = "Office of Interstellar Intelligence"
 
 /obj/item/clothing/accessory/badge/nanotrasen
-	name = "\improper NanoTrasen badge"
-	desc = "A leather-backed plastic badge with a variety of information printed on it. Belongs to a NanoTrasen corporate executive."
+	name = "\improper Nanotrasen badge"
+	desc = "A leather-backed plastic badge with a variety of information printed on it. Belongs to a Nanotrasen corporate executive."
 	icon_state = "ntbadge"
-	badge_string = "NanoTrasen"
+	badge_string = "Nanotrasen"
 
 /obj/item/clothing/accessory/badge/marshal
 	name = "colonial marshal's badge"

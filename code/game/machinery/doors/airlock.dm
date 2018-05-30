@@ -33,6 +33,7 @@
 	var/obj/item/weapon/airlock_electronics/electronics = null
 	var/hasShocked = 0 //Prevents multiple shocks from happening
 	var/secured_wires = 0
+
 	var/datum/wires/airlock/wires = null
 
 	var/open_sound_powered = 'sound/machines/airlock_open.ogg'
@@ -76,7 +77,7 @@
 					src.l_set = 1
 				else if((src.code == src.l_code) && (src.emagged == 0) && (src.l_set == 1))
 					src.locked = 0
-					playsound(src,boltUp, 30, 0, 3)
+					playsound(src,bolts_rising, 30, 0, 3)
 					update_icon()
 					src.overlays = null
 					src.code = null
@@ -85,7 +86,7 @@
 			else
 				if((href_list["type"] == "R") && (src.emagged == 0) && (!src.l_setshort))
 					src.locked = 1
-					playsound(src,boltDown, 30, 0, 3)
+					playsound(src,bolts_dropping, 30, 0, 3)
 					src.overlays = null
 					update_icon()
 					src.code = null
@@ -205,14 +206,15 @@
 /obj/machinery/door/airlock/glass
 	name = "Glass Airlock"
 	icon = 'icons/obj/doors/Doorglass.dmi'
-	hitsound = 'sound/effects/Glasshit.ogg'
 
-	open_sound_powered = 'sound/machines/windowdoor.ogg'
-	close_sound_powered = 'sound/machines/windowdoor.ogg'
 
 	door_crush_damage = DOOR_CRUSH_DAMAGE*0.75
 	maxhealth = 300
 	explosion_resistance = 5
+	hitsound = 'sound/effects/Glasshit.ogg'
+
+	open_sound_powered = 'sound/machines/windowdoor.ogg'
+	close_sound_powered = 'sound/machines/windowdoor.ogg'
 	opacity = 0
 	glass = 1
 
@@ -920,7 +922,7 @@ About the new airlock wires panel:
 			return 0
 		cut_verb = "cutting"
 		cut_sound = 'sound/items/Welder.ogg'
-	else if(istype(item,/obj/item/weapon/pickaxe/plasmacutter))
+	else if(istype(item,/obj/item/weapon/gun/energy/plasmacutter))
 		cut_verb = "cutting"
 		cut_sound = 'sound/items/Welder.ogg'
 		cut_delay *= 0.66
@@ -1038,7 +1040,16 @@ About the new airlock wires panel:
 			else
 				src.p_open = 0
 		else
-			src.p_open = 1
+			if(allowed(usr))
+				src.p_open = 1
+			else
+				to_chat(usr, "<span class='warning'>You begin to carefully pry open the access panel on the [src]...</span>")
+				if(do_after(user,40,src))
+					if(prob(70))
+						usr.visible_message("[usr] forcefully prys open the access panel on the [src]!", "You manage to pry open the access panel on the [src]!")
+						src.p_open = 1
+					else
+						to_chat(usr, "<span class='warning'>Your hand slips!</span>")
 		src.update_icon()
 	else if(isWirecutter(C))
 		return src.attack_hand(user)
@@ -1269,10 +1280,11 @@ About the new airlock wires panel:
 		if(electronics.one_access)
 			req_access.Cut()
 			req_one_access = src.electronics.conf_access
+
 		else
 			req_one_access.Cut()
 			req_access = src.electronics.conf_access
-
+		req_access_faction = electronics.req_access_faction
 		//get the name from the assembly
 		if(assembly.created_name)
 			name = assembly.created_name
@@ -1337,7 +1349,7 @@ About the new airlock wires panel:
 	else if (src.req_one_access.len)
 		electronics.conf_access = src.req_one_access
 		electronics.one_access = 1
-
+	electronics.req_access_faction = req_access_faction
 /obj/machinery/door/airlock/emp_act(var/severity)
 	if(prob(20/severity))
 		spawn(0)

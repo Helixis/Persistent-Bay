@@ -5,7 +5,7 @@
 	program_icon_state = "atmos_control"
 	program_menu_icon = "shuffle"
 	extended_desc = "This program allows remote control of air alarms. This program can not be run on tablet computers."
-	required_access = access_atmospherics
+	required_access = 999
 	requires_ntnet = 1
 	network_destination = "atmospheric control system"
 	requires_ntnet_feature = NTNET_SYSTEMCONTROL
@@ -57,6 +57,7 @@
 
 	// TODO: Move these to a cache, similar to cameras
 	for(var/obj/machinery/alarm/alarm in (monitored_alarms.len ? monitored_alarms : SSmachines.machinery))
+		if(!alarm.alarm_area) continue
 		alarms[++alarms.len] = list("name" = sanitize(alarm.name), "ref"= "\ref[alarm]", "danger" = max(alarm.danger_level, alarm.alarm_area.atmosalm))
 	data["alarms"] = alarms
 

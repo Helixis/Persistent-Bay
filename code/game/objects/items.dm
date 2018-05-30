@@ -5,7 +5,7 @@
 	mouse_drag_pointer = MOUSE_ACTIVE_POINTER
 
 	var/image/blood_overlay = null //this saves our blood splatter overlay, which will be processed not to go over the edges of the sprite
-	var/randpixel = 6
+	var/randpixel = 9
 	var/r_speed = 1.0
 	var/health = null
 	var/burn_point = null
@@ -21,8 +21,8 @@
 	var/lock_picking_level = 0 //used to determine whether something can pick a lock, and how well.
 	var/force = 0
 
-	var/heat_protection = 0 //flags which determine which body parts are protected from heat. Use the HEAD, UPPER_TORSO, LOWER_TORSO, etc. flags. See setup.dm
-	var/cold_protection = 0 //flags which determine which body parts are protected from cold. Use the HEAD, UPPER_TORSO, LOWER_TORSO, etc. flags. See setup.dm
+	var/heat_protection = 0 //flags which determine which body parts are protected from heat. Use the HEAD, UPPER_TORSO, LOWER_TORSO, etc. flags. See items_clothing.dm
+	var/cold_protection = 0 //flags which determine which body parts are protected from cold. Use the HEAD, UPPER_TORSO, LOWER_TORSO, etc. flags. See items_clothing.dm
 	var/max_heat_protection_temperature //Set this variable to determine up to which temperature (IN KELVIN) the item protects against heat damage. Keep at null to disable protection. Only protects areas set by heat_protection flags
 	var/min_cold_protection_temperature //Set this variable to determine down to which temperature (IN KELVIN) the item protects against cold damage. 0 is NOT an acceptable number due to if(varname) tests!! Keep at null to disable protection. Only protects areas set by cold_protection flags
 
@@ -78,9 +78,16 @@
 
 /obj/item/New()
 	..()
-	if(randpixel && (!pixel_x && !pixel_y) && isturf(loc)) //hopefully this will prevent us from messing with mapper-set pixel_x/y
+	if((!pixel_x && !pixel_y) && isturf(loc)) //hopefully this will prevent us from messing with mapper-set pixel_x/y
+		randomize_pixel_offset()
+
+/obj/item/proc/randomize_pixel_offset(var/reset = 0)
+	if(!reset && randpixel)
 		pixel_x = rand(-randpixel, randpixel)
 		pixel_y = rand(-randpixel, randpixel)
+	if(reset)
+		pixel_x = 0
+		pixel_y = 0
 
 /obj/item/Destroy()
 	qdel(hidden_uplink)
@@ -194,13 +201,7 @@
 		if(isliving(src.loc))
 			return
 	if(user.put_in_active_hand(src))
-		if(randpixel)
-			pixel_x = rand(-randpixel, randpixel)
-			pixel_y = rand(-randpixel/2, randpixel/2)
-			pixel_z = 0
-		else if(randpixel == 0)
-			pixel_x = 0
-			pixel_y = 0
+		randomize_pixel_offset(1)
 	return
 
 /obj/item/attack_ai(mob/user as mob)
@@ -230,8 +231,6 @@
 
 // apparently called whenever an item is removed from a slot, container, or anything else.
 /obj/item/proc/dropped(mob/user as mob)
-	if(randpixel)
-		pixel_z = randpixel //an idea borrowed from some of the older pixel_y randomizations. Intended to make items appear to drop at a character
 	if(zoom)
 		zoom(user) //binoculars, scope, etc
 
@@ -337,8 +336,10 @@ var/list/global/slot_flags_enumeration = list(
 				return 0
 			if( (slot_flags & SLOT_TWOEARS) && H.get_equipped_item(slot_other_ear) )
 				return 0
-		if(slot_wear_id, slot_belt)
-			if(!H.w_uniform && (slot_w_uniform in mob_equip))
+		if(slot_belt, slot_wear_id)
+			if(slot == slot_belt && (item_flags & IS_BELT))
+				return 1
+			else if(!H.w_uniform && (slot_w_uniform in mob_equip))
 				if(!disable_warning)
 					to_chat(H, "<span class='warning'>You need a jumpsuit before you can attach this [name].</span>")
 				return 0

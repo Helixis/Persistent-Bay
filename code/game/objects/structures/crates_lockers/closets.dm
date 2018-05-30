@@ -5,6 +5,7 @@
 	icon_state = "closed"
 	density = 1
 	w_class = ITEM_SIZE_NO_CONTAINER
+	anchored = 0
 
 	var/icon_closed = "closed"
 	var/icon_opened = "open"
@@ -15,6 +16,7 @@
 
 	var/welded = 0
 	var/large = 1
+	var/wrenchable = 1
 	var/wall_mounted = 0 //never solid (You can always pass over it)
 	var/health = 100
 	var/breakout = 0 //if someone is currently breaking out. mutex
@@ -40,12 +42,13 @@
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/structure/closet/LateInitialize(mapload, ...)
-	var/list/will_contain = WillContain()
-	if(will_contain)
-		create_objects_in_loc(src, will_contain)
+	if(!map_storage_loaded)
+		var/list/will_contain = WillContain()
+		if(will_contain)
+			create_objects_in_loc(src, will_contain)
 
-	if(!opened && mapload) // if closed and it's the map loading phase, relevant items at the crate's loc are put in the contents
-		store_contents()
+		if(!opened && mapload) // if closed and it's the map loading phase, relevant items at the crate's loc are put in the contents
+			store_contents()
 
 /obj/structure/closet/proc/WillContain()
 	return null
@@ -258,6 +261,73 @@
 	return
 
 /obj/structure/closet/attackby(obj/item/weapon/W as obj, mob/user as mob)
+	/*
+	if(istype(W, /obj/item/weapon/rcs) && !src.opened)
+		if(user in contents) //to prevent self-teleporting.
+			return
+		var/datum/effect/effect/system/spark_spread/s = new /datum/effect/effect/system/spark_spread
+		var/obj/item/weapon/rcs/E = W
+		if(E.bcell && (E.bcell.charge >= chrgdeductamt))
+			if(!is_level_reachable(src.z))
+				to_chat(user, "<span class='warning'>The rapid-crate-sender can't locate any telepads!</span>")
+				return
+			if(E.mode == 0)
+				if(!E.teleporting)
+					var/list/L = list()
+					var/list/areaindex = list()
+					for(var/obj/machinery/telepad/R in world)
+						if(R.stage == 0)
+							var/turf/T = get_turf(R)
+							var/tmpname = T.loc.name
+							if(areaindex[tmpname])
+								tmpname = "[tmpname] ([++areaindex[tmpname]])"
+							else
+								areaindex[tmpname] = 1
+							L[tmpname] = R
+					var/desc = input("Please select a telepad.", "RCS") in L
+					E.pad = L[desc]
+					playsound(E.loc, 'sound/machines/click.ogg', 50, 1)
+					to_chat(user, "\blue Teleporting [src.name]...")
+					E.teleporting = 1
+					if(!do_after(user, 50, target = src))
+						E.teleporting = 0
+						return
+					E.teleporting = 0
+					if(user in contents)
+						to_chat(user, "<span class='warning'>Error: User located in container--aborting for safety.</span>")
+						playsound(E.loc, 'sound/machines/buzz-sigh.ogg', 50, 1)
+						return
+					s.set_up(5, 1, src)
+					s.start()
+					do_teleport(src, E.pad, 0)
+					E.bcell.use(E.chrgdeductamt)
+					to_chat(user, "<span class='notice'>Teleport successful. [round(E.bcell.percent())]% charge left.</span>")
+					return
+			else
+				E.rand_x = rand(50,200)
+				E.rand_y = rand(50,200)
+				var/L = locate(E.rand_x, E.rand_y, 6)
+				playsound(E.loc, 'sound/machines/click.ogg', 50, 1)
+				to_chat(user, "\blue Teleporting [src.name]...")
+				E.teleporting = 1
+				if(!do_after(user, 50, target = src))
+					E.teleporting = 0
+					return
+				E.teleporting = 0
+				if(user in contents)
+					to_chat(user, "<span class='warning'>Error: User located in container--aborting for safety.</span>")
+					playsound(loc, 'sound/machines/buzz-sigh.ogg', 50, 1)
+					return
+				s.set_up(5, 1, src)
+				s.start()
+				do_teleport(src, L)
+				E.bcell.use(E.chrgdeductamt)
+				to_chat(user, "<span class='notice'>Teleport successful. [round(E.bcell.percent())]% charge left.</span>")
+				return
+		else
+			to_chat(user, "<span class='warning'>Out of charges.</span>")
+			return
+		*/
 	if(src.opened)
 		if(istype(W, /obj/item/grab))
 			var/obj/item/grab/G = W
@@ -295,6 +365,29 @@
 			playsound(src.loc, 'sound/weapons/blade1.ogg', 50, 1)
 			playsound(src.loc, "sparks", 50, 1)
 			open()
+	else if(isWrench(W))
+		if (src.wrenchable==0)
+			// Do not allow wrench interactions with things that aren't wrenchable.
+			return
+		if (src.anchored==1)
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+			to_chat(user, "<span class='notice'>You begin to unsecure \the [src] from the floor...</span>")
+			if (do_after(user, 40, src))
+				user.visible_message( \
+					"<span class='notice'>\The [user] unsecures \the [src].</span>", \
+					"<span class='notice'>You have unsecured \the [src]. Now it can be pulled somewhere else.</span>", \
+					"You hear ratchet.")
+				src.anchored = 0
+		else /*if (src.anchored==0)*/
+			playsound(src.loc, 'sound/items/Ratchet.ogg', 50, 1)
+			to_chat(user, "<span class='notice'>You begin to secure \the [src] to the floor...</span>")
+			if (do_after(user, 20, src))
+				user.visible_message( \
+					"<span class='notice'>\The [user] secures \the [src].</span>", \
+					"<span class='notice'>You have secured \the [src].</span>", \
+					"You hear ratchet.")
+				src.anchored = 1
+		return
 	else if(istype(W, /obj/item/weapon/packageWrap))
 		return
 	else if(isWelder(W) && (setup & CLOSET_CAN_BE_WELDED))

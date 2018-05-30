@@ -49,7 +49,7 @@
 
 	has_limbs = list(
 		BP_CHEST =  list("path" = /obj/item/organ/external/chest),
-		BP_GROIN =  list("path" = /obj/item/organ/external/groin),
+		BP_GROIN =  list("path" = /obj/item/organ/external/groin/vox),
 		BP_HEAD =   list("path" = /obj/item/organ/external/head/vox),
 		BP_L_ARM =  list("path" = /obj/item/organ/external/arm),
 		BP_R_ARM =  list("path" = /obj/item/organ/external/arm/right),
@@ -63,10 +63,10 @@
 
 
 	has_organ = list(
-		BP_HEART =    /obj/item/organ/internal/heart,
-		BP_LUNGS =    /obj/item/organ/internal/lungs,
-		BP_LIVER =    /obj/item/organ/internal/liver,
-		BP_KIDNEYS =  /obj/item/organ/internal/kidneys,
+		BP_HEART =    /obj/item/organ/internal/heart/vox,
+		BP_LUNGS =    /obj/item/organ/internal/lungs/vox,
+		BP_LIVER =    /obj/item/organ/internal/liver/vox,
+		BP_KIDNEYS =  /obj/item/organ/internal/kidneys/vox,
 		BP_BRAIN =    /obj/item/organ/internal/brain,
 		BP_EYES =     /obj/item/organ/internal/eyes,
 		BP_STACK =    /obj/item/organ/internal/stack/vox
@@ -79,7 +79,7 @@
 	return species_language.get_random_name(gender)
 
 /datum/species/vox/equip_survival_gear(var/mob/living/carbon/human/H)
-	H.equip_to_slot_or_del(new /obj/item/clothing/mask/breath(H), slot_wear_mask)
+	H.equip_to_slot_or_del(new /obj/item/clothing/mask/gas/vox(H), slot_wear_mask)
 
 	if(istype(H.get_equipped_item(slot_back), /obj/item/weapon/storage/backpack))
 		H.equip_to_slot_or_del(new /obj/item/weapon/tank/nitrogen(H), slot_r_hand)

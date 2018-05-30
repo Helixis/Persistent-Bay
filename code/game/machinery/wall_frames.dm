@@ -147,6 +147,13 @@
 	refund_amt = 2
 	build_machine_type = /obj/structure/sign/double/barsign
 
+/obj/item/frame/sink
+	name = "Sink Frame"
+	desc = "Used for building Sinks"
+	icon = 'icons/obj/watercloset.dmi'
+	icon_state = "sink"
+	refund_amt = 2
+	build_machine_type = /obj/structure/sink
 
 /obj/item/frame/kitchensink
 	name = "Kitchen Sink Frame"
@@ -160,9 +167,22 @@
 // /obj/machinery/newscaster
 // /obj/machinery/newscaster/security_unit
 
-/obj/item/frame/atm_frame
+/obj/item/frame/atm
 	name = "atm"
 	desc = "An ATM, just secure to the wall."
-	icon = 'icons/obj/monitors.dmi'
-	icon_state = "firex"
+	icon = 'icons/obj/terminals.dmi'
+	icon_state = "atm_frame"
 	build_machine_type = /obj/machinery/atm
+	
+	
+/obj/item/frame/atm/try_build(turf/on_wall)
+	if (get_dist(on_wall,usr)>1)
+		return
+	var/ndir = get_dir(usr,on_wall)
+	if (!(ndir in GLOB.cardinal))
+		return
+	var/turf/loc = get_turf(usr)
+	
+	new /obj/machinery/atm(loc, 1, src, ndir)
+	qdel(src)
+

@@ -7,7 +7,7 @@
 					/obj/item/clothing/suit/wizrobe/fake,
 					/obj/item/clothing/shoes/sandal,
 					/obj/item/clothing/head/wizard/fake)
-	cost = 20
+	cost = 8
 	containername = "\improper Wizard costume crate"
 
 /decl/hierarchy/supply_pack/miscellaneous/carpetbrown
@@ -58,23 +58,11 @@
 	cost = 15
 	containername = "\improper Linoleum crate"
 
-/decl/hierarchy/supply_pack/miscellaneous/white_tiles
-	name = "White floor tiles"
-	contains = list(/obj/item/stack/tile/floor_white/fifty)
-	cost = 15
-	containername = "\improper White floor tile crate"
-
-/decl/hierarchy/supply_pack/miscellaneous/dark_tiles
+/decl/hierarchy/supply_pack/miscellaneous/dark_tiles	//Leaving dark tiles because it is made from plasteel, which is expensive
 	name = "Dark floor tiles"
 	contains = list(/obj/item/stack/tile/floor_dark/fifty)
 	cost = 15
 	containername = "\improper Dark floor tile crate"
-
-/decl/hierarchy/supply_pack/miscellaneous/freezer_tiles
-	name = "Freezer floor tiles"
-	contains = list(/obj/item/stack/tile/floor_freezer/fifty)
-	cost = 15
-	containername = "\improper Freezer floor tile crate"
 
 /decl/hierarchy/supply_pack/miscellaneous/costume
 	num_contained = 2
@@ -113,6 +101,86 @@
 	containername = "\improper Actor Costumes"
 	supply_method = /decl/supply_method/randomized
 
+
+/decl/hierarchy/supply_pack/miscellaneous/clothing
+	num_contained = 10
+	contains = list(/obj/item/clothing/accessory/toggleable/flannel/red,
+					/obj/item/clothing/accessory/toggleable/hawaii,
+					/obj/item/clothing/accessory/toggleable/zhongshan,
+					/obj/item/clothing/accessory/toggleable/nanotrasen_jacket,
+					/obj/item/clothing/accessory/toggleable/navy_jacket,
+					/obj/item/clothing/accessory/toggleable/charcoal_jacket,
+					/obj/item/clothing/accessory/toggleable/burgundy_jacket,
+					/obj/item/clothing/suit/storage/toggle/hoodie,
+					/obj/item/clothing/suit/storage/toggle/track,
+					/obj/item/clothing/suit/storage/toggle/track/blue,
+					/obj/item/clothing/suit/storage/toggle/track/green,
+					/obj/item/clothing/suit/storage/toggle/track/red,
+					/obj/item/clothing/under/skirt,
+					/obj/item/clothing/under/skirt/plaid_blue,
+					/obj/item/clothing/under/skirt/plaid_red,
+					/obj/item/clothing/under/skirt/plaid_purple,
+					/obj/item/clothing/under/skirt/khaki,
+					/obj/item/clothing/under/skirt/swept,
+					/obj/item/clothing/under/skirt_c/dress/black,
+					/obj/item/clothing/under/skirt_c/dress/long/black,
+					/obj/item/clothing/under/shorts/red,
+					/obj/item/clothing/under/shorts/green,
+					/obj/item/clothing/under/shorts/blue,
+					/obj/item/clothing/under/shorts/black,
+					/obj/item/clothing/under/shorts/grey,
+					/obj/item/clothing/under/shorts/jeans,
+					/obj/item/clothing/under/shorts/jeans/female,
+					/obj/item/clothing/under/shorts/jeans/classic,
+					/obj/item/clothing/under/shorts/jeans/classic/female,
+					/obj/item/clothing/under/shorts/jeans/mustang,
+					/obj/item/clothing/under/shorts/jeans/mustang/female,
+					/obj/item/clothing/under/shorts/jeans/youngfolks,
+					/obj/item/clothing/under/shorts/jeans/youngfolks/female,
+					/obj/item/clothing/under/shorts/jeans/black,
+					/obj/item/clothing/under/shorts/jeans/black/female,
+					/obj/item/clothing/under/shorts/jeans/grey,
+					/obj/item/clothing/under/shorts/jeans/grey/female,
+					/obj/item/clothing/under/shorts/khaki,
+					/obj/item/clothing/under/shorts/khaki/female,
+					/obj/item/clothing/under/color/blackjumpshorts,
+					/obj/item/clothing/under/bluepyjamas,
+					/obj/item/clothing/under/redpyjamas,
+					/obj/item/clothing/suit/leathercoat,
+					/obj/item/clothing/suit/browncoat,
+					/obj/item/clothing/suit/neocoat,
+					/obj/item/clothing/suit/stripper/stripper_pink,
+					/obj/item/clothing/under/stripper/mankini,
+					/obj/item/clothing/under/swimsuit/blue,
+					/obj/item/clothing/under/swimsuit/purple,
+					/obj/item/clothing/under/swimsuit/green,
+					/obj/item/clothing/under/swimsuit/red,
+					/obj/item/clothing/under/casual_pants,
+					/obj/item/clothing/under/casual_pants/classicjeans,
+					/obj/item/clothing/under/casual_pants/mustangjeans,
+					/obj/item/clothing/under/casual_pants/blackjeans,
+					/obj/item/clothing/under/casual_pants/greyjeans,
+					/obj/item/clothing/under/casual_pants/youngfolksjeans,
+					/obj/item/clothing/under/casual_pants/track,
+					/obj/item/clothing/under/casual_pants/track/blue,
+					/obj/item/clothing/under/casual_pants/track/green,
+					/obj/item/clothing/under/casual_pants/track/white,
+					/obj/item/clothing/under/casual_pants/track/red,
+					/obj/item/clothing/under/casual_pants/camo,
+					/obj/item/clothing/under/casual_pants/baggy,
+					/obj/item/clothing/under/casual_pants/baggy/classicjeans,
+					/obj/item/clothing/under/casual_pants/baggy/mustangjeans,
+					/obj/item/clothing/under/casual_pants/baggy/blackjeans,
+					/obj/item/clothing/under/casual_pants/baggy/greyjeans,
+					/obj/item/clothing/under/casual_pants/baggy/youngfolksjeans,
+					/obj/item/clothing/under/casual_pants/baggy/track,
+					/obj/item/clothing/under/casual_pants/baggy/camo,
+					)
+	name = "Bulk clothing crate"
+	cost = 50
+	containername = "\improper bulk clothing crate"
+	supply_method = /decl/supply_method/randomized
+
 /decl/hierarchy/supply_pack/miscellaneous/formal_wear
 	contains = list(/obj/item/clothing/head/bowler,
 					/obj/item/clothing/head/that,
@@ -127,11 +195,36 @@
 					/obj/item/clothing/shoes/black,
 					/obj/item/clothing/shoes/black,
 					/obj/item/clothing/shoes/leather,
-					/obj/item/clothing/accessory/wcoat)
+					/obj/item/clothing/accessory/wcoat,
+					/obj/item/clothing/accessory/toggleable/vest,
+					/obj/item/clothing/under/formal_pants,
+					/obj/item/clothing/under/formal_pants/red,
+					/obj/item/clothing/under/formal_pants/black,
+					/obj/item/clothing/under/formal_pants/tan,
+					/obj/item/clothing/under/formal_pants/khaki)
 	name = "Formalwear closet"
 	cost = 30
 	containertype = /obj/structure/closet
 	containername = "\improper Formalwear for the best occasions."
+
+/decl/hierarchy/supply_pack/miscellaneous/gambling
+	contains = list(/obj/item/weapon/deck/cards,
+					/obj/item/weapon/dice = 4)
+	name = "\improper Gambling Crate"
+	cost = 5
+	containername = "\improper gambling crate"
+
+/decl/hierarchy/supply_pack/miscellaneous/tabletop
+	contains = list(/obj/item/weapon/paper_bin,
+					/obj/item/weapon/dice/d4 = 1,
+					/obj/item/weapon/dice = 1,
+					/obj/item/weapon/dice/d8 = 1,
+					/obj/item/weapon/dice/d10 = 1,
+					/obj/item/weapon/dice/d12 = 1,
+					/obj/item/weapon/dice/d20 = 1)
+	name = "\improper Tabletop Gaming Crate"
+	cost = 10
+	containername = "\improper gambling crate"
 
 /decl/hierarchy/supply_pack/miscellaneous/card_packs
 	num_contained = 5
@@ -139,7 +232,7 @@
 					/obj/item/weapon/pack/spaceball,
 					/obj/item/weapon/deck/holder)
 	name = "\improper Trading Card Crate"
-	cost = 20
+	cost = 5
 	containername = "\improper cards crate"
 	supply_method = /decl/supply_method/randomized
 
@@ -172,15 +265,39 @@
 					/obj/item/clothing/head/collectable/xenom,
 					/obj/item/clothing/head/collectable/petehat)
 	name = "Collectable hat crate!"
-	cost = 200
+	cost = 20
 	containername = "\improper Collectable hats crate! Brought to you by Bass.inc!"
 	supply_method = /decl/supply_method/randomized
 
 /decl/hierarchy/supply_pack/miscellaneous/cardboard_sheets
-	name = "50 cardboard sheets"
+	name = "Cardboard (x50)"
 	contains = list(/obj/item/stack/material/cardboard/fifty)
 	cost = 10
 	containername = "\improper Cardboard sheets crate"
+
+/decl/hierarchy/supply_pack/miscellaneous/luxury
+	name = "Luxury Crate"
+	num_contained = 1
+	contains = list(/obj/item/clothing/ears/earring/stud/diamond,
+					/obj/item/clothing/ears/earring/dangle/gold,
+					/obj/item/clothing/ears/earring/dangle/diamond,
+					/obj/item/clothing/ears/earring/stud/gold,
+					/obj/item/clothing/ears/earring/stud/platinum,
+					/obj/item/clothing/ears/earring/dangle/silver,
+					/obj/item/clothing/ears/earring/dangle/platinum,
+					/obj/item/clothing/ears/earring/stud/silver,
+					/obj/item/clothing/gloves/captain,
+					/obj/item/clothing/gloves/color/evening,
+					/obj/item/clothing/ring/material/gold,
+					/obj/item/clothing/ring/material/silver,
+					/obj/item/clothing/accessory/locket,
+					/obj/item/clothing/accessory/black/expensive,
+					/obj/item/clothing/accessory/scarf
+
+					)
+	cost = 100
+	containername = "\improper Luxury crate"
+	supply_method = /decl/supply_method/randomized
 
 /decl/hierarchy/supply_pack/miscellaneous/witch
 	name = "Witch costume"
@@ -188,7 +305,7 @@
 					/obj/item/clothing/shoes/sandal,
 					/obj/item/clothing/head/wizard/marisa/fake,
 					/obj/item/weapon/staff/broom)
-	cost = 20
+	cost = 8
 	containername = "\improper Witch costume"
 	containertype = /obj/structure/closet
 
@@ -208,8 +325,9 @@
 					/obj/item/clothing/mask/gas/monkeymask,
 					/obj/item/clothing/head/helmet/gladiator,
 					/obj/item/clothing/head/ushanka,
-					/obj/item/clothing/mask/spirit)
-	cost = 10
+					/obj/item/clothing/mask/spirit,
+					/obj/item/clothing/head/cowboy_hat)
+	cost = 6
 	containername = "\improper Actor hats crate"
 	containertype = /obj/structure/closet
 	num_contained = 2
@@ -228,7 +346,7 @@
 					/obj/item/clothing/under/dress/dress_orange,
 					/obj/item/clothing/under/dress/dress_yellow,
 					/obj/item/clothing/under/dress/dress_saloon)
-	cost = 15
+	cost = 10
 	containername = "\improper Pretty dress locker"
 	containertype = /obj/structure/closet
 	num_contained = 1
@@ -243,7 +361,7 @@
 		/obj/item/device/kit/paint/ripley/flames_red,
 		/obj/item/device/kit/paint/ripley/flames_blue
 		)
-	cost = 200
+	cost = 10
 	containername = "heavy crate"
 	supply_method = /decl/supply_method/randomized
 
@@ -255,7 +373,7 @@
 		/obj/item/device/kit/paint/durand/seraph,
 		/obj/item/device/kit/paint/durand/phazon
 		)
-	cost = 200
+	cost = 10
 	containername = "heavy crate"
 	supply_method = /decl/supply_method/randomized
 
@@ -267,7 +385,7 @@
 		/obj/item/device/kit/paint/gygax/darkgygax,
 		/obj/item/device/kit/paint/gygax/recitence
 		)
-	cost = 200
+	cost = 10
 	containername = "heavy crate"
 	supply_method = /decl/supply_method/randomized
 
@@ -297,6 +415,19 @@
 	num_contained = 1
 	contains = list(/obj/item/device/phorosiansuit_changer)
 	name = "\improper Phorosian Suit Adapter"
-	cost = 50
+	cost = 12
 	containername = "\improper Phorosian Suit adapter"
 
+/decl/hierarchy/supply_pack/miscellaneous/bedsheets
+	name = "Bedsheet Variety Pack"
+	contains = list(/obj/item/weapon/bedsheet,
+					/obj/item/weapon/bedsheet/blue,
+					/obj/item/weapon/bedsheet/green,
+					/obj/item/weapon/bedsheet/orange,
+					/obj/item/weapon/bedsheet/purple,
+					/obj/item/weapon/bedsheet/red,
+					/obj/item/weapon/bedsheet/yellow,
+					/obj/item/weapon/bedsheet/brown,
+					/obj/item/weapon/bedsheet/rainbow)
+	cost = 7
+	containername = "Bedsheet Crate"

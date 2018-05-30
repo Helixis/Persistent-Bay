@@ -8,6 +8,8 @@
 	var/list/will_assist_languages = list()
 	var/list/datum/language/assists_languages = list()
 	var/min_bruised_damage = 10       // Damage before considered bruised
+	var/scarred = 0	// To what degree this organ is scarred
+	var/scarring_effect = 3	// How much durability a scar will remove
 
 /obj/item/organ/internal/New(var/mob/living/carbon/holder)
 	if(max_damage)
@@ -23,7 +25,11 @@
 				CRASH("[src] spawned in [holder] without a parent organ: [parent_organ].")
 			E.internal_organs |= src
 			E.cavity_max_w_class = max(E.cavity_max_w_class, w_class)
-
+/obj/item/organ/internal/after_load()
+	var/mob/living/carbon/human/H = loc
+	if(istype(H))
+		var/obj/item/organ/external/E = H.get_organ(parent_organ)
+		E.cavity_max_w_class = max(E.cavity_max_w_class, w_class)
 /obj/item/organ/internal/Destroy()
 	if(owner)
 		owner.internal_organs.Remove(src)
@@ -122,12 +128,57 @@
 		damage = between(0, src.damage + amount, max_damage)
 
 		//only show this if the organ is not robotic
-		if(owner && can_feel_pain() && parent_organ && (amount > 5 || prob(10)))
+		if(owner && can_feel_pain() && parent_organ && (amount > min_bruised_damage/2 || prob(10)))
 			var/obj/item/organ/external/parent = owner.get_organ(parent_organ)
 			if(parent && !silent)
 				var/degree = ""
 				if(is_bruised())
 					degree = " a lot"
-				if(damage < 5)
+				if(damage < min_bruised_damage/2)
 					degree = " a bit"
 				owner.custom_pain("Something inside your [parent.name] hurts[degree].", amount, affecting = parent)
+
+/obj/item/organ/internal/proc/get_visible_state()
+	if(damage > max_damage)
+		. = "bits and pieces of a destroyed "
+	else if(is_broken())
+		. = "broken "
+	else if(is_bruised())
+		. = "badly damaged "
+	else if(damage > 5)
+		. = "damaged "
+	else if(scarred == 1)
+		. = "slightly scarred "
+	else if(scarred == 2)
+		. = "scarred "
+	else if(scarred == 3)
+		. = "heavily scarred "
+	if(status & ORGAN_DEAD)
+		if(can_recover())
+			. = "decaying [.]"
+		else
+			. = "necrotic [.]"
+	. = "[.][name]"
+
+/obj/item/organ/internal/Process()
+	..()
+	handle_regeneration()
+
+// Organs will heal very minor damage on their own without much work
+// As long as no toxins are present in the system
+/obj/item/organ/internal/proc/handle_regeneration()
+	if(!damage || isrobotic() || !owner || owner.chem_effects[CE_TOXIN])
+		return
+	if(damage < min_bruised_damage) // If it's not even bruised, it will just heal very slowly.
+		heal_damage(0.01)
+	else if(is_bruised()) // If it is bruised, it will heal a little faster, but it will scar if it's not aided by medication or surgery
+	//	if(((damage - 0.02) < (min_bruised_damage)) && (scarred < 3))
+	//		scarred++
+	//		max_damage -= scarring_effect
+	//		min_broken_damage -= scarring_effect
+		heal_damage(0.02)
+
+/obj/item/organ/internal/emp_act(severity)
+	..()
+//	if(severity > 1 && scarred <3) // A strong enough EMP can mess up your robotic organs permanantly
+//		scarred++

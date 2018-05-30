@@ -210,7 +210,9 @@
 	wall_mounted = 1
 	storage_types = CLOSET_STORAGE_ITEMS
 
-/obj/structure/closet/hydrant/New()
+/obj/structure/closet/hydrant/filled
+
+/obj/structure/closet/hydrant/filled/New()
 	..()
 	new /obj/item/inflatable/door(src)
 	new /obj/item/inflatable/door(src)
@@ -242,12 +244,12 @@
 		icon_state = icon_opened
 
 /obj/structure/closet/medical_wall/filled
-/*
+
 /obj/structure/closet/medical_wall/filled/WillContain()
 	return list(
 		/obj/random/firstaid,
 		/obj/random/medical/lite = 12)
-*/
+
 /obj/structure/closet/shipping_wall
 	name = "shipping supplies closet"
 	desc = "It's a wall-mounted storage unit containing supplies for preparing shipments."
@@ -266,10 +268,9 @@
 		icon_state = icon_opened
 
 /obj/structure/closet/shipping_wall/filled
-/*
+
 /obj/structure/closet/shipping_wall/filled/WillContain()
 	return list(
 		/obj/item/stack/material/cardboard/ten,
 		/obj/item/device/destTagger,
 		/obj/item/weapon/packageWrap)
-*/

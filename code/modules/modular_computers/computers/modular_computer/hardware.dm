@@ -55,6 +55,18 @@
 			return
 		found = 1
 		tesla_link = H
+	else if(istype(H, /obj/item/weapon/computer_hardware/dna_scanner))
+		if(dna_scanner)
+			to_chat(user, "This computer's dna scanner slot is already occupied by \the [dna_scanner].")
+			return
+		found = 1
+		dna_scanner = H	
+	else if(istype(H, /obj/item/weapon/computer_hardware/logistic_processor))
+		if(logistic_processor)
+			to_chat(user, "This computer's logistic processor slot is already occupied by \the [logistic_processor].")
+			return
+		found = 1
+		logistic_processor = H		
 	if(found)
 		to_chat(user, "You install \the [H] into \the [src]")
 		H.holder2 = src
@@ -93,11 +105,21 @@
 	if(tesla_link == H)
 		tesla_link = null
 		found = 1
+	if(dna_scanner == H)
+		dna_scanner = null
+		found = 1
+	if(logistic_processor == H)
+		logistic_processor = null
+		found = 1
 	if(found)
 		if(user)
 			to_chat(user, "You remove \the [H] from \the [src].")
+
 		H.forceMove(get_turf(src))
+		if(Adjacent(user) && !issilicon(user))
+			user.put_in_hands(H)
 		H.holder2 = null
+
 		update_verbs()
 	if(critical && enabled)
 		if(user)
@@ -126,6 +148,10 @@
 		return ai_slot
 	if(tesla_link && (tesla_link.name == name))
 		return tesla_link
+	if(logistic_processor && (logistic_processor.name == name))
+		return logistic_processor
+	if(dna_scanner && (dna_scanner.name == name))
+		return dna_scanner
 	return null
 
 // Returns list of all components
@@ -149,4 +175,9 @@
 		all_components.Add(ai_slot)
 	if(tesla_link)
 		all_components.Add(tesla_link)
+	if(dna_scanner)
+		all_components.Add(dna_scanner)
+	if(logistic_processor)
+		all_components.Add(logistic_processor)
+		
 	return all_components

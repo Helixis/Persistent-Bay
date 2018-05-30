@@ -1,6 +1,7 @@
 datum/preferences
 	//The mob should have a gender you want before running this proc. Will run fine without H
 	proc/randomize_appearance_and_body_for(var/mob/living/carbon/human/H)
+		chosen_pin = rand(1000,9999)
 		var/datum/species/current_species = all_species[species]
 		if(!current_species) current_species = all_species[SPECIES_HUMAN]
 		gender = pick(current_species.genders)
@@ -24,6 +25,18 @@ datum/preferences
 		if(current_species.appearance_flags & HAS_UNDERWEAR)
 			all_underwear.Cut()
 			for(var/datum/category_group/underwear/WRC in GLOB.underwear.categories)
+				if(WRC.name == "Underwear, top")
+					if(gender == FEMALE)
+						all_underwear[WRC.name] = "Bra"
+					else
+						all_underwear[WRC.name] = "None"
+					continue
+				if(WRC.name == "Underwear, top")
+					if(gender == FEMALE)
+						all_underwear[WRC.name] = "Panties"
+					else
+						all_underwear[WRC.name] = "Boxers"
+					continue
 				var/datum/category_item/underwear/WRI = pick(WRC.items)
 				all_underwear[WRC.name] = WRI.name
 
@@ -191,52 +204,12 @@ datum/preferences
 		b_skin = blue
 
 /datum/preferences/proc/dress_preview_mob(var/mob/living/carbon/human/mannequin, var/finalize = FALSE)
-	var/update_icon = FALSE
+	var/update_icon = TRUE
 	copy_to(mannequin, !finalize)
 	mannequin.real_name = real_name
-	var/datum/job/previewJob
-	if(equip_preview_mob && job_master)
-		// Determine what job is marked as 'High' priority, and dress them up as such.
-		if("Assistant" in job_low)
-			previewJob = job_master.GetJob("Assistant")
-		else
-			for(var/datum/job/job in job_master.occupations)
-				if(job.title == job_high)
-					previewJob = job
-					break
-	else
-		return
-
-	if((equip_preview_mob & EQUIP_PREVIEW_JOB) && previewJob)
-		mannequin.job = previewJob.title
-		previewJob.equip_preview(mannequin, player_alt_titles[previewJob.title], mannequin.char_branch)
-		update_icon = TRUE
-
-	if((equip_preview_mob & EQUIP_PREVIEW_LOADOUT) && !(previewJob && (equip_preview_mob & EQUIP_PREVIEW_JOB) && (previewJob.type == /datum/job/ai || previewJob.type == /datum/job/cyborg)))
-		// Equip custom gear loadout, replacing any job items
-		var/list/loadout_taken_slots = list()
-		for(var/thing in Gear())
-			var/datum/gear/G = gear_datums[thing]
-			if(G)
-				var/permitted = 0
-				if(G.allowed_roles && G.allowed_roles.len)
-					if(previewJob)
-						for(var/job_type in G.allowed_roles)
-							if(previewJob.type == job_type)
-								permitted = 1
-				else
-					permitted = 1
-
-				if(G.whitelisted && (G.whitelisted != mannequin.species.name))
-					permitted = 0
-
-				if(!permitted)
-					continue
-
-				if(G.slot && G.slot != slot_tie && !(G.slot in loadout_taken_slots) && G.spawn_on_mob(mannequin, gear_list[gear_slot][G.display_name]))
-					loadout_taken_slots.Add(G.slot)
-					update_icon = TRUE
-
+	if(selected_under)
+		selected_under.loc = mannequin
+		mannequin.equip_to_slot_or_del(selected_under,slot_w_uniform)
 	if(update_icon)
 		mannequin.update_icons()
 

@@ -11,7 +11,7 @@
 	used for power or data transmission."
 	icon = 'icons/obj/electronic_assemblies.dmi'
 	icon_state = "wirer-wire"
-	matter = list("metal" = 147, "glass" = 64)
+	matter = list(DEFAULT_WALL_MATERIAL = 147, "glass" = 64)
 	flags = CONDUCT
 	w_class = ITEM_SIZE_SMALL
 	var/datum/integrated_io/selected_io = null
@@ -95,7 +95,7 @@
 	settings to specific circuits, or for debugging purposes.  It can also pulse activation pins."
 	icon = 'icons/obj/electronic_assemblies.dmi'
 	icon_state = "debugger"
-	matter = list("metal" = 151, "glass" = 82)
+	matter = list(DEFAULT_WALL_MATERIAL = 151, "glass" = 82)
 	flags = CONDUCT
 	w_class = ITEM_SIZE_SMALL
 	description_info = "Ref scanning is done by click-drag-dropping the debugger unto an adjacent object that you wish to scan."
@@ -159,7 +159,7 @@
 	desc = "This tool allows one to analyze custom assemblies and their components from a distance."
 	icon = 'icons/obj/electronic_assemblies.dmi'
 	icon_state = "analyzer"
-	matter = list("metal" = 156, "glass" = 67)
+	matter = list(DEFAULT_WALL_MATERIAL = 156, "glass" = 67)
 	flags = CONDUCT
 	w_class = 2
 	var/last_scan = ""
@@ -205,62 +205,64 @@
 
 /obj/item/weapon/storage/bag/circuits/basic/Initialize()
 	. = ..()
-	var/list/types_to_spawn = typesof(/obj/item/integrated_circuit/arithmetic,
-		/obj/item/integrated_circuit/logic,
-		/obj/item/integrated_circuit/memory,
-		) - list(/obj/item/integrated_circuit/arithmetic,
-		/obj/item/integrated_circuit/memory,
-		/obj/item/integrated_circuit/logic,
-		)
+	if(!map_storage_loaded)
+		var/list/types_to_spawn = typesof(/obj/item/integrated_circuit/arithmetic,
+			/obj/item/integrated_circuit/logic,
+			/obj/item/integrated_circuit/memory,
+			) - list(/obj/item/integrated_circuit/arithmetic,
+			/obj/item/integrated_circuit/memory,
+			/obj/item/integrated_circuit/logic,
+			)
 
-	types_to_spawn.Add(/obj/item/integrated_circuit/input/numberpad,
-		/obj/item/integrated_circuit/input/textpad,
-		/obj/item/integrated_circuit/input/button,
-		/obj/item/integrated_circuit/input/signaler,
-		/obj/item/integrated_circuit/input/local_locator,
-		/obj/item/integrated_circuit/output/screen,
-		/obj/item/integrated_circuit/converter/num2text,
-		/obj/item/integrated_circuit/converter/text2num,
-		/obj/item/integrated_circuit/converter/uppercase,
-		/obj/item/integrated_circuit/converter/lowercase,
-		/obj/item/integrated_circuit/time/delay/five_sec,
-		/obj/item/integrated_circuit/time/delay/one_sec,
-		/obj/item/integrated_circuit/time/delay/half_sec,
-		/obj/item/integrated_circuit/time/delay/tenth_sec,
-		/obj/item/integrated_circuit/time/ticker/slow,
-		/obj/item/integrated_circuit/time/clock
-		)
+		types_to_spawn.Add(/obj/item/integrated_circuit/input/numberpad,
+			/obj/item/integrated_circuit/input/textpad,
+			/obj/item/integrated_circuit/input/button,
+			/obj/item/integrated_circuit/input/signaler,
+			/obj/item/integrated_circuit/input/local_locator,
+			/obj/item/integrated_circuit/output/screen,
+			/obj/item/integrated_circuit/converter/num2text,
+			/obj/item/integrated_circuit/converter/text2num,
+			/obj/item/integrated_circuit/converter/uppercase,
+			/obj/item/integrated_circuit/converter/lowercase,
+			/obj/item/integrated_circuit/time/delay/five_sec,
+			/obj/item/integrated_circuit/time/delay/one_sec,
+			/obj/item/integrated_circuit/time/delay/half_sec,
+			/obj/item/integrated_circuit/time/delay/tenth_sec,
+			/obj/item/integrated_circuit/time/ticker/slow,
+			/obj/item/integrated_circuit/time/clock
+			)
 
-	for(var/thing in types_to_spawn)
-		var/obj/item/integrated_circuit/ic = thing
-		if(initial(ic.category) == thing)
-			continue
+		for(var/thing in types_to_spawn)
+			var/obj/item/integrated_circuit/ic = thing
+			if(initial(ic.category) == thing)
+				continue
 
-		for(var/i = 1 to 4)
-			new thing(src)
+			for(var/i = 1 to 4)
+				new thing(src)
 
-	new /obj/item/device/electronic_assembly(src)
-	new /obj/item/device/integrated_electronics/wirer(src)
-	new /obj/item/device/integrated_electronics/debugger(src)
-	new /obj/item/weapon/crowbar(src)
-	new /obj/item/weapon/screwdriver(src)
-	make_exact_fit()
+		new /obj/item/device/electronic_assembly(src)
+		new /obj/item/device/integrated_electronics/wirer(src)
+		new /obj/item/device/integrated_electronics/debugger(src)
+		new /obj/item/weapon/crowbar(src)
+		new /obj/item/weapon/screwdriver(src)
+		make_exact_fit()
 
 /obj/item/weapon/storage/bag/circuits/debug/Initialize()
 	. = ..()
-	name = "[name] - not intended for general use"
-	desc = "[desc] - not intended for general use"
-	for(var/subtype in subtypesof(/obj/item/integrated_circuit))
-		var/obj/item/integrated_circuit/ic = subtype
-		if(initial(ic.category) == subtype)
-			continue
-		for(var/i = 1 to 10)
-			new subtype(src)
+	if(!map_storage_loaded)
+		name = "[name] - not intended for general use"
+		desc = "[desc] - not intended for general use"
+		for(var/subtype in subtypesof(/obj/item/integrated_circuit))
+			var/obj/item/integrated_circuit/ic = subtype
+			if(initial(ic.category) == subtype)
+				continue
+			for(var/i = 1 to 10)
+				new subtype(src)
 
-	new /obj/item/device/electronic_assembly(src)
-	new /obj/item/device/integrated_electronics/wirer(src)
-	new /obj/item/device/integrated_electronics/debugger(src)
-	new /obj/item/device/integrated_electronics/analyzer(src)
-	new /obj/item/weapon/crowbar(src)
-	new /obj/item/weapon/screwdriver(src)
-	make_exact_fit()
+		new /obj/item/device/electronic_assembly(src)
+		new /obj/item/device/integrated_electronics/wirer(src)
+		new /obj/item/device/integrated_electronics/debugger(src)
+		new /obj/item/device/integrated_electronics/analyzer(src)
+		new /obj/item/weapon/crowbar(src)
+		new /obj/item/weapon/screwdriver(src)
+		make_exact_fit()

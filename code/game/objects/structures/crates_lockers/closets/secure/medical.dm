@@ -20,9 +20,9 @@
 	icon_opened = "medicalopen"
 	icon_broken = "medicalbroken"
 	icon_off = "medicaloff"
-	req_access = list(access_medical_equip)
+	req_access = list(core_access_medical_programs)
 /*
-/obj/structure/closet/secure_closet/medical1/WillContain()
+/obj/structure/closet/secure_closet/medical1/WillContain() //Add the contents to Supply Crate.
 	return list(
 		/obj/item/weapon/storage/box/autoinjectors,
 		/obj/item/weapon/storage/box/syringes,
@@ -35,7 +35,6 @@
 		/obj/item/weapon/storage/box/gloves
 	)
 */
-
 /obj/structure/closet/secure_closet/medical2
 	name = "anesthetics closet"
 	desc = "Used to knock people out."
@@ -45,7 +44,7 @@
 	icon_opened = "medicalopen"
 	icon_broken = "medicalbroken"
 	icon_off = "medicaloff"
-	req_access = list(access_surgery)
+	req_access = list(core_access_medical_programs)
 /*
 /obj/structure/closet/secure_closet/medical2/WillContain()
 	return list(
@@ -53,10 +52,9 @@
 		/obj/item/clothing/mask/breath/medical = 3
 	)
 */
-
 /obj/structure/closet/secure_closet/medical3
 	name = "medical doctor's locker"
-	req_access = list(access_medical_equip)
+	req_access = list(core_access_medical_programs)
 	icon_state = "securemed1"
 	icon_closed = "securemed"
 	icon_locked = "securemed1"
@@ -83,7 +81,6 @@
 		RANDOM_SCRUBS
 	)
 */
-
 /obj/structure/closet/secure_closet/paramedic
 	name = "paramedic locker"
 	desc = "Supplies for a first responder."
@@ -93,7 +90,7 @@
 	icon_opened = "medicalopen"
 	icon_broken = "medicalbroken"
 	icon_off = "medicaloff"
-	req_access = list(access_medical_equip)
+	req_access = list(core_access_medical_programs)
 /*
 /obj/structure/closet/secure_closet/paramedic/WillContain()
 	return list(
@@ -119,10 +116,9 @@
 	    /obj/item/clothing/accessory/storage/white_vest,
 	)
 */
-
 /obj/structure/closet/secure_closet/CMO
 	name = "chief medical officer's locker"
-	req_access = list(access_cmo)
+	req_access = list(core_access_medical_programs)
 	icon_state = "cmosecure1"
 	icon_closed = "cmosecure"
 	icon_locked = "cmosecure1"
@@ -149,7 +145,6 @@
 		RANDOM_SCRUBS
 	)
 */
-
 /obj/structure/closet/secure_closet/chemical
 	name = "chemical closet"
 	desc = "Store dangerous chemicals in here."
@@ -159,7 +154,7 @@
 	icon_opened = "medicalopen"
 	icon_broken = "medicalbroken"
 	icon_off = "medicaloff"
-	req_access = list(access_chemistry)
+	req_access = list(core_access_medical_programs)
 /*
 /obj/structure/closet/secure_closet/chemical/WillContain()
 	return list(
@@ -168,7 +163,6 @@
 		/obj/random/medical = 12
 	)
 */
-
 /obj/structure/closet/secure_closet/medical_wall
 	name = "first aid closet"
 	desc = "It's a secure wall-mounted storage unit for first aid supplies."
@@ -186,7 +180,7 @@
 
 /obj/structure/closet/secure_closet/counselor
 	name = "counselor's locker"
-	req_access = list(access_psychiatrist,access_chapel_office)
+	req_access = list(core_access_medical_programs)
 	icon_state = "chaplainsecure1"
 	icon_closed = "chaplainsecure"
 	icon_locked = "chaplainsecure1"
@@ -218,7 +212,6 @@
 		/obj/item/toy/therapy_blue,
 	)
 */
-
 /obj/structure/closet/secure_closet/virology
 	name = "virologist's locker"
 	icon_state = "secureviro1"
@@ -227,7 +220,7 @@
 	icon_opened = "secureviroopen"
 	icon_broken = "securevirobroken"
 	icon_off = "securevirooff"
-	req_access = list(access_virology)
+	req_access = list(core_access_medical_programs)
 /*
 /obj/structure/closet/secure_closet/virology/WillContain()
 	return list(
@@ -249,7 +242,6 @@
 		/obj/item/clothing/glasses/hud/health
 	)
 */
-
 /obj/structure/closet/secure_closet/psychiatry
 	name = "Psychiatrist's locker"
 	desc = "Everything you need to keep the lunatics at bay."
@@ -259,7 +251,7 @@
 	icon_opened = "securemedopen"
 	icon_broken = "securemedbroken"
 	icon_off = "securemedoff"
-	req_access = list(access_psychiatrist)
+	req_access = list(core_access_medical_programs)
 /*
 /obj/structure/closet/secure_closet/psychiatry/WillContain()
 	return list(

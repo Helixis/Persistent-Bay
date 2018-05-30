@@ -4,14 +4,14 @@
 	path = "vignette"
 	flags = MAP_HAS_RANK
 
-	lobby_icon = 'maps/torch/icons/lobby.dmi'
+	lobby_icon = 'maps/vignette/icons/lobby.dmi'
 
-	station_levels = list(1,2,3,4,5,6,7,8,9,10,11)
-	contact_levels = list(1,2,3)
-	player_levels = list(1,2,3,4,5,6,7,8,9,10,11,12)
-	admin_levels = list(13)
-	empty_levels = list(12)
-	accessible_z_levels = list("1"=1,"2"=1,"3"=1,"4"=1,"5"=1,"6"=1,"7"=1,"8"=1,"9"=1,"10"=1,"11"=1)
+	station_levels = list(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27)
+	contact_levels = list(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27)
+	player_levels = list(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27)
+	admin_levels = list(29)
+	empty_levels = list(28)
+	accessible_z_levels = list("1"=1,"2"=1,"3"=1,"4"=1,"5"=1,"6"=1,"7"=1,"8"=1,"9"=1,"10"=1,"11"=1,"12"=1,"13"=1,"14"=1,"15"=1,"16"=1,"17"=1,"18"=1,"19"=1,"20"=1,"21"=1,"22"=1,"23"=1,"24"=1,"25"=1,"26"=1,"27"=1)
 	usable_email_tlds = list("freemail.glo")
 
 	allowed_spawns = list("Cryogenic Storage", "Cyborg Storage")

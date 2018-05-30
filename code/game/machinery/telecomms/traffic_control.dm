@@ -68,7 +68,7 @@
 
 
 
-	req_access = list(access_tcomsat)
+	req_access = list(core_access_wireless_programs)
 
 	attack_hand(mob/user as mob)
 		if(stat & (BROKEN|NOPOWER))
@@ -121,8 +121,6 @@
 		if(..())
 			return
 
-
-		add_fingerprint(usr)
 		usr.set_machine(src)
 		if(!src.allowed(usr) && !emagged)
 			to_chat(usr, "<span class='warning'>ACCESS DENIED.</span>")

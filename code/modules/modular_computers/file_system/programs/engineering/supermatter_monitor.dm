@@ -6,7 +6,7 @@
 	program_menu_icon = "notice"
 	extended_desc = "This program connects to specially calibrated supermatter sensors to provide information on the status of supermatter-based engines."
 	ui_header = "smmon_0.gif"
-	required_access = access_engine
+	required_access = core_access_engineering_programs
 	requires_ntnet = 1
 	network_destination = "supermatter monitoring system"
 	size = 5
@@ -83,12 +83,14 @@
 			data["SM_gas_N2"] = round(100*air.gas["nitrogen"]/air.total_moles,0.01)
 			data["SM_gas_PH"] = round(100*air.gas["phoron"]/air.total_moles,0.01)
 			data["SM_gas_N2O"] = round(100*air.gas["sleeping_agent"]/air.total_moles,0.01)
+			data["SM_gas_H2"] = round(100*air.gas["hydrogen"]/air.total_moles,0.01)
 		else
 			data["SM_gas_O2"] = 0
 			data["SM_gas_CO2"] = 0
 			data["SM_gas_N2"] = 0
 			data["SM_gas_PH"] = 0
 			data["SM_gas_N2O"] = 0
+			data["SM_gas_PH"] = 0
 	else
 		var/list/SMS = list()
 		for(var/obj/machinery/power/supermatter/S in supermatters)

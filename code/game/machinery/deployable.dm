@@ -16,7 +16,7 @@ for reference:
 	access_tox_storage = 8
 	access_genetics = 9
 	access_engine = 10
-	access_engine_equip= 11
+	core_access_engineering_programs= 11
 	access_maint_tunnels = 12
 	access_external_airlocks = 13
 	access_emergency_storage = 14
@@ -29,7 +29,7 @@ for reference:
 	access_all_personal_lockers = 21
 	access_chapel_office = 22
 	access_tech_storage = 23
-	access_atmospherics = 24
+	core_access_engineering_programs = 24
 	access_bar = 25
 	access_janitor = 26
 	access_crematorium = 27
@@ -153,7 +153,7 @@ for reference:
 	name = "deployable"
 	desc = "Deployable."
 	icon = 'icons/obj/objects.dmi'
-	req_access = list(access_security)//I'm changing this until these are properly tested./N
+	req_access = list(core_access_security_programs)//I'm changing this until these are properly tested./N
 
 /obj/machinery/deployable/barrier
 	name = "deployable barrier"
@@ -196,12 +196,12 @@ for reference:
 			if (src.health < src.maxhealth)
 				src.health = src.maxhealth
 				src.emagged = 0
-				src.req_access = list(access_security)
+				src.req_access = list(core_access_security_programs)
 				visible_message("<span class='warning'>[user] repairs \the [src]!</span>")
 				return
 			else if (src.emagged > 0)
 				src.emagged = 0
-				src.req_access = list(access_security)
+				src.req_access = list(core_access_security_programs)
 				visible_message("<span class='warning'>[user] repairs \the [src]!</span>")
 				return
 			return

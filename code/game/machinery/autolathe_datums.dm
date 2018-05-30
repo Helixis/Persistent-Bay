@@ -1,8 +1,10 @@
 /var/global/list/autolathe_recipes
 /var/global/list/autolathe_categories
 
-var/const/EXTRA_COST_FACTOR = 1.25
+var/const/EXTRA_COST_FACTOR = 1
 // Items are more expensive to produce than they are to recycle.
+// Yeah but just make recycling bad
+// Extra cost factor implies you are DELETING steel (1st law of thermodynamics)
 
 /proc/populate_lathe_recipes()
 
@@ -35,39 +37,24 @@ var/const/EXTRA_COST_FACTOR = 1.25
 	path = /obj/item/weapon/reagent_containers/glass/bucket
 	category = "General"
 
-/datum/autolathe/recipe/drinkingglass
-	name = "drinking glass"
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/square
-	category = "General"
-	New()
-		..()
-		var/obj/O = path
-		name = initial(O.name) // generic recipes yay
-
-/datum/autolathe/recipe/drinkingglass/rocks
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/rocks
-
-/datum/autolathe/recipe/drinkingglass/shake
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/shake
-
-/datum/autolathe/recipe/drinkingglass/cocktail
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/cocktail
-
-/datum/autolathe/recipe/drinkingglass/shot
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/shot
-
-/datum/autolathe/recipe/drinkingglass/pint
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/pint
-
-/datum/autolathe/recipe/drinkingglass/mug
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/mug
-
-/datum/autolathe/recipe/drinkingglass/wine
-	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/wine
-
 /datum/autolathe/recipe/flashlight
 	name = "flashlight"
 	path = /obj/item/device/flashlight
+	category = "General"
+
+/datum/autolathe/recipe/maglight
+	name = "maglight"
+	path = /obj/item/device/flashlight/maglight
+	category = "General"
+
+/datum/autolathe/recipe/penlight
+	name = "penlight"
+	path = /obj/item/device/flashlight/pen
+	category = "General"
+
+/datum/autolathe/recipe/desklamp
+	name = "desk lamp"
+	path = /obj/item/device/flashlight/lamp
 	category = "General"
 
 /datum/autolathe/recipe/floor_light
@@ -78,6 +65,21 @@ var/const/EXTRA_COST_FACTOR = 1.25
 /datum/autolathe/recipe/extinguisher
 	name = "extinguisher"
 	path = /obj/item/weapon/extinguisher
+	category = "General"
+
+/datum/autolathe/recipe/tank/proc/Fabricate()
+	var/obj/item/weapon/tank/T = ..()
+	T.air_contents = new /datum/gas_mixture(T.volume, T20C)  //Empty air tanks only
+	return T
+
+/datum/autolathe/recipe/tank
+	name = "air tank"
+	path = /obj/item/weapon/tank/oxygen/yellow
+	category = "General"
+
+/datum/autolathe/recipe/tank_double
+	name = "emergency air tank"
+	path = /obj/item/weapon/tank/emergency/oxygen/engi
 	category = "General"
 
 /datum/autolathe/recipe/jar
@@ -233,6 +235,7 @@ var/const/EXTRA_COST_FACTOR = 1.25
 	name = "matter cartridge"
 	path = /obj/item/weapon/rcd_ammo
 	category = "Engineering"
+
 /datum/autolathe/recipe/rcd_ammo_large
 	name = "high-capacity matter cartridge"
 	path = /obj/item/weapon/rcd_ammo/large
@@ -283,6 +286,11 @@ var/const/EXTRA_COST_FACTOR = 1.25
 	path = /obj/item/weapon/reagent_containers/glass/beaker/vial
 	category = "Medical"
 
+/datum/autolathe/recipe/pillbottle
+	name = "pill bottle"
+	path = /obj/item/weapon/storage/pill_bottle
+	category = "Medical"
+
 /datum/autolathe/recipe/syringe
 	name = "syringe"
 	path = /obj/item/weapon/reagent_containers/syringe
@@ -301,6 +309,12 @@ var/const/EXTRA_COST_FACTOR = 1.25
 /datum/autolathe/recipe/shotgun_beanbag
 	name = "ammunition (shotgun, beanbag)"
 	path = /obj/item/ammo_casing/shotgun/beanbag
+	hidden = 1
+	category = "Arms and Ammunition"
+
+/datum/autolathe/recipe/shotgun_rubber
+	name = "ammunition (shotgun, rubber)"
+	path = /obj/item/ammo_casing/shotgun/rubber
 	hidden = 1
 	category = "Arms and Ammunition"
 
@@ -366,7 +380,7 @@ var/const/EXTRA_COST_FACTOR = 1.25
 
 /datum/autolathe/recipe/cable_coil
 	name = "cable coil"
-	path = /obj/item/stack/cable_coil/single
+	path = /obj/item/stack/cable_coil
 	category = "Devices and Components"
 	is_stack = 1
 
@@ -544,6 +558,16 @@ var/const/EXTRA_COST_FACTOR = 1.25
 	hidden = 1
 	category = "Engineering"
 
+/datum/autolathe/recipe/stasisclamp
+	name = "stasis clamp"
+	path = /obj/machinery/clamp
+	category = "Engineering"
+
+/datum/autolathe/recipe/beerkeg
+	name = "beer keg"
+	path = /obj/structure/reagent_dispensers/beerkeg/empty
+	category = "General"
+
 /datum/autolathe/recipe/electropack
 	name = "electropack"
 	path = /obj/item/device/radio/electropack
@@ -578,7 +602,177 @@ var/const/EXTRA_COST_FACTOR = 1.25
 	path = /obj/item/weapon/reagent_containers/ecig_cartridge/blank
 	category = "Devices and Components"
 
+/datum/autolathe/recipe/ecig
+	// We get it, you vape
+	name = "ecigarette"
+	path = /obj/item/clothing/mask/smokable/ecig/lathed
+	category = "Devices and Components"
+
 /datum/autolathe/recipe/keypad
-	name = "Airlock Keypad Electronics"
+	name = "airlock keypad electronics"
 	path = /obj/item/weapon/airlock_electronics/keypad_electronics
 	category = "Engineering"
+
+/datum/autolathe/recipe/analyzer
+	name = "gas analyzer"
+	path = /obj/item/device/analyzer
+	category = "Tools"
+
+/datum/autolathe/recipe/healthscanner
+	name = "health scanner"
+	path = /obj/item/device/healthanalyzer
+	category = "Medical"
+
+/datum/autolathe/recipe/mop
+	name = "mop"
+	path = /obj/item/weapon/mop
+	category = "General"
+
+/datum/autolathe/recipe/spraybottle
+	name = "spray bottle"
+	path = /obj/item/weapon/reagent_containers/spray
+	category = "General"
+
+/datum/autolathe/recipe/glasses
+	name = "prescription glasses"
+	path = /obj/item/clothing/glasses/regular
+	category = "Medical"
+
+/datum/autolathe/recipe/dropper
+	name = "dropper"
+	path = /obj/item/weapon/reagent_containers/dropper
+	category = "Medical"
+
+/datum/autolathe/recipe/lighter
+	name = "cheap lighter"
+	path = /obj/item/weapon/flame/lighter
+	category = "General"
+
+/datum/autolathe/recipe/pitcher
+	name = "pitcher"
+	path = /obj/item/weapon/reagent_containers/food/drinks/pitcher
+	category = "General"
+
+/datum/autolathe/recipe/carafe
+	name = "carafe"
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/carafe
+	category = "General"
+
+/datum/autolathe/recipe/lipstick
+	name = "lipstick"
+	path = /obj/item/weapon/lipstick
+	category = "General"
+
+/datum/autolathe/recipe/lipstick_purple
+	name = "purple lipstick"
+	path = /obj/item/weapon/lipstick/purple
+	category = "General"
+
+/datum/autolathe/recipe/lipstick_jade
+	name = "jade lipstick"
+	path = /obj/item/weapon/lipstick/jade
+	category = "General"
+
+/datum/autolathe/recipe/lipstick_black
+	name = "black lipstick"
+	path = /obj/item/weapon/lipstick/black
+	category = "General"
+
+/datum/autolathe/recipe/comb
+	name = "comb"
+	path = /obj/item/weapon/haircomb
+	category = "General"
+
+/datum/autolathe/recipe/red_doll
+	name = "red doll"
+	path = /obj/item/toy/therapy_red
+	category = "General"
+
+/datum/autolathe/recipe/purple_doll
+	name = "purple doll"
+	path = /obj/item/toy/therapy_purple
+	category = "General"
+
+/datum/autolathe/recipe/blue_doll
+	name = "blue doll"
+	path = /obj/item/toy/therapy_blue
+	category = "General"
+
+/datum/autolathe/recipe/yellow_doll
+	name = "yellow doll"
+	path = /obj/item/toy/therapy_yellow
+	category = "General"
+
+/datum/autolathe/recipe/green_doll
+	name = "green doll"
+	path = /obj/item/toy/therapy_green
+	category = "General"
+
+/datum/autolathe/recipe/water_balloon
+	name = "water balloon"
+	path = /obj/item/toy/water_balloon
+	category = "General"
+
+/datum/autolathe/recipe/coffeecup
+	name = "coffee cup"
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup
+	category = "General"
+	New()
+		..()
+		var/obj/O = path
+		name = initial(O.name) // generic recipes yay
+
+/datum/autolathe/recipe/coffeecup/black
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/black
+
+/datum/autolathe/recipe/coffeecup/green
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/green
+
+/datum/autolathe/recipe/coffeecup/heart
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/heart
+
+/datum/autolathe/recipe/coffeecup/metal
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/metal
+
+/datum/autolathe/recipe/coffeecup/rainbow
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/rainbow
+
+/datum/autolathe/recipe/coffeecup/NT
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/NT
+
+/datum/autolathe/recipe/coffeecup/STC
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/STC
+	hidden = 1 // We get our autolathes from a SolGov-friendly firm.
+
+/datum/autolathe/recipe/coffeecup/SCG
+	path = /obj/item/weapon/reagent_containers/food/drinks/coffeecup/SCG
+
+/datum/autolathe/recipe/drinkingglass
+	name = "drinking glass"
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/square
+	category = "General"
+	New()
+		..()
+		var/obj/O = path
+		name = initial(O.name) // generic recipes yay
+
+/datum/autolathe/recipe/drinkingglass/rocks
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/rocks
+
+/datum/autolathe/recipe/drinkingglass/shake
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/shake
+
+/datum/autolathe/recipe/drinkingglass/cocktail
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/cocktail
+
+/datum/autolathe/recipe/drinkingglass/shot
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/shot
+
+/datum/autolathe/recipe/drinkingglass/pint
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/pint
+
+/datum/autolathe/recipe/drinkingglass/mug
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/mug
+
+/datum/autolathe/recipe/drinkingglass/wine
+	path = /obj/item/weapon/reagent_containers/food/drinks/glass2/wine

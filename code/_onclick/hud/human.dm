@@ -239,7 +239,15 @@
 		hud_elements |= mymob.nutrition_icon
 
 
-	mymob.pain = new /obj/screen( null )
+	mymob.pain = new /obj/screen/fullscreen/pain( null )
+	mymob.pain.icon = ui_style
+	mymob.pain.icon_state = "blank"
+	mymob.pain.name = "pain"
+	mymob.pain.screen_loc = "WEST,SOUTH to EAST,NORTH"
+	mymob.pain.layer = UNDER_HUD_LAYER
+	mymob.pain.mouse_opacity = 0
+	hud_elements |= mymob.pain
+
 
 	mymob.zone_sel = new /obj/screen/zone_sel( null )
 	mymob.zone_sel.icon = ui_style

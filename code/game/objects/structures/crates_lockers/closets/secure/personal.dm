@@ -1,11 +1,22 @@
 /obj/structure/closet/secure_closet/personal
 	name = "personal closet"
 	desc = "It's a secure locker for personnel. The first card swiped gains control."
-	req_access = list(access_all_personal_lockers)
+	req_access = list(core_access_command_programs) // Command Staff may approve locker searching/resetting
 	var/registered_name = null
+
+/obj/structure/closet/secure_closet/personal/WillContain()
+	return list(
+		new /datum/atom_creator/weighted(list(/obj/item/weapon/storage/backpack, /obj/item/weapon/storage/backpack/satchel/grey)),
+		/obj/item/device/radio/headset
+	)
+
+/obj/structure/closet/secure_closet/personal/empty/WillContain()
+	return
 
 /obj/structure/closet/secure_closet/personal/patient
 	name = "patient's closet"
+/obj/structure/closet/secure_closet/personal/patient/WillContain()
+	return
 
 /obj/structure/closet/secure_closet/personal/cabinet
 	icon_state = "cabinetdetective"
@@ -14,6 +25,12 @@
 	icon_opened = "cabinetdetective_open"
 	icon_broken = "cabinetdetective_broken"
 	icon_off = "cabinetdetective_broken"
+
+/obj/structure/closet/secure_closet/personal/cabinet/WillContain()
+	return list(/obj/item/weapon/storage/backpack/satchel/grey/withwallet, /obj/item/device/radio/headset)
+
+/obj/structure/closet/secure_closet/personal/cabinet/empty/WillContain()
+	return
 
 /obj/structure/closet/secure_closet/personal/attackby(var/obj/item/weapon/W, var/mob/user)
 	if (src.opened)

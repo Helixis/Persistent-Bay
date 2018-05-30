@@ -751,3 +751,7 @@ default behaviour is:
 		layer = HIDING_MOB_LAYER
 	else
 		..()
+
+/mob/living/Destroy()
+
+	return ..()

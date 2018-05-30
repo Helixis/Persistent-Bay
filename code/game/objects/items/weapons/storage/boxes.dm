@@ -27,6 +27,10 @@
 	max_storage_space = DEFAULT_BOX_STORAGE
 	var/foldable = /obj/item/stack/material/cardboard	// BubbleWrap - if set, can be folded (when empty) into a sheet of cardboard
 
+/obj/item/weapon/storage/box/cigarettes
+	name = "cigarette carton"
+	desc = "A carton of cigarettes."
+
 /obj/item/weapon/storage/box/large
 	name = "large box"
 	icon_state = "largebox"
@@ -387,7 +391,8 @@
 
 /obj/item/weapon/storage/box/lights/Initialize()
 	. = ..()
-	make_exact_fit()
+	if(!map_storage_loaded)
+		make_exact_fit()
 
 /obj/item/weapon/storage/box/lights/bulbs
 	startswith = list(/obj/item/weapon/light/bulb = 21)

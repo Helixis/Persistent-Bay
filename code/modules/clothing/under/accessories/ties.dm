@@ -22,6 +22,11 @@
 	name = "black tie"
 	color = "#ffffff"
 
+/obj/item/clothing/accessory/black/expensive
+	name = "expensive black tie"
+	color = "#1c1c1c"
+	desc = "A tie made from real silk, or so the label leads you to believe."
+
 /obj/item/clothing/accessory/yellow
 	name = "yellow tie"
 	icon_state = "longtie"
@@ -42,7 +47,7 @@
 	color = "#b18345"
 
 /obj/item/clothing/accessory/nt
-	name = "\improper NanoTrasen tie with a clip"
+	name = "\improper Nanotrasen tie with a clip"
 	desc = "A neosilk clip-on tie. This one has a clip on it that proudly bears 'NT' on it."
 	icon_state = "ntcliptie"
 
