@@ -2,6 +2,9 @@
 //////////////////////////////////////////////////////////////////
 //						INTERNAL ORGANS							//
 //////////////////////////////////////////////////////////////////
+#define DUCTTAPE_NEEDED_ORGANATTACH 10
+#define DUCTTAPE_NEEDED_ORGANMENDING 20
+
 /datum/surgery_step/internal
 	priority = 2
 	can_infect = 1
@@ -17,7 +20,7 @@
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	if(!affected)
 		return 0
-	if(affected.robotic >= ORGAN_ROBOT)
+	if(BP_IS_ROBOTIC(affected))
 		return affected.hatch_state == HATCH_OPENED
 	else
 		return affected.how_open() == (affected.encased ? SURGERY_ENCASED : SURGERY_RETRACTED)
@@ -39,13 +42,18 @@
 
 	if (!hasorgans(target))
 		return FALSE
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		if(!thetape.has_enough_tape_left(DUCTTAPE_NEEDED_ORGANMENDING))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_ORGANMENDING] tape strip\s to do this!</span>")
+			return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	if(!affected)
 		return FALSE
-	if(affected.robotic >= ORGAN_ROBOT)
+	if(BP_IS_ROBOTIC(affected))
 		return FALSE
 	for(var/obj/item/organ/internal/I in affected.internal_organs)
-		if(I.damage > 0)
+		if(I.isdamaged())
 			if(I.surface_accessible)
 				return TRUE
 			if(affected.how_open() >= (affected.encased ? SURGERY_ENCASED : SURGERY_RETRACTED))
@@ -65,7 +73,7 @@
 	if(!affected || affected.how_open() < 2)
 		return
 	for(var/obj/item/organ/internal/I in affected.internal_organs)
-		if(I && I.damage > 0 && I.robotic < ORGAN_ROBOT && (!I.status & ORGAN_DEAD || I.can_recover()) && (I.surface_accessible || affected.how_open() >= (affected.encased ? 3 : 2)))
+		if(I && I.isdamaged() && !BP_IS_ROBOTIC(I) && (!I.status & ORGAN_DEAD || I.can_recover()) && (I.surface_accessible || affected.how_open() >= (affected.encased ? 3 : 2)))
 			user.visible_message("[user] starts treating damage to [target]'s [I.name] with [tool_name].", \
 			"You start treating damage to [target]'s [I.name] with [tool_name]." )
 
@@ -85,14 +93,17 @@
 	if(!affected || affected.how_open() < 2)
 		return
 	for(var/obj/item/organ/internal/I in affected.internal_organs)
-		if(I && I.damage > 0 && I.robotic < ORGAN_ROBOT && (I.surface_accessible || affected.how_open() >= (affected.encased ? SURGERY_ENCASED : SURGERY_RETRACTED)))
+		if(I && I.isdamaged() && !BP_IS_ROBOTIC(I) && (I.surface_accessible || affected.how_open() >= (affected.encased ? SURGERY_ENCASED : SURGERY_RETRACTED)))
 			if(I.status & ORGAN_DEAD && I.can_recover())
 				user.visible_message("<span class='notice'>[user] treats damage to [target]'s [I.name] with [tool_name], though it needs to be recovered further.</span>", \
 				"<span class='notice'>You treat damage to [target]'s [I.name] with [tool_name], though it needs to be recovered further.</span>" )
 			else
 				user.visible_message("<span class='notice'>[user] treats damage to [target]'s [I.name] with [tool_name].</span>", \
 				"<span class='notice'>You treat damage to [target]'s [I.name] with [tool_name].</span>" )
-			I.damage = 0
+			I.set_health(I.get_max_health())
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		thetape.use_tape(DUCTTAPE_NEEDED_ORGANMENDING)
 
 /datum/surgery_step/internal/fix_organ/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 
@@ -110,11 +121,11 @@
 	else
 		dam_amt = 5
 		target.adjustToxLoss(10)
-		affected.take_damage(dam_amt, 0, (DAM_SHARP|DAM_EDGE), used_weapon = tool)
+		affected.take_damage(dam_amt, DAM_CUT, damsrc = tool)
 
 	for(var/obj/item/organ/internal/I in affected.internal_organs)
-		if(I && I.damage > 0 && I.robotic < ORGAN_ROBOT && (I.surface_accessible || affected.how_open() >= (affected.encased ? 3 : 2)))
-			I.take_damage(dam_amt,0)
+		if(I && I.isdamaged() && !BP_IS_ROBOTIC(I) && (I.surface_accessible || affected.how_open() >= (affected.encased ? 3 : 2)))
+			I.take_damage(dam_amt)
 
 //////////////////////////////////////////////////////////////////
 //	 Organ detatchment surgery step
@@ -141,7 +152,7 @@
 	if(!affected)
 		return 0
 
-	if(affected.robotic >= ORGAN_ROBOT)
+	if(BP_IS_ROBOTIC(affected))
 		return 0
 
 	target.op_stage.current_organ = null
@@ -178,7 +189,7 @@
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, slicing an artery inside [target]'s [affected.name] with \the [tool]!</span>", \
 	"<span class='warning'>Your hand slips, slicing an artery inside [target]'s [affected.name] with \the [tool]!</span>")
-	affected.take_damage(rand(30,50), 0, (DAM_SHARP|DAM_EDGE), used_weapon = tool)
+	affected.take_damage(rand(30,50), DAM_CUT, damsrc = tool)
 
 //////////////////////////////////////////////////////////////////
 //	 Organ removal surgery step
@@ -187,7 +198,7 @@
 	priority = 2
 	allowed_tools = list(
 	/obj/item/weapon/hemostat = 100,	\
-	/obj/item/weapon/wirecutters = 75,
+	/obj/item/weapon/tool/wirecutters = 75,
 	/obj/item/weapon/material/knife = 75,	\
 	/obj/item/weapon/material/kitchen/utensil/fork = 20
 	)
@@ -239,7 +250,7 @@
 		affected.implants -= O
 		O.dropInto(target.loc)
 		target.op_stage.current_organ = null
-		if(affected.robotic < ORGAN_ROBOT)
+		if(!BP_IS_ROBOTIC(affected))
 			playsound(target.loc, 'sound/effects/squelch1.ogg', 15, 1)
 		else
 			playsound(target.loc, 'sound/items/Ratchet.ogg', 50, 1)
@@ -256,7 +267,7 @@
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, damaging [target]'s [affected.name] with \the [tool]!</span>", \
 	"<span class='warning'>Your hand slips, damaging [target]'s [affected.name] with \the [tool]!</span>")
-	affected.take_damage(20, used_weapon = tool)
+	affected.take_damage(20, DAM_CUT,  damsrc = tool)
 
 //////////////////////////////////////////////////////////////////
 //	 Organ inserting surgery step
@@ -278,7 +289,7 @@
 	if(!istype(O))
 		return 0
 
-	if((affected.robotic >= ORGAN_ROBOT) && !(O.robotic >= ORGAN_ROBOT))
+	if(BP_IS_ROBOTIC(affected) && !BP_IS_ROBOTIC(O))
 		to_chat(user, "<span class='danger'>You cannot install a naked organ into a robotic body.</span>")
 		return SURGERY_FAILURE
 
@@ -293,7 +304,7 @@
 		to_chat(user, "<span class='warning'>There's no place in [target] to fit \the [O.organ_tag].</span>")
 		return SURGERY_FAILURE
 
-	if(O.damage > (O.max_damage * 0.75))
+	if(O.get_damages() > (O.get_max_health() * 0.75))
 		to_chat(user, "<span class='warning'>\The [O.name] [o_is] in no state to be transplanted.</span>")
 		return SURGERY_FAILURE
 	if(O.w_class > affected.cavity_max_w_class)
@@ -303,6 +314,10 @@
 	var/obj/item/organ/internal/I = target.internal_organs_by_name[O.organ_tag]
 	if(I && (I.parent_organ == affected.organ_tag || istype(O, /obj/item/organ/internal/stack)))
 		to_chat(user, "<span class='warning'>\The [target] already has [o_a][O.name].</span>")
+		return SURGERY_FAILURE
+
+	if(istype(O, /obj/item/organ/internal/stack/vat))
+		to_chat(user, "<span class='warning'>You feel a sense of dread when you realize [O.name] was not designed to be transplanted more than once.</span>")
 		return SURGERY_FAILURE
 
 	return ..()
@@ -334,7 +349,7 @@
 	"<span class='warning'>Your hand slips, damaging \the [tool]!</span>")
 	var/obj/item/organ/I = tool
 	if(istype(I))
-		I.take_damage(rand(3,5),0)
+		I.take_damage(rand(3,5))
 
 //////////////////////////////////////////////////////////////////
 //	 Organ inserting surgery step
@@ -356,8 +371,14 @@
 
 	target.op_stage.current_organ = null
 
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		if(!thetape.has_enough_tape_left(DUCTTAPE_NEEDED_ORGANATTACH))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_ORGANATTACH] tape strip\s to do this!</span>")
+			return 0
+
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	if(!affected || affected.robotic >= ORGAN_ROBOT)
+	if(!affected || BP_IS_ROBOTIC(affected))
 		// robotic attachment handled via screwdriver
 		return 0
 
@@ -400,11 +421,15 @@
 		affected.implants -= I
 		I.replaced(target, affected)
 
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		thetape.use_tape(DUCTTAPE_NEEDED_ORGANATTACH)
+
 /datum/surgery_step/internal/attach_organ/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, damaging the flesh in [target]'s [affected.name] with \the [tool]!</span>", \
 	"<span class='warning'>Your hand slips, damaging the flesh in [target]'s [affected.name] with \the [tool]!</span>")
-	affected.take_damage(20, used_weapon = tool)
+	affected.take_damage(20, damsrc = tool)
 
 //////////////////////////////////////////////////////////////////
 //	 Peridaxon necrosis treatment surgery step
@@ -437,14 +462,14 @@
 	if(!affected)
 		return 0
 
-	if(affected.robotic >= ORGAN_ROBOT)
+	if(BP_IS_ROBOTIC(affected))
 		return 0
 
 	target.op_stage.current_organ = null
 
 	var/obj/item/organ/internal/list/dead_organs = list()
 	for(var/obj/item/organ/internal/I in target.internal_organs)
-		if(I && !(I.status & ORGAN_CUT_AWAY) && I.status & ORGAN_DEAD && I.parent_organ == affected.organ_tag && !(I.robotic >= ORGAN_ROBOT))
+		if(I && !(I.status & ORGAN_CUT_AWAY) && I.status & ORGAN_DEAD && I.parent_organ == affected.organ_tag && !BP_IS_ROBOTIC(I))
 			dead_organs |= I
 
 	var/obj/item/organ/internal/organ_to_fix = input(user, "Which organ do you want to regenerate?") as null|anything in dead_organs
@@ -453,7 +478,7 @@
 	if(!organ_to_fix.can_recover())
 		to_chat(user, "<span class='notice'>The [organ_to_fix.name] is necrotic and can't be saved, it will need to be replaced.</span>")
 		return 0
-	if(organ_to_fix.damage >= organ_to_fix.max_damage)
+	if(organ_to_fix.get_damages() >= organ_to_fix.get_max_health())
 		to_chat(user, "<span class='notice'>The [organ_to_fix.name] needs to be repaired before it is regenerated.</span>")
 		return 0
 
@@ -503,3 +528,6 @@
 	"<span class='warning'>Your hand slips, applying [trans] units of the solution to the wrong place in [target]'s [affected.name] with the [tool]!</span>")
 
 	//no damage or anything, just wastes medicine
+
+#undef DUCTTAPE_NEEDED_ORGANATTACH
+#undef DUCTTAPE_NEEDED_ORGANMENDING

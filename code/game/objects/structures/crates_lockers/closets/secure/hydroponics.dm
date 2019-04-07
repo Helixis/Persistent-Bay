@@ -1,14 +1,9 @@
 /obj/structure/closet/secure_closet/hydroponics
 	name = "botanist's locker"
 	req_access = list()
-	icon_state = "hydrosecure1"
-	icon_closed = "hydrosecure"
-	icon_locked = "hydrosecure1"
-	icon_opened = "hydrosecureopen"
-	icon_broken = "hydrosecurebroken"
-	icon_off = "hydrosecureoff"
-/*
-/obj/structure/closet/secure_closet/hydroponics/WillContain() //Add the contents to Supply Crate.
+	closet_appearance = /decl/closet_appearance/secure_closet/hydroponics
+
+/obj/structure/closet/secure_closet/hydroponics/filled/WillContain() //Add the contents to Supply Crate.
 	return list(
 		new /datum/atom_creator/weighted(list(/obj/item/clothing/suit/apron, /obj/item/clothing/suit/apron/overalls)),
 		/obj/item/weapon/storage/plants,
@@ -18,7 +13,6 @@
 		/obj/item/clothing/head/greenbandana,
 		/obj/item/weapon/material/minihoe,
 		/obj/item/weapon/material/hatchet,
-		/obj/item/weapon/wirecutters/clippers,
+		/obj/item/weapon/tool/wirecutters/clippers,
 		/obj/item/weapon/reagent_containers/spray/plantbgone,
 	)
-*/

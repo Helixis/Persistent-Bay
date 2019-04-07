@@ -17,6 +17,9 @@ obj/structure/windoor_assembly
 	density = 0
 	dir = NORTH
 	w_class = ITEM_SIZE_NORMAL
+	mass = 2
+	max_health = 30
+	damthreshold_brute 	= 1
 
 	var/obj/item/weapon/airlock_electronics/electronics = null
 
@@ -47,7 +50,7 @@ obj/structure/windoor_assembly/Destroy()
 	icon_state = "[facing]_[secure]windoor_assembly[state]"
 
 /obj/structure/windoor_assembly/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
-	if(istype(mover) && mover.checkpass(PASSGLASS))
+	if(istype(mover) && mover.checkpass(PASS_FLAG_GLASS))
 		return 1
 	if(get_dir(loc, target) == dir) //Make sure looking at appropriate border
 		if(air_group) return 0
@@ -56,7 +59,7 @@ obj/structure/windoor_assembly/Destroy()
 		return 1
 
 /obj/structure/windoor_assembly/CheckExit(atom/movable/mover as mob|obj, turf/target as turf)
-	if(istype(mover) && mover.checkpass(PASSGLASS))
+	if(istype(mover) && mover.checkpass(PASS_FLAG_GLASS))
 		return 1
 	if(get_dir(loc, target) == dir)
 		return !density
@@ -69,7 +72,7 @@ obj/structure/windoor_assembly/Destroy()
 	switch(state)
 		if("01")
 			if(isWelder(W) && !anchored )
-				var/obj/item/weapon/weldingtool/WT = W
+				var/obj/item/weapon/tool/weldingtool/WT = W
 				if (WT.remove_fuel(0,user))
 					user.visible_message("[user] dissassembles the windoor assembly.", "You start to dissassemble the windoor assembly.")
 					playsound(src.loc, 'sound/items/Welder2.ogg', 50, 1)
@@ -224,7 +227,7 @@ obj/structure/windoor_assembly/Destroy()
 						windoor.set_density(0)
 						if(electronics.business_name)
 							if(electronics.one_access)
-								windoor.req_one_access_business_list = src.electronics.business_access
+								windoor.req_access_business_list = src.electronics.business_access
 
 							else
 								windoor.req_one_access_business_list = src.electronics.business_access
@@ -236,7 +239,7 @@ obj/structure/windoor_assembly/Destroy()
 								windoor.req_one_access = src.electronics.conf_access
 							else
 								windoor.req_access = src.electronics.conf_access
-							
+
 							windoor.electronics = src.electronics
 							src.electronics.loc = windoor
 							windoor.req_access_faction = electronics.req_access_faction
@@ -271,10 +274,20 @@ obj/structure/windoor_assembly/Destroy()
 
 
 //Rotates the windoor assembly clockwise
+/obj/structure/windoor_assembly/AltClick()
+	revrotate()
+
 /obj/structure/windoor_assembly/verb/revrotate()
 	set name = "Rotate Windoor Assembly"
 	set category = "Object"
 	set src in oview(1)
+
+	if(!usr || !Adjacent(usr))
+		return
+
+	if(usr.incapacitated())
+		return
+
 
 	if (src.anchored)
 		to_chat(usr, "It is fastened to the floor; therefore, you can't rotate it!")

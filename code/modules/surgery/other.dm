@@ -2,6 +2,8 @@
 //////////////////////////////////////////////////////////////////
 //					INTERNAL WOUND PATCHING						//
 //////////////////////////////////////////////////////////////////
+#define DUCTTAPE_NEEDED_TENDONFIX 10
+#define DUCTTAPE_NEEDED_IBFIX 10
 
 //////////////////////////////////////////////////////////////////
 //	 Tendon fix surgery step
@@ -24,6 +26,11 @@
 /datum/surgery_step/fix_tendon/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	if(!hasorgans(target))
 		return 0
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		if(!thetape.has_enough_tape_left(DUCTTAPE_NEEDED_TENDONFIX))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_TENDONFIX] tape strip\s to do this!</span>")
+			return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	return affected && (affected.status & ORGAN_TENDON_CUT) && affected.how_open() >= SURGERY_RETRACTED
 
@@ -40,12 +47,15 @@
 		"<span class='notice'>You have reattached the [affected.tendon_name] in [target]'s [affected.name] with \the [tool].</span>")
 	affected.status &= ~ORGAN_TENDON_CUT
 	affected.update_damages()
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		thetape.use_tape(DUCTTAPE_NEEDED_TENDONFIX)
 
 /datum/surgery_step/fix_tendon/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>" , \
 	"<span class='warning'>Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>")
-	affected.take_damage(5, used_weapon = tool)
+	affected.take_damage(5, damsrc = tool)
 
 //////////////////////////////////////////////////////////////////
 //	 IB fix surgery step
@@ -66,6 +76,11 @@
 	delicate = 1
 
 /datum/surgery_step/fix_vein/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		if(!thetape.has_enough_tape_left(DUCTTAPE_NEEDED_IBFIX))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_IBFIX] tape strip\s to do this!</span>")
+			return 0
 	if(!hasorgans(target))
 		return 0
 
@@ -85,12 +100,15 @@
 		"<span class='notice'>You have patched the [affected.artery_name] in [target]'s [affected.name] with \the [tool].</span>")
 	affected.status &= ~ORGAN_ARTERY_CUT
 	affected.update_damages()
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		thetape.use_tape(DUCTTAPE_NEEDED_IBFIX)
 
 /datum/surgery_step/fix_vein/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>" , \
 	"<span class='warning'>Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>")
-	affected.take_damage(5, used_weapon = tool)
+	affected.take_damage(5, damsrc = tool)
 
 
 //////////////////////////////////////////////////////////////////
@@ -98,7 +116,7 @@
 //////////////////////////////////////////////////////////////////
 /datum/surgery_step/hardsuit
 	allowed_tools = list(
-		/obj/item/weapon/weldingtool = 80,
+		/obj/item/weapon/tool/weldingtool = 80,
 		/obj/item/weapon/circular_saw = 60,
 		/obj/item/weapon/gun/energy/plasmacutter = 100
 		)
@@ -114,7 +132,7 @@
 	if(!istype(target))
 		return 0
 	if(isWelder(tool))
-		var/obj/item/weapon/weldingtool/welder = tool
+		var/obj/item/weapon/tool/weldingtool/welder = tool
 		if(!welder.isOn() || !welder.remove_fuel(1,user))
 			return 0
 	return (target_zone == BP_CHEST) && istype(target.back, /obj/item/weapon/rig) && !(target.back.canremove)
@@ -222,3 +240,6 @@
 	"<span class='warning'>Your hand slips, spilling \the [tool]'s contents over the [target]'s [affected.name]!</span>")
 	affected.disinfect()
 
+
+#undef DUCTTAPE_NEEDED_TENDONFIX
+#undef DUCTTAPE_NEEDED_IBFIX

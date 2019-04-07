@@ -2,11 +2,11 @@
 	set invisibility = 0
 	set background = 1
 
-	if (src.transforming)
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 
 	src.blinded = null
-	
+
 	//Status updates, death etc.
 	clamp_values()
 	handle_regular_status_updates()
@@ -20,7 +20,7 @@
 		process_killswitch()
 		process_locks()
 		process_queued_alarms()
-	update_canmove()
+	UpdateLyingBuckledAndVerbStatus()
 
 /mob/living/silicon/robot/proc/clamp_values()
 
@@ -34,8 +34,6 @@
 	adjustFireLoss(0)
 
 /mob/living/silicon/robot/proc/use_power()
-	// Debug only
-//	log_debug(life.dm line 35: cyborg use_power() called at tick [controller_iteration]")
 
 	used_power_this_tick = 0
 	for(var/V in components)
@@ -84,11 +82,11 @@
 
 	if(health < config.health_threshold_dead && src.stat != 2) //die only once
 		death()
-		
+
 	if(last_hud_update < world.time)
 		last_hud_update = world.time + 15 SECONDS
 		update_action_buttons()
-		
+
 	if (src.stat != DEAD) //Alive.
 		if (src.paralysis || src.stunned || src.weakened || !src.has_power) //Stunned etc.
 			src.set_stat(UNCONSCIOUS)
@@ -283,7 +281,7 @@
 		set_see_invisible(SEE_INVISIBLE_LEVEL_TWO)
 	else if (src.stat != DEAD)
 		set_sight(sight&(~SEE_TURFS)&(~SEE_MOBS)&(~SEE_OBJS))
-		set_see_in_dark(8) 			 // see_in_dark means you can FAINTLY see in the dark, humans have a range of 3 or so, tajaran have it at 8
+		set_see_in_dark(8) 			 // see_in_dark means you can FAINTLY see in the dark, humans have a range of 3 or so
 		set_see_invisible(SEE_INVISIBLE_LIVING) // This is normal vision (25), setting it lower for normal vision means you don't "see" things like darkness since darkness
 							 // has a "invisible" value of 15
 
@@ -321,11 +319,6 @@
 				to_chat(src, "<span class='danger'>Weapon Lock Timed Out!</span>")
 			weapon_lock = 0
 			weaponlock_time = 120
-
-/mob/living/silicon/robot/update_canmove()
-	if(paralysis || stunned || weakened || buckled || lockcharge || !is_component_functioning("actuator")) canmove = 0
-	else canmove = 1
-	return canmove
 
 /mob/living/silicon/robot/update_fire()
 	overlays -= image("icon"='icons/mob/OnFire.dmi', "icon_state"="Standing")

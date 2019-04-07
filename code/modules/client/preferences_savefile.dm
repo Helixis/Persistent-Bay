@@ -6,6 +6,17 @@
 	var/path = "data/player_saves/[copytext(ckey,1,2)]/[ckey]/[filename]"
 	return path
 
+/proc/beta_path(ckey,filename="preferences.sav")
+	if(!ckey) return
+	var/path = "exports/player_saves/[copytext(ckey,1,2)]/[ckey]/[filename]"
+	return path
+
+/proc/exit_path(ckey,filename="preferences.sav")
+	if(!ckey)	return
+	var/path = "exits/player_saves/[copytext(ckey,1,2)]/[ckey]/[filename]"
+	return path
+
+
 /datum/preferences/proc/load_preferences()
 	path = load_path(client.ckey)
 	if(!fexists(path))		return 0
@@ -78,7 +89,10 @@
 	mannequin.dna.ready_dna(mannequin)
 	mannequin.dna.b_type = client.prefs.b_type
 	mannequin.sync_organ_dna()
-	mannequin.internal_organs_by_name[BP_STACK] = new /obj/item/organ/internal/stack(mannequin,1)
+	if (client.prefs.has_vatgrown_chip)
+		mannequin.internal_organs_by_name[BP_STACK] = new /obj/item/organ/internal/stack/vat(mannequin,1)
+	else
+		mannequin.internal_organs_by_name[BP_STACK] = new /obj/item/organ/internal/stack(mannequin,1)
 	var/datum/computer_file/data/email_account/email = new()
 	email.login = "[replacetext(mannequin.real_name, " ", "_")]@freemail.nt"
 	email.password = chosen_password
@@ -105,12 +119,12 @@
 	if(backpack)
 		mannequin.equip_to_slot_or_del(backpack,slot_back)
 	mannequin.mind.initial_account = M
-	var/datum/computer_file/crew_record/record = CreateModularRecord(mannequin)
+	var/datum/computer_file/report/crew_record/record = CreateModularRecord(mannequin)
 	var/faction_uid = "refugee"
 	faction_uid = "nanotrasen"
 	var/datum/world_faction/factions = get_faction(faction)
 	if(factions)
-		var/datum/computer_file/crew_record/record2 = new()
+		var/datum/computer_file/report/crew_record/record2 = new()
 		if(!record2.load_from_global(real_name))
 			message_admins("record for [real_name] failed to load in character creation..")
 		else
@@ -138,7 +152,8 @@
 			var/is_species_lang = (chosen_language.name in mannequin.species.secondary_langs)
 			if(is_species_lang || ((!(chosen_language.flags & RESTRICTED) || check_rights(R_ADMIN, 0, client))))
 				mannequin.add_language(lang)
-	S << mannequin
+	S["name"] << mannequin.real_name
+	S["mob"] << mannequin
 	character_list = list()
 	qdel(mannequin)
 

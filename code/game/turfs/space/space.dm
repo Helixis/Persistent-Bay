@@ -2,7 +2,7 @@
 	plane = SPACE_PLANE
 	icon = 'icons/turf/space.dmi'
 	name = "\proper space"
-	icon_state = "white"
+	icon_state = "black"
 	dynamic_lighting = 0
 
 	temperature = T20C
@@ -30,7 +30,7 @@
 	if(istype(below, /turf/space))
 		return
 	var/area/A = below.loc
-	if(A.flags & AREA_EXTERNAL)
+	if(A.area_flags & AREA_FLAG_EXTERNAL)
 		return
 
 	return INITIALIZE_HINT_LATELOAD // oh no! we need to switch to being a different kind of turf!
@@ -91,11 +91,8 @@
 
 /turf/space/Entered(atom/movable/A as mob|obj)
 	..()
-	if(A && A.loc == src && ticker && ticker.mode)
-
-		// Okay, so let's make it so that people can travel z levels but not nuke disks!
-		// if(ticker.mode.name == "mercenary")	return
-		if (A.x <= TRANSITIONEDGE || A.x >= (world.maxx - TRANSITIONEDGE + 1) || A.y <= TRANSITIONEDGE || A.y >= (world.maxy - TRANSITIONEDGE + 1))
+	if(A && A.loc == src)
+		if (A.x <= TRANSITIONEDGE+1 || A.x >= (world.maxx - TRANSITIONEDGE) || A.y <= TRANSITIONEDGE+1 || A.y >= (world.maxy - TRANSITIONEDGE))
 			A.touch_map_edge()
 
 /turf/space/proc/Sandbox_Spacemove(atom/movable/A as mob|obj)

@@ -12,11 +12,30 @@
 /obj/structure/filingcabinet
 	name = "filing cabinet"
 	desc = "A large cabinet with drawers."
-	icon = 'icons/obj/bureaucracy.dmi'
+	icon = 'icons/obj/structures/fillingcabinets.dmi'
 	icon_state = "filingcabinet"
 	density = 1
 	anchored = 1
-	flags = OBJ_ANCHORABLE|OBJ_CLIMBABLE
+	atom_flags = ATOM_FLAG_CLIMBABLE
+	obj_flags = OBJ_FLAG_ANCHORABLE
+	mass = 50
+	max_health = 250
+	damthreshold_brute 	= 5
+	damthreshold_brute 	= 5
+	armor = list(
+		DAM_BLUNT  	= 60,
+		DAM_PIERCE 	= 70,
+		DAM_CUT 	= 50,
+		DAM_BULLET 	= 10,
+		DAM_ENERGY 	= 10,
+		DAM_BURN 	= 60,
+		DAM_BOMB 	= 20,
+		DAM_EMP 	= MaxArmorValue,
+		DAM_BIO 	= MaxArmorValue,
+		DAM_RADS 	= MaxArmorValue,
+		DAM_STUN 	= MaxArmorValue,
+		DAM_PAIN	= MaxArmorValue,
+		DAM_CLONE   = MaxArmorValue)
 	var/list/can_hold = list(
 		/obj/item/weapon/paper,
 		/obj/item/weapon/folder,
@@ -33,7 +52,7 @@
 	desc = "A filing cabinet installed into a cavity in the wall to save space. Wow!"
 	icon_state = "wallcabinet"
 	density = 0
-	flags = 0
+	obj_flags = 0
 
 
 /obj/structure/filingcabinet/filingcabinet	//not changing the path to avoid unecessary map issues, but please don't name stuff like this in the future -Pete
@@ -56,8 +75,9 @@
 		sleep(5)
 		icon_state = initial(icon_state)
 		updateUsrDialog()
+		return
 	if(isWelder(P))
-		var/obj/item/weapon/weldingtool/WT = P
+		var/obj/item/weapon/tool/weldingtool/WT = P
 		if(WT.remove_fuel(0,user))
 			var/obj/item/stack/material/steel/new_item = new(usr.loc)
 			new_item.add_to_stacks(usr)

@@ -47,11 +47,10 @@ FIELD_SHORT_SECURE("DNA", dna, core_access_security_programs)
 FIELD_SHORT_SECURE("Fingerprint", fingerprint, core_access_security_programs)
 
 // EMPLOYMENT RECORDS
-FIELD_LONG_SECURE("Employment Record", emplRecord, core_access_employee_records)
-FIELD_SHORT_SECURE("Home System", homeSystem, core_access_employee_records)
-FIELD_SHORT_SECURE("Citizenship", citizenship, core_access_employee_records)
-FIELD_SHORT_SECURE("Faction", faction, core_access_employee_records)
-FIELD_SHORT_SECURE("Religion", religion, core_access_employee_records)
+FIELD_LONG_SECURE("Employment Record", emplRecord, core_access_reassignment)
+FIELD_SHORT_SECURE("Home System", homeSystem, core_access_reassignment)
+FIELD_SHORT_SECURE("Faction", faction, core_access_reassignment)
+FIELD_SHORT_SECURE("Religion", religion, core_access_reassignment)
 
 // ANTAG RECORDS
 FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
@@ -80,8 +79,10 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 	var/validate_time = 0
 	var/worked = 0
 	var/expenses = 0
-	
-	
+	var/datum/computer_file/data/email_account/email
+
+	var/citizenship = RESIDENT
+
 /datum/computer_file/crew_record/New()
 	..()
 	for(var/T in subtypesof(/record_field/))
@@ -103,30 +104,52 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 	var/list/all_demotes = list()
 	var/list/three_demotes = list()
 	var/list/five_demotes = list()
-	var/datum/assignment/curr_assignment = faction.get_assignment(assignment_uid)
+	var/datum/assignment/curr_assignment = faction.get_assignment(assignment_uid, get_name())
 	if(!curr_assignment) return 0
 	for(var/name in promote_votes)
+		if(name == faction.get_leadername())
+			five_promotes |= name
+			three_promotes |= name
+			all_promotes |= name
+			continue
 		if(name == get_name()) continue
 		var/datum/computer_file/crew_record/record = faction.get_record(name)
 		if(record)
-			var/head_position = 0
-			var/datum/assignment/assignment = faction.get_assignment(record.assignment_uid)
+			var/datum/assignment/assignment = faction.get_assignment(record.assignment_uid, record.get_name())
 			if(assignment)
-				if(curr_assignment.parent)
-					if(curr_assignment.parent.command_faction)
-						if(curr_assignment.parent.head_position.uid == curr_assignment.uid) head_position = 1
-				if(assignment.parent.command_faction || assignment.parent.name == curr_assignment.parent.name) // either the promotion is coming from a command position or its coming from an internal promotion request
-					if(assignment.parent)
-						if(assignment.parent.head_position.uid != assignment.uid && curr_assignment.parent.head_position.uid == curr_assignment.uid) // The promoted position is a head position and the promoter is not
-							continue
-						if((assignment.uid == curr_assignment.uid || assignment.parent.head_position.uid != assignment.uid) && record.rank <= rank) // they have the same assignment and we are equal or less rank
-							continue
-					if(assignment.accesses.Find("2"))
-						if(record.rank >= 5 || (record.rank >= assignment.ranks.len && head_position))
-							five_promotes |= name
-						if(record.rank >= 3 || (record.rank >= assignment.ranks.len && head_position))
-							three_promotes |= name
-						all_promotes |= name
+				if(assignment.parent)
+					var/promoter_command = (assignment.parent.command_faction)
+					var/promoter_head = (assignment.parent.head_position && assignment.parent.head_position.uid == assignment.uid)
+					var/curr_command = curr_assignment.parent.command_faction
+					var/curr_head = (curr_assignment.parent.head_position && curr_assignment.parent.head_position.uid == curr_assignment.uid)
+					var/same_dept = (assignment.parent.name == curr_assignment.parent.name)
+					if(promoter_command)
+						if(curr_command)
+							if(curr_head)
+								if(promoter_head)
+									if(record.rank <= rank)
+										continue
+								else
+									continue
+					else
+						if(curr_command) continue
+						if(curr_head && !promoter_head) continue
+						if(!same_dept) continue
+						if(promoter_head)
+							if(curr_head)
+								if(record.rank <= rank)
+									continue
+						else
+							if(record.rank <= rank)
+								continue
+
+		if(record.rank <= 5)
+			five_promotes |= record.get_name()
+		if(record.rank <= 3)
+			three_promotes |= record.get_name()
+		all_promotes |= record.get_name()
+
+
 	if(five_promotes.len >= faction.five_promote_req)
 		rank++
 		promote_votes.Cut()
@@ -146,26 +169,49 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 		update_ids(get_name())
 		return
 	for(var/name in demote_votes)
+
+		if(name == faction.get_leadername())
+			five_promotes |= name
+			three_promotes |= name
+			all_promotes |= name
+			continue
+		if(name == get_name()) continue
 		var/datum/computer_file/crew_record/record = faction.get_record(name)
 		if(record)
-			var/head_position = 0
-			var/datum/assignment/assignment = faction.get_assignment(record.assignment_uid)
+			var/datum/assignment/assignment = faction.get_assignment(record.assignment_uid, record.get_name())
 			if(assignment)
-				if(curr_assignment.parent)
-					if(curr_assignment.parent.command_faction)
-						if(curr_assignment.parent.head_position.uid == curr_assignment.uid) head_position = 1
-				if(assignment.parent.head_position.uid != assignment.uid && curr_assignment.parent.head_position.uid == curr_assignment.uid) // The promoted position is a head position and the promoter is not
-					message_admins("disregard 1")
-					continue
-				if((assignment.uid == curr_assignment.uid || assignment.parent.head_position.uid != assignment.uid) && record.rank <= rank) // they have the same assignment and we are equal or less rank
-					message_admins("disregard 2")
-					continue
-				if(assignment.accesses.Find("2") || record.access.Find("2"))
-					if(record.rank >= 5 || (record.rank >= assignment.ranks.len && head_position))
-						five_demotes |= name
-					if(record.rank >= 3 || (record.rank >= assignment.ranks.len && head_position))
-						three_demotes |= name
-					all_demotes |= name
+				if(assignment.parent)
+					var/promoter_command = (assignment.parent.command_faction)
+					var/promoter_head = (assignment.parent.head_position && assignment.parent.head_position.uid == assignment.uid)
+					var/curr_command = curr_assignment.parent.command_faction
+					var/curr_head = (curr_assignment.parent.head_position && curr_assignment.parent.head_position.uid == curr_assignment.uid)
+					var/same_dept = (assignment.parent.name == curr_assignment.parent.name)
+					if(promoter_command)
+						if(curr_command)
+							if(curr_head)
+								if(promoter_head)
+									if(record.rank <= rank)
+										continue
+								else
+									continue
+					else
+						if(curr_command) continue
+						if(curr_head && !promoter_head) continue
+						if(!same_dept) continue
+						if(promoter_head)
+							if(curr_head)
+								if(record.rank <= rank)
+									continue
+						else
+							if(record.rank <= rank)
+								continue
+
+		if(record.rank <= 5)
+			five_demotes |= record.get_name()
+		if(record.rank <= 3)
+			three_demotes |= record.get_name()
+		all_demotes |= record.get_name()
+
 	if(five_demotes.len >= faction.five_promote_req)
 		rank--
 		promote_votes.Cut()
@@ -216,6 +262,8 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 			record = R
 			break
 	if(!record)
+		record = Retrieve_Record(real_name)
+	if(!record)
 		return 0
 	photo_front = record.photo_front
 	photo_side = record.photo_side
@@ -254,6 +302,10 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 		photo_side = getFlatIcon(dummy, WEST, always_use_defdir = 1)
 		qdel(dummy)
 
+	if(!email && H)
+		email = new()
+		email.login = H.real_name
+
 	// Generic record
 	set_name(H ? H.real_name : "Unset")
 	set_job(H ? GetAssignment(H) : "Unset")
@@ -271,13 +323,13 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 	// Security record
 	set_criminalStatus(GLOB.default_security_status)
 	set_dna(H ? H.dna.unique_enzymes : "")
-	set_fingerprint(H ? md5(H.dna.uni_identity) : "")
+	set_fingerprint(H ? md5("[H.real_name]+fingerprint") : "")
+
 	set_secRecord((H && H.sec_record && !jobban_isbanned(H, "Records") ? html_decode(H.sec_record) : "No record supplied"))
 
 	// Employment record
 	set_emplRecord((H && H.gen_record && !jobban_isbanned(H, "Records") ? html_decode(H.gen_record) : "No record supplied"))
 	set_homeSystem(H ? H.home_system : "Unset")
-	set_citizenship(H ? H.citizenship : "Unset")
 	set_faction(H ? H.personal_faction : "Unset")
 	set_religion(H ? H.religion : "Unset")
 
@@ -306,6 +358,8 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 		if(R.get_name() == H.real_name)
 			message_admins("record already found heh")
 			return R
+	var/datum/computer_file/crew_record/R = Retrieve_Record(H.real_name)
+	if(R) return R
 	var/datum/computer_file/crew_record/CR = new/datum/computer_file/crew_record()
 	GLOB.all_crew_records.Add(CR)
 	CR.load_from_mob(H)
@@ -342,6 +396,8 @@ FIELD_LONG_SECURE("Exploitable Information", antagRecord, access_syndicate)
 	for(var/datum/computer_file/crew_record/CR in GLOB.all_crew_records)
 		if(CR.get_name() == name)
 			return CR
+	var/datum/computer_file/crew_record/R = Retrieve_Record(name)
+	if(R) return R
 	return null
 
 /proc/GetAssignment(var/mob/living/carbon/human/H)

@@ -1,10 +1,7 @@
 /obj/structure/closet/syndicate
 	name = "armory closet"
 	desc = "Why is this here?"
-	icon_state = "syndicate"
-	icon_closed = "syndicate"
-	icon_opened = "syndicateopen"
-
+	closet_appearance = /decl/closet_appearance/tactical/alt
 
 /obj/structure/closet/syndicate/personal
 	desc = "It's a storage unit for operative gear."
@@ -16,7 +13,7 @@
 	new /obj/item/clothing/under/syndicate(src)
 	new /obj/item/clothing/head/helmet/space/void/merc(src)
 	new /obj/item/clothing/suit/space/void/merc(src)
-	new /obj/item/weapon/crowbar/red(src)
+	new /obj/item/weapon/tool/crowbar/red(src)
 	new /obj/item/weapon/cell/high(src)
 	new /obj/item/weapon/card/id/syndicate(src)
 	new /obj/item/device/multitool(src)

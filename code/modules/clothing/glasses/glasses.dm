@@ -14,7 +14,7 @@
 	var/obj/screen/overlay = null
 	var/obj/item/clothing/glasses/hud/hud = null	// Hud glasses, if any
 	var/electric = 0 //if the glasses should be disrupted by EMP
-	matter = list(DEFAULT_WALL_MATERIAL = 50, "glass" = 200)
+	matter = list(MATERIAL_STEEL = 50, MATERIAL_GLASS = 200)
 
 /obj/item/clothing/glasses/New()
 	..()
@@ -51,6 +51,8 @@
 			user.update_inv_glasses()
 			flash_protection = FLASH_PROTECTION_NONE
 			tint = TINT_NONE
+			vision_flags = !initial(vision_flags)
+			see_invisible = !initial(see_invisible)
 			to_chat(usr, "You deactivate the optical matrix on the [src].")
 		else
 			active = 1
@@ -58,7 +60,8 @@
 			user.update_inv_glasses()
 			if(activation_sound)
 				sound_to(usr, activation_sound)
-
+			vision_flags = initial(vision_flags)
+			see_invisible = initial(see_invisible)
 			flash_protection = initial(flash_protection)
 			tint = initial(tint)
 			to_chat(usr, "You activate the optical matrix on the [src].")
@@ -125,9 +128,21 @@
 	action_button_name = "Toggle Goggles"
 	toggleable = 1
 	see_invisible = SEE_INVISIBLE_NOLIGHTING
-	armor = list(melee = 20, bullet = 20, laser = 20, energy = 15, bomb = 20, bio = 0, rad = 0)
 	siemens_coefficient = 0.6
 	electric = 1
+	armor  = list(
+		DAM_BLUNT 	= 20,
+		DAM_PIERCE 	= 10,
+		DAM_CUT 	= 20,
+		DAM_BULLET 	= 20,
+		DAM_LASER 	= 20,
+		DAM_ENERGY 	= 15,
+		DAM_BURN 	= 20,
+		DAM_BOMB 	= 20,
+		DAM_EMP 	= 10,
+		DAM_BIO 	= 0,
+		DAM_RADS 	= 0,
+		DAM_STUN 	= 0)
 
 /obj/item/clothing/glasses/eyepatch
 	name = "eyepatch"
@@ -221,7 +236,7 @@
 	icon_state = "welding-g"
 	item_state = "welding-g"
 	action_button_name = "Flip Welding Goggles"
-	matter = list(DEFAULT_WALL_MATERIAL = 1500, "glass" = 1000)
+	matter = list(MATERIAL_STEEL = 1500, MATERIAL_GLASS = 1000)
 	var/up = 0
 	flash_protection = FLASH_PROTECTION_MAJOR
 	tint = TINT_HEAVY
@@ -235,7 +250,7 @@
 	set name = "Adjust welding goggles"
 	set src in usr
 
-	if(usr.canmove && !usr.incapacitated())
+	if(!usr.incapacitated())
 		if(src.up)
 			src.up = !src.up
 			flags_inv |= HIDEEYES
@@ -376,9 +391,7 @@
 	name = "thermoncle"
 	desc = "A monocle thermal."
 	icon_state = "thermoncle"
-	flags = null //doesn't protect eyes because it's a monocle, duh
-
-	body_parts_covered = 0
+	body_parts_covered = 0 //doesn't protect eyes because it's a monocle, duh
 
 /obj/item/clothing/glasses/thermal/plain/eyepatch
 	name = "optical thermal eyepatch"
@@ -454,37 +467,33 @@
 	..()
 	overlay = GLOB.global_hud.meson
 
-
-/*---Tajaran-specific Eyewear---*/
-/*
-/obj/item/clothing/glasses/tajblind
+/obj/item/clothing/glasses/veil
 	name = "embroidered veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes."
-	icon_state = "tajblind"
-	item_state = "tajblind"
+	desc = "An alien made veil that allows the user to see while obscuring their eyes."
+	icon_state = "xenoblind"
+	item_state = "xenoblind"
 	prescription = 5
 	body_parts_covered = EYES
 
-/obj/item/clothing/glasses/hud/health/tajblind
+/obj/item/clothing/glasses/hud/health/veil
 	name = "lightweight veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes. This one has an installed medical HUD."
-	icon_state = "tajblind_med"
-	item_state = "tajblind_med"
+	desc = "An alien made veil that allows the user to see while obscuring their eyes. This one has an installed medical HUD."
+	icon_state = "xenoblind_med"
+	item_state = "xenoblind_med"
 	body_parts_covered = EYES
 
-/obj/item/clothing/glasses/sunglasses/sechud/tajblind
+/obj/item/clothing/glasses/sunglasses/sechud/veil
 	name = "sleek veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes. This one has an in-built security HUD."
-	icon_state = "tajblind_sec"
-	item_state = "tajblind_sec"
+	desc = "An alien made veil that allows the user to see while obscuring their eyes. This one has an in-built security HUD."
+	icon_state = "xenoblind_sec"
+	item_state = "xenoblind_sec"
 	prescription = 5
 	body_parts_covered = EYES
 
-/obj/item/clothing/glasses/meson/prescription/tajblind
+/obj/item/clothing/glasses/meson/prescription/veil
 	name = "industrial veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes. This one has installed mesons."
-	icon_state = "tajblind_meson"
-	item_state = "tajblind_meson"
-	off_state = "tajblind_meson"
+	desc = "An alien made veil that allows the user to see while obscuring their eyes. This one has installed mesons."
+	icon_state = "xenoblind_meson"
+	item_state = "xenoblind_meson"
+	off_state = "xenoblind_meson"
 	body_parts_covered = EYES
-*/

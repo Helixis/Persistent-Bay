@@ -21,6 +21,7 @@
 	infra_luminosity = 15 //byond implementation is bugged.
 	anchor_fall = TRUE
 	w_class = ITEM_SIZE_NO_CONTAINER
+	should_save = 0
 	var/initial_icon = null //Mech type for resetting icon. Only used for reskinning kits (see custom items)
 	var/can_move = 1
 	var/mob/living/carbon/occupant = null
@@ -28,7 +29,7 @@
 	var/step_in = 10 //make a step in step_in/10 sec.
 	var/dir_in = 2//What direction will the mech face when entered/powered on? Defaults to South.
 	var/step_energy_drain = 200		// Energy usage per step in joules.
-	var/health = 300 //health is health
+	max_health = 300 //health is health
 	var/deflect_chance = 10 //chance to deflect incoming projectiles, hits, or lesser the effect of ex_act.
 	var/r_deflect_coeff = 1
 	var/m_deflect_coeff = 1
@@ -39,7 +40,7 @@
 	var/mhit_power_use = 0
 
 	//the values in this list show how much damage will pass through, not how much will be absorbed.
-	var/list/damage_absorption = list("brute"=0.8,"fire"=1.2,"bullet"=0.9,"laser"=1,"energy"=1,"bomb"=1)
+	var/list/damage_absorption = list(DAM_BLUNT = 0.8, DAM_CUT = 0.8, DAM_PIERCE = 0.75, DAM_BURN = 1.2, DAM_BULLET = 0.9, DAM_LASER = 1, DAM_ENERGY = 1, DAM_BOMB = 1)
 	var/obj/item/weapon/cell/cell
 	var/state = 0
 	var/list/log = new
@@ -72,14 +73,18 @@
 	var/datum/global_iterator/pr_inertial_movement //controls intertial movement in spesss
 	var/datum/global_iterator/pr_give_air //moves air from tank to cabin
 	var/datum/global_iterator/pr_internal_damage //processes internal damage
-
-
 	var/wreckage
-
 	var/list/equipment = new
 	var/obj/item/mecha_parts/mecha_equipment/selected
 	var/max_equip = 3
 	var/datum/events/events
+
+
+/obj/mecha/after_load()
+	if(occupant)
+		icon_state = reset_icon()
+	update_connect_verbs()
+
 
 /obj/mecha/drain_power(var/drain_check)
 
@@ -93,22 +98,45 @@
 
 /obj/mecha/New()
 	..()
-	events = new
-
 	icon_state += "-open"
+	events = new
 	add_radio()
 	add_cabin()
-	add_airtank() //All mecha currently have airtanks. No need to check unless changes are made.
 	spark_system.set_up(2, 0, src)
 	spark_system.attach(src)
-	add_cell()
 	add_iterators()
 	removeVerb(/obj/mecha/verb/disconnect_from_port)
 	log_message("[src.name] created.")
 	mechas_list += src //global mech list
 	return
 
+/obj/mecha/Initialize()
+	. = ..()
+	if(!map_storage_loaded)
+		add_airtank() //All mecha currently have airtanks. No need to check unless changes are made.
+		add_cell()
+
 /obj/mecha/Destroy()
+	src.go_out()
+	for(var/mob/M in src) //Let's just be ultra sure
+		M.Move(loc)
+
+	for(var/obj/item/mecha_parts/mecha_equipment/E in equipment)
+		E.detach(loc)
+		E.destroy()
+	QDEL_NULL(cell)
+	QDEL_NULL(internal_tank)
+	QDEL_NULL(pr_int_temp_processor)
+	QDEL_NULL(pr_inertial_movement)
+	QDEL_NULL(pr_give_air)
+	QDEL_NULL(pr_internal_damage)
+	QDEL_NULL(spark_system)
+
+	mechas_list -= src //global mech list
+	. = ..()
+
+//When the mech "dies" this is what should be called, not Destroy or qdel...
+/obj/mecha/proc/destroy_mech()
 	src.go_out()
 	for(var/mob/M in src) //Let's just be ultra sure
 		M.Move(loc)
@@ -136,26 +164,8 @@
 		if(internal_tank)
 			WR.crowbar_salvage += internal_tank
 			internal_tank.forceMove(WR)
-	else
-		for(var/obj/item/mecha_parts/mecha_equipment/E in equipment)
-			E.detach(loc)
-			E.destroy()
-		if(cell)
-			qdel(cell)
-		if(internal_tank)
-			qdel(internal_tank)
 	equipment.Cut()
-	cell = null
-	internal_tank = null
-
-	QDEL_NULL(pr_int_temp_processor)
-	QDEL_NULL(pr_inertial_movement)
-	QDEL_NULL(pr_give_air)
-	QDEL_NULL(pr_internal_damage)
-	QDEL_NULL(spark_system)
-
-	mechas_list -= src //global mech list
-	. = ..()
+	qdel(src)
 
 ////////////////////////
 ////// Helpers /////////
@@ -178,7 +188,7 @@
 	cabin_air = new
 	cabin_air.temperature = T20C
 	cabin_air.volume = 200
-	cabin_air.adjust_multi("oxygen", O2STANDARD*cabin_air.volume/(R_IDEAL_GAS_EQUATION*cabin_air.temperature), "nitrogen", N2STANDARD*cabin_air.volume/(R_IDEAL_GAS_EQUATION*cabin_air.temperature))
+	cabin_air.adjust_multi(GAS_OXYGEN, O2STANDARD*cabin_air.volume/(R_IDEAL_GAS_EQUATION*cabin_air.temperature), GAS_NITROGEN, N2STANDARD*cabin_air.volume/(R_IDEAL_GAS_EQUATION*cabin_air.temperature))
 	return cabin_air
 
 /obj/mecha/proc/add_radio()
@@ -207,7 +217,7 @@
 
 	for(var/i = 0, i<numticks, i++)
 		sleep(delayfraction)
-		if(!src || !user || !user.canmove || !(user.loc == T))
+		if(!src || !user || user.is_physically_disabled() || !(user.loc == T))
 			return 0
 
 	return 1
@@ -475,18 +485,18 @@
 ////////  Health related procs  ////////
 ////////////////////////////////////////
 
-/obj/mecha/proc/take_damage(amount, type="brute")
-	if(amount)
-		var/damage = absorb_damage(amount,type)
-		health -= damage
+/obj/mecha/take_damage(damage, damtype, armorbypass, damsrc)
+	if(damage)
+		var/amount = absorb_damage(damage,damtype)
+		health -= amount
 		update_health()
-		log_append_to_last("Took [damage] points of damage. Damage type: \"[type]\".",1)
+		log_append_to_last("Took [amount] points of damage. Damage type: \"[type]\".",1)
 	return
 
-/obj/mecha/proc/absorb_damage(damage,damage_type)
-	return damage*(listgetindex(damage_absorption,damage_type) || 1)
+/obj/mecha/proc/absorb_damage(damage,damtype)
+	return damage*(listgetindex(damage_absorption,damtype) || 1)
 
-/obj/mecha/proc/hit_damage(damage, type="brute", is_melee=0)
+/obj/mecha/proc/hit_damage(damage, type=DAM_BLUNT, is_melee=0)
 
 	var/power_to_use
 	var/damage_coeff_to_use
@@ -548,11 +558,11 @@
 	check_for_internal_damage(list(MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST))
 	return 1
 
-/obj/mecha/proc/update_health()
+/obj/mecha/update_health()
 	if(src.health > 0)
 		src.spark_system.start()
 	else
-		qdel(src)
+		destroy_mech()
 	return
 
 /obj/mecha/attack_hand(mob/user as mob)
@@ -599,7 +609,7 @@
 		src.log_append_to_last("Armor saved.")
 		if(istype(A, /mob/living))
 			var/mob/living/M = A
-			M.take_organ_damage(10)
+			M.apply_damage(10)
 	else if(istype(A, /obj))
 		var/obj/O = A
 		if(O.throwforce)
@@ -608,10 +618,10 @@
 	return
 
 /obj/mecha/bullet_act(var/obj/item/projectile/Proj)
-	if(Proj.damage_type == PAIN && !(src.r_deflect_coeff > 1))
+	if(ISDAMTYPE(Proj.damtype, DAM_PAIN) && !(src.r_deflect_coeff > 1))
 		use_power(Proj.agony * 5)
 
-	src.log_message("Hit by projectile. Type: [Proj.name]([Proj.check_armour]).",1)
+	src.log_message("Hit by projectile. Type: [Proj.name]([Proj.damtype]).",1)
 	if(deflect_hit(is_melee=0))
 		src.occupant_message("<span class='notice'>The armor deflects incoming projectile.</span>")
 		src.visible_message("The [src.name] armor deflects the projectile.")
@@ -622,7 +632,7 @@
 		var/ignore_threshold
 		if(istype(Proj, /obj/item/projectile/beam/pulse))
 			ignore_threshold = 1
-		src.hit_damage(Proj.damage, Proj.check_armour, is_melee=0)
+		src.hit_damage(Proj.force, Proj.damtype, is_melee=0)
 		if(prob(25)) spark_system.start()
 		src.check_for_internal_damage(list(MECHA_INT_FIRE,MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST,MECHA_INT_SHORT_CIRCUIT),ignore_threshold)
 
@@ -630,7 +640,7 @@
 		if(Proj.penetrating)
 			var/distance = get_dist(Proj.starting, get_turf(loc))
 			var/hit_occupant = 1 //only allow the occupant to be hit once
-			for(var/i in 1 to min(Proj.penetrating, round(Proj.damage/15)))
+			for(var/i in 1 to min(Proj.penetrating, round(Proj.force/15)))
 				if(src.occupant && hit_occupant && prob(20))
 					Proj.attack_mob(src.occupant, distance)
 					hit_occupant = 0
@@ -653,16 +663,16 @@
 		src.log_append_to_last("Armor saved, changing severity to [severity].")
 	switch(severity)
 		if(1.0)
-			qdel(src)
+			destroy_mech()
 		if(2.0)
 			if (prob(30))
-				qdel(src)
+				destroy_mech()
 			else
 				src.take_damage(initial(src.health)/2)
 				src.check_for_internal_damage(list(MECHA_INT_FIRE,MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST,MECHA_INT_SHORT_CIRCUIT),1)
 		if(3.0)
 			if (prob(5))
-				qdel(src)
+				destroy_mech()
 			else
 				src.take_damage(initial(src.health)/5)
 				src.check_for_internal_damage(list(MECHA_INT_FIRE,MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST,MECHA_INT_SHORT_CIRCUIT),1)
@@ -692,7 +702,7 @@
 
 /obj/mecha/emp_act(severity)
 	if(use_power((cell.charge/2)/severity))
-		take_damage(50 / severity,"energy")
+		take_damage(50 / severity, DAM_EMP)
 	src.log_message("EMP detected",1)
 	check_for_internal_damage(list(MECHA_INT_FIRE,MECHA_INT_TEMP_CONTROL,MECHA_INT_CONTROL_LOST,MECHA_INT_SHORT_CIRCUIT),1)
 	return
@@ -700,7 +710,7 @@
 /obj/mecha/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature>src.max_temperature)
 		src.log_message("Exposed to dangerous temperature.",1)
-		src.take_damage(5,"fire")
+		src.take_damage(5,DAM_BURN)
 		src.check_for_internal_damage(list(MECHA_INT_FIRE, MECHA_INT_TEMP_CONTROL))
 	return
 
@@ -797,7 +807,7 @@
 		return
 
 	else if(isWelder(W) && user.a_intent != I_HURT)
-		var/obj/item/weapon/weldingtool/WT = W
+		var/obj/item/weapon/tool/weldingtool/WT = W
 		if (WT.remove_fuel(0,user))
 			if (hasInternalDamage(MECHA_INT_TANK_BREACH))
 				clearInternalDamage(MECHA_INT_TANK_BREACH)
@@ -940,6 +950,7 @@
 		network.gases += internal_tank.return_air()
 		network.update = 1
 	log_message("Connected to gas port.")
+	update_connect_verbs()
 	return 1
 
 /obj/mecha/proc/disconnect()
@@ -953,12 +964,21 @@
 	connected_port.connected_device = null
 	connected_port = null
 	src.log_message("Disconnected from gas port.")
+	update_connect_verbs()
 	return 1
 
 
 /////////////////////////
 ////////  Verbs  ////////
 /////////////////////////
+
+/obj/mecha/proc/update_connect_verbs()
+	if(connected_port)
+		src.verbs += /obj/mecha/verb/disconnect_from_port
+		src.verbs -= /obj/mecha/verb/connect_to_port
+	else
+		src.verbs -= /obj/mecha/verb/disconnect_from_port
+		src.verbs += /obj/mecha/verb/connect_to_port
 
 
 /obj/mecha/verb/connect_to_port()
@@ -973,8 +993,6 @@
 	if(possible_port)
 		if(connect(possible_port))
 			src.occupant_message("<span class='notice'>\The [name] connects to the port.</span>")
-			src.verbs += /obj/mecha/verb/disconnect_from_port
-			src.verbs -= /obj/mecha/verb/connect_to_port
 			return
 		else
 			src.occupant_message("<span class='danger'>\The [name] failed to connect to the port.</span>")
@@ -993,8 +1011,6 @@
 		return
 	if(disconnect())
 		src.occupant_message("<span class='notice'>[name] disconnects from the port.</span>")
-		src.verbs -= /obj/mecha/verb/disconnect_from_port
-		src.verbs += /obj/mecha/verb/connect_to_port
 	else
 		src.occupant_message("<span class='danger'>[name] is not connected to the port at the moment.</span>")
 
@@ -1182,7 +1198,6 @@
 			if(mmi.brainmob)
 				occupant.loc = mmi
 			mmi.mecha = null
-			src.occupant.canmove = 0
 			src.verbs += /obj/mecha/verb/eject
 		src.occupant = null
 		src.icon_state = src.reset_icon()+"-open"
@@ -1829,7 +1844,7 @@
 			if(mecha.cabin_air && mecha.cabin_air.volume>0)
 				mecha.cabin_air.temperature = min(6000+T0C, mecha.cabin_air.temperature+rand(10,15))
 				if(mecha.cabin_air.temperature>mecha.max_temperature/2)
-					mecha.take_damage(4/round(mecha.max_temperature/mecha.cabin_air.temperature,0.1),"fire")
+					mecha.take_damage(4/round(mecha.max_temperature/mecha.cabin_air.temperature,0.1),DAM_BURN)
 		if(mecha.hasInternalDamage(MECHA_INT_TEMP_CONTROL)) //stop the mecha_preserve_temp loop datum
 			mecha.pr_int_temp_processor.stop()
 		if(mecha.hasInternalDamage(MECHA_INT_TANK_BREACH)) //remove some air from internal tank

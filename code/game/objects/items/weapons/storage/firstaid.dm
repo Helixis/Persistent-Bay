@@ -10,6 +10,7 @@
 /obj/item/weapon/storage/firstaid
 	name = "first-aid kit"
 	desc = "It's an emergency medical kit for those serious boo-boos."
+	icon = 'icons/obj/items/storage/firstaid.dmi'
 	icon_state = "firstaid"
 	throw_speed = 2
 	throw_range = 8
@@ -17,8 +18,7 @@
 	max_storage_space = DEFAULT_BOX_STORAGE
 
 /obj/item/weapon/storage/firstaid/empty
-	icon_state = "firstaid"
-	name = "First-Aid (empty)"
+	startswith = null
 
 /obj/item/weapon/storage/firstaid/fire
 	name = "fire first-aid kit"
@@ -26,6 +26,7 @@
 	icon_state = "ointment"
 	item_state = "firstaid-ointment"
 
+/obj/item/weapon/storage/firstaid/fire/full
 	startswith = list(
 		/obj/item/device/healthanalyzer,
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector,
@@ -34,11 +35,14 @@
 		/obj/item/weapon/storage/pill_bottle/paracetamol
 		)
 
+/obj/item/weapon/storage/firstaid/fire/empty
+	startswith = null
+
 /obj/item/weapon/storage/firstaid/fire/New()
 	..()
 	icon_state = pick("ointment","firefirstaid")
 
-/obj/item/weapon/storage/firstaid/regular
+/obj/item/weapon/storage/firstaid/regular/full
 	icon_state = "firstaid"
 
 	startswith = list(
@@ -56,11 +60,15 @@
 	icon_state = "antitoxin"
 	item_state = "firstaid-toxin"
 
+/obj/item/weapon/storage/firstaid/toxin/full
 	startswith = list(
 		/obj/item/weapon/reagent_containers/syringe/antitoxin = 3,
 		/obj/item/weapon/storage/pill_bottle/antitox,
 		/obj/item/device/healthanalyzer,
 		)
+
+/obj/item/weapon/storage/firstaid/toxin/empty
+	startswith = null
 
 /obj/item/weapon/storage/firstaid/toxin/New()
 	..()
@@ -72,6 +80,7 @@
 	icon_state = "o2"
 	item_state = "firstaid-o2"
 
+/obj/item/weapon/storage/firstaid/o2/full
 	startswith = list(
 		/obj/item/weapon/storage/pill_bottle/dexalin,
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector,
@@ -79,12 +88,16 @@
 		/obj/item/device/healthanalyzer,
 		)
 
+/obj/item/weapon/storage/firstaid/o2/empty
+	startswith = null
+
 /obj/item/weapon/storage/firstaid/adv
 	name = "advanced first-aid kit"
 	desc = "Contains advanced medical treatments."
 	icon_state = "advfirstaid"
 	item_state = "firstaid-advanced"
 
+/obj/item/weapon/storage/firstaid/adv/full
 	startswith = list(
 		/obj/item/weapon/reagent_containers/hypospray/autoinjector,
 		/obj/item/stack/medical/advanced/bruise_pack = 3,
@@ -92,12 +105,16 @@
 		/obj/item/stack/medical/splint
 		)
 
+/obj/item/weapon/storage/firstaid/adv/empty
+	startswith = null
+
 /obj/item/weapon/storage/firstaid/combat
 	name = "combat medical kit"
 	desc = "Contains advanced medical treatments."
 	icon_state = "bezerk"
 	item_state = "firstaid-advanced"
 
+/obj/item/weapon/storage/firstaid/combat/full
 	startswith = list(
 		/obj/item/weapon/storage/pill_bottle/bicaridine,
 		/obj/item/weapon/storage/pill_bottle/dermaline,
@@ -108,9 +125,13 @@
 		/obj/item/stack/medical/splint,
 		)
 
+/obj/item/weapon/storage/firstaid/combat/empty
+	startswith = null
+
 /obj/item/weapon/storage/firstaid/surgery
 	name = "surgery kit"
 	desc = "Contains tools for surgery. Has precise foam fitting for safe transport and automatically sterilizes the content between uses."
+	icon = 'icons/obj/items/storage/toolboxes.dmi'
 	icon_state = "surgerykit"
 	item_state = "firstaid-surgery"
 
@@ -132,6 +153,7 @@
 		/obj/item/stack/nanopaste
 		)
 
+/obj/item/weapon/storage/firstaid/surgery/full
 	startswith = list(
 		/obj/item/weapon/bonesetter,
 		/obj/item/weapon/cautery,
@@ -145,6 +167,9 @@
 		/obj/item/stack/medical/advanced/bruise_pack,
 		)
 
+/obj/item/weapon/storage/firstaid/surgery/empty
+	startswith = null
+
 /*
  * Pill Bottles
  */
@@ -156,7 +181,7 @@
 	item_state = "contsolid"
 	w_class = ITEM_SIZE_SMALL
 	max_w_class = ITEM_SIZE_TINY
-	matter = list("glass" = 100)
+	matter = list(MATERIAL_GLASS = 100)
 	max_storage_space = 21
 	can_hold = list(/obj/item/weapon/reagent_containers/pill,/obj/item/weapon/dice,/obj/item/weapon/paper)
 	allow_quick_gather = 1

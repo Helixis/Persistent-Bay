@@ -28,7 +28,7 @@
 		return 0
 	if(status & ORGAN_DEAD)
 		return 0
-	return round(cell.charge*(1 - damage/max_damage))
+	return round(cell.charge*(1 - health/max_health))
 
 /obj/item/organ/internal/cell/proc/check_charge(var/amount)
 	return get_charge() >= amount
@@ -126,7 +126,7 @@
 	update_from_mmi()
 	if(owner)
 		persistantMind = owner.mind
-		ownerckey = owner.ckey
+		ownerckey = owner.ckey ? owner.ckey : owner.stored_ckey
 
 /obj/item/organ/internal/mmi_holder/proc/update_from_mmi()
 	if(!owner) return
@@ -160,7 +160,7 @@
 	if(owner && owner.mind)
 		persistantMind = owner.mind
 		if(owner.ckey)
-			ownerckey = owner.ckey
+			ownerckey = owner.ckey ? owner.ckey : owner.stored_ckey
 	..()
 
 /obj/item/organ/internal/mmi_holder/proc/transfer_and_delete()

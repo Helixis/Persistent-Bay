@@ -8,7 +8,7 @@
 /obj/machinery/atm
 	name = "Automatic Teller Machine"
 	desc = "For all your monetary needs!"
-	icon = 'icons/obj/terminals.dmi'
+	icon = 'icons/obj/machines/terminals/atm.dmi'
 	icon_state = "atm"
 	anchored = 1
 	use_power = 1
@@ -27,18 +27,53 @@
 	var/account_security_level = 0
 	var/buildstage = 2	// 2 = complete, 1 = no wires,  0 = circuit gone
 	var/wiresexposed = 0
+	frame_type = /obj/item/frame/atm
+
+/obj/machinery/atm/New(loc, dir, atom/frame, var/ndir)	//ATM is created from frame
+	..(loc)
+	if(istype(frame))
+		buildstage = 0
+		wiresexposed = 1
+		frame.transfer_fingerprints_to(src)
+
+	machine_id = "[station_name()] ATM #[num_financial_terminals++]"
+	spark_system = new /datum/effect/effect/system/spark_spread
+	spark_system.set_up(5, 0, src)
+	spark_system.attach(src)
+
+	if(ndir)
+		set_dir(ndir)
+		update_icon()
+
+/obj/machinery/atm/Initialize(mapload, d)
+	. = ..()
+	update_icon()
 
 /obj/machinery/atm/update_icon()	//Sprites for each build stage
 	overlays.Cut()
+	//ATMs can only exist on walls. So its better to just do it like this.
+	switch(dir)
+		if(NORTH)
+			src.pixel_x = 0
+			src.pixel_y = -32
+		if(SOUTH)
+			src.pixel_x = 0
+			src.pixel_y = 40
+		if(EAST)
+			src.pixel_x = -36
+			src.pixel_y = 0
+		if(WEST)
+			src.pixel_x = 36
+			src.pixel_y = 0
 
 	if(wiresexposed)
 		switch(buildstage)
 			if(2)
-				icon_state="atm_b2"
+				icon_state="atm_off"
 			if(1)
-				icon_state="atm_b1"
+				icon_state="atm_off"
 			if(0)
-				icon_state="atm_b0"
+				icon_state="atm_off"
 		set_light(0)
 		return
 	else
@@ -96,25 +131,8 @@
 
 	return
 
-/obj/machinery/atm/New(loc, dir, atom/frame, var/ndir)	//ATM is created from frame
-	..(loc)
-
-	if(istype(frame))
-		buildstage = 0
-		wiresexposed = 1
-		frame.transfer_fingerprints_to(src)
-	..()
-	machine_id = "[station_name()] ATM #[num_financial_terminals++]"
-	spark_system = new /datum/effect/effect/system/spark_spread
-	spark_system.set_up(5, 0, src)
-	spark_system.attach(src)
-
-	if(ndir)
-		set_dir(ndir)
-		pixel_x = (src.dir & 3)? 0 : (src.dir == 4 ? 30 : -30)
-		pixel_y = (src.dir & 3)? (src.dir ==1 ? 30 : -30) : 0
 /obj/machinery/atm/Process()
-	if(stat & NOPOWER)
+	if(inoperable())
 		return
 
 	if(ticks_left_timeout > 0)
@@ -147,6 +165,17 @@
 		var/response = pick("Initiating withdraw. Have a nice day!", "CRITICAL ERROR: Activating cash chamber panic siphon.","PIN Code accepted! Emptying account balance.", "Jackpot!")
 		to_chat(user, "\icon[src] <span class='warning'>The [src] beeps: \"[response]\"</span>")
 		return 1
+
+/obj/item/frame/atm/try_build(turf/on_wall)
+	if (get_dist(on_wall,usr)>1)
+		return
+	var/ndir = get_dir(usr,on_wall)
+	if (!(ndir in GLOB.cardinal))
+		return
+	var/turf/loc = get_turf(usr)
+
+	new /obj/machinery/atm(loc, 1, src, ndir)
+	qdel(src)
 
 /obj/machinery/atm/attackby(obj/item/I as obj, mob/user as mob)
 	if(..())
@@ -435,7 +464,7 @@
 					R.info += "<i>Service terminal ID:</i> [machine_id]<br>"
 
 					//stamp the paper
-					var/image/stampoverlay = image('icons/obj/bureaucracy.dmi')
+					var/image/stampoverlay = image('icons/obj/items/paper.dmi')
 					stampoverlay.icon_state = "paper_stamp-cent"
 					if(!R.stamped)
 						R.stamped = new
@@ -477,7 +506,7 @@
 					R.info += "</table>"
 
 					//stamp the paper
-					var/image/stampoverlay = image('icons/obj/bureaucracy.dmi')
+					var/image/stampoverlay = image('icons/obj/items/paper.dmi')
 					stampoverlay.icon_state = "paper_stamp-cent"
 					if(!R.stamped)
 						R.stamped = new

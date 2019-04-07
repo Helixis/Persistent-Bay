@@ -4,7 +4,8 @@
 	icon = 'icons/obj/janitor.dmi'
 	icon_state = "cleaner"
 	item_state = "cleaner"
-	flags = OPENCONTAINER|NOBLUDGEON
+	item_flags = ITEM_FLAG_NO_BLUDGEON
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 	slot_flags = SLOT_BELT
 	throwforce = 3
 	w_class = ITEM_SIZE_SMALL
@@ -17,7 +18,7 @@
 	var/list/spray_sizes = list(1,3)
 	var/step_delay = 10 // lower is faster
 	volume = 250
-	matter = list("glass" = 60)
+	matter = list(MATERIAL_GLASS = 60)
 
 /obj/item/weapon/reagent_containers/spray/New()
 	..()
@@ -133,7 +134,7 @@
 
 /obj/item/weapon/reagent_containers/spray/pepper/New()
 	..()
-	reagents.add_reagent(/datum/reagent/capsaicin/condensed, 60)
+//	reagents.add_reagent(/datum/reagent/capsaicin/condensed, 60)
 
 /obj/item/weapon/reagent_containers/spray/pepper/examine(mob/user)
 	if(..(user, 1))
@@ -161,7 +162,7 @@
 
 /obj/item/weapon/reagent_containers/spray/waterflower/New()
 	..()
-	reagents.add_reagent(/datum/reagent/water, 10)
+//	reagents.add_reagent(/datum/reagent/water, 10)
 
 /obj/item/weapon/reagent_containers/spray/chemsprayer
 	name = "chem sprayer"
@@ -206,7 +207,7 @@
 
 /obj/item/weapon/reagent_containers/spray/plantbgone/New()
 	..()
-	reagents.add_reagent(/datum/reagent/toxin/plantbgone, 100)
+//	reagents.add_reagent(/datum/reagent/toxin/plantbgone, 100)
 
 /obj/item/weapon/reagent_containers/spray/plantbgone/afterattack(atom/A as mob|obj, mob/user as mob, proximity)
 	if(!proximity) return

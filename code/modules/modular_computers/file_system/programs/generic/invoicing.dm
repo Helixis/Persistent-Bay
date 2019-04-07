@@ -1,6 +1,6 @@
 /datum/computer_file/program/invoicing
 	filename = "invoicing-program"
-	filedesc = "Invoicing creation"
+	filedesc = "Organization Invoice Creation"
 	nanomodule_path = /datum/nano_module/program/invoicing
 	program_icon_state = "supply"
 	program_menu_icon = "cart"
@@ -8,7 +8,8 @@
 	size = 21
 	available_on_ntnet = 1
 	requires_ntnet = 1
-	required_access = core_access_invoicing
+	usage_flags = PROGRAM_ALL
+
 /datum/nano_module/program/invoicing
 	name = "Invoicing program"
 	var/screen = 1		// 0: Ordering menu, 1: Statistics 2: Shuttle control, 3: Orders menu
@@ -32,7 +33,7 @@
 	data["amount"] = amount
 	data["reason"] = reason ? reason : "Unset"
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "invoicing.tmpl", name, 1050, 500, state = state)
 		ui.set_auto_update(1)
@@ -79,6 +80,7 @@
 	return 1
 
 /datum/nano_module/program/invoicing/proc/print_invoice(var/mob/user)
+	if(amount < 0) return
 	var/datum/world_faction/connected_faction
 	if(program.computer.network_card && program.computer.network_card.connected_network)
 		connected_faction = program.computer.network_card.connected_network.holder

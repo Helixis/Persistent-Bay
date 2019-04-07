@@ -49,6 +49,12 @@
 	icon = 'icons/turf/flooring/grass.dmi'
 	icon_state = "grass0"
 	initial_flooring = /decl/flooring/grass
+
+/turf/simulated/floor/concrete
+	name = "concrete tile"
+	icon = 'icons/turf/flooring/misc.dmi'
+	icon_state = "concrete"
+	initial_flooring = /decl/flooring/concrete
 /*
 /turf/simulated/floor/diona
 	name = "biomass"
@@ -58,7 +64,7 @@
 /turf/simulated/floor/tiled
 	name = "steel floor"
 	icon = 'icons/turf/flooring/tiles.dmi'
-	icon_state = "steel"
+	icon_state = MATERIAL_STEEL
 	initial_flooring = /decl/flooring/tiling
 
 /turf/simulated/floor/carpet
@@ -107,32 +113,32 @@
 	initial_gas = null
 
 /turf/simulated/floor/reinforced/airmix
-	initial_gas = list("oxygen" = MOLES_O2ATMOS, "nitrogen" = MOLES_N2ATMOS)
+	initial_gas = list(GAS_OXYGEN = MOLES_O2ATMOS, GAS_NITROGEN = MOLES_N2ATMOS)
 
 /turf/simulated/floor/reinforced/nitrogen
-	initial_gas = list("nitrogen" = ATMOSTANK_NITROGEN)
+	initial_gas = list(GAS_NITROGEN = ATMOSTANK_NITROGEN)
 
 /turf/simulated/floor/reinforced/hydrogen
-	initial_gas = list("hydrogen" = ATMOSTANK_HYDROGEN)
+	initial_gas = list(GAS_HYDROGEN = ATMOSTANK_HYDROGEN)
 
 /turf/simulated/floor/reinforced/oxygen
-	initial_gas = list("oxygen" = ATMOSTANK_OXYGEN)
+	initial_gas = list(GAS_OXYGEN = ATMOSTANK_OXYGEN)
 
 /turf/simulated/floor/reinforced/phoron
-	initial_gas = list("phoron" = ATMOSTANK_PHORON)
+	initial_gas = list(GAS_PHORON = ATMOSTANK_PHORON)
 
 /turf/simulated/floor/reinforced/nitrogen/engine
 	name = "engine floor"
-	initial_gas = list("nitrogen" = MOLES_N2STANDARD)
+	initial_gas = list(GAS_NITROGEN = MOLES_N2STANDARD)
 
 /turf/simulated/floor/reinforced/phoron/fuel
-	initial_gas = list("phoron" = ATMOSTANK_PHORON_FUEL)
+	initial_gas = list(GAS_PHORON = ATMOSTANK_PHORON_FUEL)
 
 /turf/simulated/floor/reinforced/carbon_dioxide
-	initial_gas = list("carbon_dioxide" = ATMOSTANK_CO2)
+	initial_gas = list(GAS_CO2 = ATMOSTANK_CO2)
 
 /turf/simulated/floor/reinforced/n20
-	initial_gas = list("sleeping_agent" = ATMOSTANK_NITROUSOXIDE)
+	initial_gas = list(GAS_N2O = ATMOSTANK_NITROUSOXIDE)
 
 
 /turf/simulated/floor/cult
@@ -152,10 +158,22 @@
 /turf/simulated/floor/tiled/dark/airless
 	initial_gas = null
 
+/turf/simulated/floor/tiled/dark/mono
+	name = "dark mono-tiled floor"
+	icon_state = "monotile"
+	color = COLOR_DARK_GRAY
+	initial_flooring = /decl/flooring/tiling/dark/mono
+
 /turf/simulated/floor/tiled/white
 	name = "white floor"
 	icon_state = "white"
 	initial_flooring = /decl/flooring/tiling/white
+
+/turf/simulated/floor/tiled/white/mono
+	name = "white mono-tiled floor"
+	icon_state = "monotile"
+	color = COLOR_WHITE
+	initial_flooring = /decl/flooring/tiling/white/mono
 
 /turf/simulated/floor/tiled/freezer
 	name = "tiles"
@@ -195,7 +213,7 @@
 	temperature = TCMB
 
 /turf/simulated/floor/greengrid/nitrogen
-	initial_gas = list("nitrogen" = MOLES_N2STANDARD)
+	initial_gas = list(GAS_NITROGEN = MOLES_N2STANDARD)
 
 /turf/simulated/floor/tiled/white/airless
 	name = "airless floor"
@@ -259,3 +277,22 @@
 /turf/simulated/floor/beach/water/New()
 	..()
 	overlays += image("icon"='icons/misc/beach.dmi',"icon_state"="water5","layer"=MOB_LAYER+0.1)
+
+/turf/simulated/floor/reinforced/rockvault
+	name = "vault floor"
+	icon = 'icons/turf/flooring/misc.dmi'
+	icon_state = "rockvault"
+	initial_flooring = /decl/flooring/rockvault
+
+/turf/simulated/floor/reinforced/sandstonevault
+	name = "sandstone vault floor"
+	icon = 'icons/turf/flooring/misc.dmi'
+	icon_state = "sandstonevault"
+	initial_flooring = /decl/flooring/sandstonevault
+
+
+/turf/simulated/floor/reinforced/elevatorshaft
+	name = "elevator shaft floor"
+	icon = 'icons/turf/flooring/misc.dmi'
+	icon_state = "elevatorshaft"
+	initial_flooring = /decl/flooring/elevatorshaft

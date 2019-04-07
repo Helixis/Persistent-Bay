@@ -5,22 +5,24 @@
 	program_icon_state = "word"
 	size = 4
 	requires_ntnet = 0
-	available_on_ntnet = 1
+	available_on_ntnet = TRUE
 	nanomodule_path = /datum/nano_module/program/computer_wordprocessor/
+	usage_flags = PROGRAM_ALL
 	var/browsing
 	var/open_file
 	var/loaded_data
 	var/error
 	var/is_edited
 
-/datum/computer_file/program/wordprocessor/proc/get_file(var/filename)
-	var/obj/item/weapon/computer_hardware/hard_drive/HDD = computer.hard_drive
-	if(!HDD)
-		return
-	var/datum/computer_file/data/F = HDD.find_file_by_name(filename)
-	if(!istype(F))
-		return
-	return F
+/datum/computer_file/program/wordprocessor/New(comp)
+	..(comp)
+	ADD_SAVED_VAR(open_file)
+	ADD_SKIP_EMPTY(open_file)
+
+/datum/computer_file/program/wordprocessor/after_load()
+	. = ..()
+	if(open_file)
+		open_file(open_file)
 
 /datum/computer_file/program/wordprocessor/proc/open_file(var/filename)
 	var/datum/computer_file/data/F = get_file(filename)
@@ -47,22 +49,6 @@
 	is_edited = 0
 	return 1
 
-/datum/computer_file/program/wordprocessor/proc/create_file(var/newname, var/data = "")
-	if(!newname)
-		return
-	var/obj/item/weapon/computer_hardware/hard_drive/HDD = computer.hard_drive
-	if(!HDD)
-		return
-	if(get_file(newname))
-		return
-	var/datum/computer_file/data/F = new/datum/computer_file/data()
-	F.filename = newname
-	F.filetype = "TXT"
-	F.stored_data = data
-	F.calculate_size()
-	if(HDD.store_file(F))
-		return F
-
 /datum/computer_file/program/wordprocessor/Topic(href, href_list)
 	if(..())
 		return 1
@@ -74,6 +60,7 @@
 	if(href_list["PRG_taghelp"])
 		to_chat(usr, "<span class='notice'>The hologram of a googly-eyed paper clip helpfully tells you:</span>")
 		var/help = {"
+		\[tab\] : Indents the text.
 		\[br\] : Creates a linebreak.
 		\[center\] - \[/center\] : Centers the text.
 		\[h1\] - \[/h1\] : First level heading.
@@ -97,7 +84,8 @@
 		\[logo\] - Inserts NT logo image.
 		\[bluelogo\] - Inserts blue NT logo image.
 		\[solcrest\] - Inserts SCG crest image.
-		\[terraseal\] - Inserts TCC seal"}
+		\[terraseal\] - Inserts TCC seal.
+		\[nfrseal\] - Inserts NFR seal."}
 
 		to_chat(usr, help)
 		return 1
@@ -227,7 +215,7 @@
 		data["filedata"] = pencode2html(PRG.loaded_data)
 		data["filename"] = "UNNAMED"
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "word_processor.tmpl", "Word Processor", 575, 700, state = state)
 		ui.auto_update_layout = 1

@@ -9,6 +9,7 @@
 	anchored = 1
 	icon = 'icons/obj/virology.dmi'
 	icon_state = "isolator"
+	use_power = POWER_USE_IDLE
 	var/isolating = 0
 	var/state = HOME
 	var/datum/disease2/disease/virus2 = null
@@ -17,16 +18,24 @@
 
 /obj/machinery/disease2/isolator/New()
 	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/isolator(src)
-	component_parts += new /obj/item/weapon/stock_parts/scanning_module(src)
-	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
-	component_parts += new /obj/item/weapon/stock_parts/console_screen(src)
-	component_parts += new /obj/item/weapon/computer_hardware/hard_drive/portable(src)
+	ADD_SAVED_VAR(isolating)
+	ADD_SAVED_VAR(state)
+	ADD_SAVED_VAR(sample)
+	ADD_SKIP_EMPTY(sample)
+
+/obj/machinery/disease2/isolator/Initialize()
+	. = ..()
+	if(!map_storage_loaded)
+		component_parts = list()
+		component_parts += new /obj/item/weapon/circuitboard/isolator(src)
+		component_parts += new /obj/item/weapon/stock_parts/scanning_module(src)
+		component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+		component_parts += new /obj/item/weapon/stock_parts/console_screen(src)
+		component_parts += new /obj/item/weapon/computer_hardware/hard_drive/portable(src)
 	RefreshParts()
 
 /obj/machinery/disease2/isolator/update_icon()
-	if (stat & (BROKEN|NOPOWER))
+	if (inoperable())
 		icon_state = "isolator"
 		return
 
@@ -38,31 +47,28 @@
 		icon_state = "isolator"
 
 /obj/machinery/disease2/isolator/attackby(var/obj/O as obj, var/mob/user)
-	if(!istype(O,/obj/item/weapon/reagent_containers/syringe)) return
-	var/obj/item/weapon/reagent_containers/syringe/S = O
-
-	if(sample)
-		to_chat(user, "\The [src] is already loaded.")
-		return
-
-	sample = S
-	user.drop_item()
-	S.loc = src
-
-	user.visible_message("[user] adds \a [O] to \the [src]!", "You add \a [O] to \the [src]!")
-	GLOB.nanomanager.update_uis(src)
-	update_icon()
-
-	src.attack_hand(user)
-
 	if(default_deconstruction_screwdriver(user, O))
-		return
-	if(default_deconstruction_crowbar(user, O))
-		return
-	..()
+		return 1
+	else if(default_deconstruction_crowbar(user, O))
+		return 1
+	else if(istype(O,/obj/item/weapon/reagent_containers/syringe))
+		var/obj/item/weapon/reagent_containers/syringe/S = O
+		if(sample)
+			to_chat(user, "\The [src] is already loaded.")
+			return
+		sample = S
+		user.drop_item()
+		S.forceMove(src)
+		user.visible_message("[user] adds \a [O] to \the [src]!", "You add \a [O] to \the [src]!")
+		SSnano.update_uis(src)
+		update_icon()
+		src.attack_hand(user)
+		return 1
+	else 
+		return ..()
 
 /obj/machinery/disease2/isolator/attack_hand(mob/user as mob)
-	if(stat & (NOPOWER|BROKEN)) return
+	if(inoperable()) return
 	ui_interact(user)
 
 /obj/machinery/disease2/isolator/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
@@ -117,7 +123,7 @@
 					"name" = entry.fields["name"], \
 					"description" = replacetext(desc, "\n", ""))
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "pathogenic_isolator.tmpl", src.name, 400, 500)
 		ui.set_initial_data(data)
@@ -133,12 +139,12 @@
 				virus2 = null
 				ping("\The [src] pings, \"Viral strain isolated.\"")
 
-			GLOB.nanomanager.update_uis(src)
+			SSnano.update_uis(src)
 			update_icon()
 
 /obj/machinery/disease2/isolator/OnTopic(user, href_list)
 	if (href_list["close"])
-		GLOB.nanomanager.close_user_uis(user, src, "main")
+		SSnano.close_user_uis(user, src, "main")
 		return TOPIC_HANDLED
 
 	if (href_list[HOME])

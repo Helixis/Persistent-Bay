@@ -48,12 +48,12 @@
 	icon_state = "welder"
 
 /obj/random/tool/spawn_choices()
-	return list(/obj/item/weapon/screwdriver,
-				/obj/item/weapon/wirecutters,
-				/obj/item/weapon/weldingtool,
-				/obj/item/weapon/weldingtool/largetank,
-				/obj/item/weapon/crowbar,
-				/obj/item/weapon/wrench,
+	return list(/obj/item/weapon/tool/screwdriver,
+				/obj/item/weapon/tool/wirecutters,
+				/obj/item/weapon/tool/weldingtool,
+				/obj/item/weapon/tool/weldingtool/largetank,
+				/obj/item/weapon/tool/crowbar,
+				/obj/item/weapon/tool/wrench,
 				/obj/item/device/flashlight)
 
 /obj/random/technology_scanner
@@ -98,7 +98,7 @@
 /obj/random/toolbox
 	name = "random toolbox"
 	desc = "This is a random toolbox."
-	icon = 'icons/obj/storage.dmi'
+	icon = 'icons/obj/items/storage/toolboxes.dmi'
 	icon_state = "red"
 
 /obj/random/toolbox/spawn_choices()
@@ -175,7 +175,7 @@
 /obj/random/firstaid
 	name = "Random First Aid Kit"
 	desc = "This is a random first aid kit."
-	icon = 'icons/obj/storage.dmi'
+	icon = 'icons/obj/items/storage/firstaid.dmi'
 	icon_state = "firstaid"
 
 /obj/random/firstaid/spawn_choices()
@@ -184,7 +184,7 @@
 				/obj/item/weapon/storage/firstaid/o2 = 3,
 				/obj/item/weapon/storage/firstaid/adv = 2,
 				/obj/item/weapon/storage/firstaid/combat = 1,
-				/obj/item/weapon/storage/firstaid/empty = 2,
+				/obj/item/weapon/storage/firstaid = 2,
 				/obj/item/weapon/storage/firstaid/fire = 3)
 
 /obj/random/contraband
@@ -377,7 +377,7 @@
 /obj/random/junk //Broken items, or stuff that could be picked up
 	name = "random junk"
 	desc = "This is some random junk."
-	icon = 'icons/obj/trash.dmi'
+	icon = 'icons/obj/items/storage/bags.dmi'
 	icon_state = "trashbag3"
 
 /obj/random/junk/spawn_choices()
@@ -408,18 +408,18 @@
 obj/random/closet //A couple of random closets to spice up maint
 	name = "random closet"
 	desc = "This is a random closet."
-	icon = 'icons/obj/closet.dmi'
-	icon_state = "syndicate1"
+	icon = 'icons/obj/closets/bases/closet.dmi'
+	icon_state = "base"
 
 obj/random/closet/spawn_choices()
 	return list(/obj/structure/closet,
 				/obj/structure/closet/firecloset,
-				/obj/structure/closet/firecloset/full,
+				/obj/structure/closet/firecloset/filled,
 				/obj/structure/closet/emcloset,
 				/obj/structure/closet/jcloset,
 				/obj/structure/closet/athletic_mixed,
 				/obj/structure/closet/toolcloset,
-				/obj/structure/closet/l3closet/general,
+				/obj/structure/closet/l3closet,
 				/obj/structure/closet/cabinet,
 				/obj/structure/closet/crate,
 				/obj/structure/closet/crate/freezer,
@@ -666,7 +666,7 @@ obj/random/obstruction/spawn_choices()
 /obj/random/storage
 	name = "random storage item"
 	desc = "This is a storage item."
-	icon = 'icons/obj/storage.dmi'
+	icon = 'icons/obj/items/storage/boxes.dmi'
 	icon_state = "idOld"
 
 /obj/random/storage/spawn_choices()
@@ -817,7 +817,7 @@ obj/random/obstruction/spawn_choices()
 
 /obj/random/clothing/spawn_choices()
 	return list(/obj/item/clothing/under/syndicate/tacticool = 2,
-				/obj/item/clothing/under/syndicate/combat = 1,
+				/obj/item/clothing/under/syndicate = 1,
 				/obj/item/clothing/under/hazard = 4,
 				/obj/item/clothing/under/sterile = 4,
 				/obj/item/clothing/under/casual_pants/camo = 2,

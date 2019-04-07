@@ -3,9 +3,9 @@
 	name = "phoronized lungs"
 	icon_state = "lungs-plasma"
 	desc = "A set of lungs seemingly made out of fleshy phoron."
-	breath_type = "phoron"
-	poison_types = list("oxygen" = TRUE) //It burns to breathe!
-	exhale_type = "hydrogen"
+	breath_type = GAS_PHORON
+	poison_types = list(GAS_OXYGEN = TRUE) //It burns to breathe!
+	exhale_type = GAS_HYDROGEN
 
 /obj/item/organ/internal/liver/phorosian
 	name = "phoron processor"
@@ -57,7 +57,7 @@
 
 	var/safe_pressure_min = min_breath_pressure // Minimum safe partial pressure of breathable gas in kPa
 	// Lung damage increases the minimum safe pressure.
-	safe_pressure_min *= 1 + rand(1,4) * damage/max_damage
+	safe_pressure_min *= 1 + rand(1,4) * (1.0 - health/max_health)
 
 	if(!forced && owner.chem_effects[CE_BREATHLOSS] && !owner.chem_effects[CE_STABLE]) //opiates are bad mmkay
 		safe_pressure_min *= 1 + rand(1,4) * owner.chem_effects[CE_BREATHLOSS]
@@ -103,9 +103,9 @@
 	// Pass reagents from the gas into our body.
 	// Presumably if you breathe it you have a specialized metabolism for it, so we drop/ignore breath_type. Also avoids
 	// humans processing thousands of units of oxygen over the course of a round for the sole purpose of poisoning vox.
-	var/ratio = (robotic >= ORGAN_ROBOT) ? 0.66 : 1
+	var/ratio = BP_IS_ROBOTIC(src) ? 0.66 : 1
 	for(var/gasname in breath.gas - breath_type)
-		if(gasname == "oxygen")
+		if(gasname == GAS_OXYGEN)
 			take_damage(0.5)
 			if(prob(20))
 				to_chat(owner, "<span class='warning'>Your lungs feel like they are burning!</span>")
@@ -134,7 +134,7 @@
 		heal_damage(0.1)
 		last_failed_breath = null
 		owner.adjustOxyLoss(-5 * inhale_efficiency)
-		if(robotic < ORGAN_ROBOT && species.breathing_sound && is_below_sound_pressure(get_turf(owner)))
+		if(!BP_IS_ROBOTIC(src) && species.breathing_sound && is_below_sound_pressure(get_turf(owner)))
 			if(breathing || owner.shock_stage >= 10)
 				sound_to(owner, sound(species.breathing_sound,0,0,0,5))
 				breathing = 0
@@ -158,7 +158,7 @@
 		else
 			owner.emote(pick("shiver","twitch"))
 
-	if(damage || owner.chem_effects[CE_BREATHLOSS] || world.time > last_failed_breath + 2 MINUTES)
+	if(isdamaged() || owner.chem_effects[CE_BREATHLOSS] || world.time > last_failed_breath + 2 MINUTES)
 		owner.remove_blood(HUMAN_MAX_OXYLOSS*breath_fail_ratio)
 
 	owner.oxygen_alert = max(owner.oxygen_alert, 2)

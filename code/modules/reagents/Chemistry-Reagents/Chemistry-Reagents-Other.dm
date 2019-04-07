@@ -133,41 +133,6 @@
 	M.sleeping = 0
 	M.jitteriness = 0
 
-/datum/reagent/gold
-	name = "Gold"
-	description = "Gold is a dense, soft, shiny metal and the most malleable and ductile metal known."
-	taste_description = "expensive metal"
-	reagent_state = SOLID
-	color = "#f7c430"
-
-/datum/reagent/silver
-	name = "Silver"
-	description = "A soft, white, lustrous transition metal, it has the highest electrical conductivity of any element and the highest thermal conductivity of any metal."
-	taste_description = "expensive yet reasonable metal"
-	reagent_state = SOLID
-	color = "#d0d0d0"
-
-/datum/reagent/uranium
-	name ="Uranium"
-	description = "A silvery-white metallic chemical element in the actinide series, weakly radioactive."
-	taste_description = "the inside of a reactor"
-	reagent_state = SOLID
-	color = "#b8b8c0"
-
-/datum/reagent/uranium/affect_touch(var/mob/living/carbon/M, var/alien, var/removed)
-	affect_ingest(M, alien, removed)
-
-/datum/reagent/uranium/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
-	M.apply_effect(5 * removed, IRRADIATE, blocked = 0)
-
-/datum/reagent/uranium/touch_turf(var/turf/T)
-	if(volume >= 3)
-		if(!istype(T, /turf/space))
-			var/obj/effect/decal/cleanable/greenglow/glow = locate(/obj/effect/decal/cleanable/greenglow, T)
-			if(!glow)
-				new /obj/effect/decal/cleanable/greenglow(T)
-			return
-
 /datum/reagent/water/holywater
 	name = "Holy Water"
 	description = "An ashen-obsidian-water mix, this solution will alter certain sections of the brain's rationality."
@@ -300,10 +265,20 @@
 	if(volume >= 1)
 		T.wet_floor(80)
 
+/datum/reagent/lube/oil // TODO: Robot Overhaul in general
+	name = "Oil"
+	description = "A thick greasy industrial lubricant. Commonly found in robotics."
+	taste_description = "greasy diesel"
+	color = "#000000"
+
+/datum/reagent/lube/oil/touch_turf(var/turf/simulated/T)
+	if(!istype(T, /turf/space))
+		new /obj/effect/decal/cleanable/blood/oil/streak(T)
+
 /datum/reagent/silicate
 	name = "Silicate"
 	description = "A compound that can be used to reinforce glass."
-	taste_description = "plastic"
+	taste_description = MATERIAL_PLASTIC
 	reagent_state = LIQUID
 	color = "#c7ffff"
 
@@ -320,17 +295,6 @@
 	taste_description = "sweetness"
 	reagent_state = LIQUID
 	color = "#808080"
-
-/datum/reagent/nitroglycerin
-	name = "Nitroglycerin"
-	description = "Nitroglycerin is a heavy, colorless, oily, explosive liquid obtained by nitrating glycerol."
-	taste_description = "oil"
-	reagent_state = LIQUID
-	color = "#808080"
-
-/datum/reagent/nitroglycerin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed)
-	..()
-	M.add_chemical_effect(CE_PULSE, 2)
 
 /datum/reagent/coolant
 	name = "Coolant"
@@ -365,10 +329,11 @@
 
 /datum/reagent/luminol/touch_mob(var/mob/living/L)
 	L.reveal_blood()
- 
-// This is only really used to poison vox and to produce other gases.
+
+// This is only really used to poison vox.
 /datum/reagent/oxygen
 	name = "Oxygen"
+	gas_id = GAS_OXYGEN
 	description = "An ubiquitous oxidizing agent."
 	taste_description = "nothing"
 	reagent_state = LIQUID
@@ -380,14 +345,16 @@
 
 /datum/reagent/carbon_dioxide
 	name = "Carbon Dioxide"
+	gas_id = GAS_CO2
 	description = "A byproduct of human respiration."
 	taste_description = "stale air"
 	reagent_state = LIQUID
 	color = "#cccccc"
-	metabolism = 0.1
+	metabolism = 0.025 * REAGENT_GAS_EXCHANGE_FACTOR
 
 /datum/reagent/nitrogen
 	name = "Nitrogen"
+	gas_id = GAS_NITROGEN
 	description = "A ubiquitous and largely inert chemical."
 	taste_description = "nothing"
 	reagent_state = LIQUID
@@ -395,27 +362,28 @@
 
 /datum/reagent/hydrogen
 	name = "Hydrogen"
+	gas_id = GAS_HYDROGEN
 	description = "The most common element in the universe."
 	taste_description = "nothing"
 	reagent_state = LIQUID
 	color = "#d3e2e2"
-  
+
 /datum/reagent/carbon_dioxide/affect_blood(var/mob/living/carbon/human/M, var/alien, var/removed)
 	if(!istype(M) || alien == IS_DIONA)
 		return
 	var/warning_message
 	var/warning_prob = 10
 	var/dosage = M.chem_doses[type]
-	if(dosage >= 3)
+	if(dosage >= 3 * REAGENT_GAS_EXCHANGE_FACTOR)
 		warning_message = pick("extremely dizzy","short of breath","faint","confused")
 		warning_prob = 15
 		M.adjustOxyLoss(10,20)
 		M.co2_alert = 1
-	else if(dosage >= 1.5)
+	else if(dosage >= 1.5 * REAGENT_GAS_EXCHANGE_FACTOR)
 		warning_message = pick("dizzy","short of breath","faint","momentarily confused")
 		M.co2_alert = 1
 		M.adjustOxyLoss(3,5)
-	else if(dosage >= 0.25)
+	else if(dosage >= 0.25 * REAGENT_GAS_EXCHANGE_FACTOR)
 		warning_message = pick("a little dizzy","short of breath")
 		warning_prob = 10
 		M.co2_alert = 0
@@ -423,3 +391,19 @@
 		M.co2_alert = 0
 	if(warning_message && prob(warning_prob))
 		to_chat(M, "<span class='warning'>You feel [warning_message].</span>")
+
+/datum/reagent/cellulose
+	name = "Cellulose"
+	description = "Organic polymer, and major component of plant cells. Found in wood and cotton."
+	taste_description = "like wet paper bags"
+	reagent_state = LIQUID
+	color = "#dbd3a6"
+
+/datum/reagent/toxin/salpeter
+	name = "Salpeter"
+	description = "Potassium nitrate. A useful chemical used in anything from fertilizers to food preservatives."
+	taste_description = "like wet paper bags"
+	reagent_state = SOLID
+	color = "#ffffff"
+	strength = 0.5
+

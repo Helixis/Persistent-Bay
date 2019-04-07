@@ -21,9 +21,8 @@ GLOBAL_LIST_EMPTY(all_expense_cards)
 	icon = 'icons/obj/card.dmi'
 	w_class = ITEM_SIZE_TINY
 	slot_flags = SLOT_EARS
+	var/list/files = list()
 	var/associated_account_number = 0
-
-	var/list/files = list(  )
 
 /obj/item/weapon/card/data
 	name = "data disk"
@@ -93,8 +92,21 @@ var/const/NO_EMAG_ACT = -50
 		qdel(src)
 
 	return 1
-	
-	
+
+/obj/item/weapon/card/attackby(var/obj/item/W, var/mob/user)
+	if(isWelder(W))
+		var/obj/item/weapon/tool/weldingtool/WT = W
+		if(WT.remove_fuel(0,user))
+			for (var/mob/M in viewers(src))
+				M.show_message("<span class='notice'>[src] is melted by [user.name] with the welding tool.</span>", 3, "<span class='notice'>You hear welding.</span>", 2)
+			qdel(src)
+		return
+	if(isWirecutter(W) || isScissors(W))
+		for (var/mob/M in viewers(src))
+			M.show_message("<span class='notice'>[src] is sliced up by [user.name] with the wirecutters.</span>", 3, "<span class='notice'>You hear a snipping sound.</span>", 2)
+		qdel(src)
+		return
+
 /obj/item/weapon/card/expense // the fabled expense card
 	desc = "This card is used to expense invoices."
 	name = "expense card"
@@ -103,22 +115,22 @@ var/const/NO_EMAG_ACT = -50
 	var/ctype = 1 // 1 = faction, 2 = business
 	var/linked = "" // either business or faction
 	var/valid = 1
-	
+
 /obj/item/weapon/card/expense/New()
 	..()
 	GLOB.all_expense_cards |= src
-	
+
 /obj/item/weapon/card/expense/proc/pay(var/amount, var/mob/user, var/obj/item/weapon/paper/invoice/invoice)
 	if(!user || !invoice || !valid)
 		return 0
-		
+
 	var/username = user.get_id_name("NULL!@#")
 	if(username == "NULL!@#")
 		to_chat(user, "Invalid ID!")
 		return 0
-		
-		
-	var/linked_name	
+
+
+	var/linked_name
 	if(istype(invoice, /obj/item/weapon/paper/invoice/business))
 		var/obj/item/weapon/paper/invoice/business/buis_invoice = invoice
 		var/datum/small_business/business = get_business(buis_invoice.linked_business)
@@ -126,16 +138,16 @@ var/const/NO_EMAG_ACT = -50
 	else
 		var/datum/world_faction/linked_faction = get_faction(invoice.linked_faction)
 		linked_name = linked_faction.name
-	
+
 	if(ctype == 1)
 		var/datum/world_faction/faction = get_faction(linked)
 		if(!faction)
 			message_admins("expense card without valid faction at [loc]")
 			return 0
-		var/datum/computer_file/crew_record/record = faction.get_record(username)
+		var/datum/computer_file/report/crew_record/record = faction.get_record(username)
 		if(!record)
 			return 0
-		var/datum/assignment/assignment = faction.get_assignment(record.assignment_uid)
+		var/datum/assignment/assignment = faction.get_assignment(record.assignment_uid, record.get_name())
 		if(!assignment)
 			return 0
 		var/datum/accesses/copy = assignment.accesses["[record.rank]"]
@@ -145,6 +157,10 @@ var/const/NO_EMAG_ACT = -50
 		if(available < amount)
 			to_chat(user, "This exceeds your expense limit.")
 			return 0
+		if(faction.central_account.money < amount)
+			to_chat(user, "Insufficent funds.")
+			return 0
+
 		var/datum/transaction/T = new("[linked_name] (via [username] expense card)", invoice.purpose, -amount, "Digital Invoice")
 		faction.central_account.do_transaction(T)
 		record.expenses += amount
@@ -156,30 +172,35 @@ var/const/NO_EMAG_ACT = -50
 			return 0
 		var/expenses = business.get_expenses(username)
 		var/expense_limit = business.get_expense_limit(username)
-		var/available = expenses - expense_limit
+		var/available = expense_limit - expenses
 		if(available < amount)
 			to_chat(user, "This exceeds your expense limit.")
+			return 0
+		if(business.central_account.money < amount)
+			to_chat(user, "Insufficent funds.")
 			return 0
 		var/datum/transaction/T = new("[linked_name] (via [username] expense card)", invoice.purpose, -amount, "Digital Invoice")
 		business.central_account.do_transaction(T)
 		business.add_expenses(username, amount)
 		return 1
-		
-		
-		
+
+
+
 /proc/devalidate_expense_cards(var/stype = 1, var/name)
 	for(var/obj/item/weapon/card/expense/expense in GLOB.all_expense_cards)
 		if(expense.ctype == stype && expense.linked == name)
 			expense.name = "devalidated expense card"
 			expense.linked = ""
 			expense.valid = 0
-			
+
 /proc/update_ids(var/name)
-	var/datum/computer_file/crew_record/record
-	for(var/datum/computer_file/crew_record/record2 in GLOB.all_crew_records)
+	var/datum/computer_file/report/crew_record/record
+	for(var/datum/computer_file/report/crew_record/record2 in GLOB.all_crew_records)
 		if(record2.get_name() == name)
 			record = record2
 			break
+	if(!record)
+		record = Retrieve_Record(name)
 	if(!record)
 		message_admins("no record found for [name]")
 		return
@@ -192,7 +213,7 @@ var/const/NO_EMAG_ACT = -50
 			if(id.selected_faction)
 				var/datum/world_faction/faction = get_faction(id.selected_faction)
 				if(faction)
-					var/datum/computer_file/crew_record/record2 = faction.get_record(id.registered_name)
+					var/datum/computer_file/report/crew_record/record2 = faction.get_record(id.registered_name)
 					if(record2)
 						id.sync_from_record(record2)
 					else
@@ -225,10 +246,11 @@ var/const/NO_EMAG_ACT = -50
 	desc = "A card used to provide ID and determine access."
 	icon_state = "id"
 	item_state = "card-id"
+	slot_flags = SLOT_ID
 
 	var/access = list()
 	var/registered_name = "Unknown" // The name registered_name on the card
-	slot_flags = SLOT_ID
+	var/list/associated_email_login = list("login" = "", "password" = "")
 
 	var/age = "\[UNSET\]"
 	var/blood_type = "\[UNSET\]"
@@ -250,12 +272,12 @@ var/const/NO_EMAG_ACT = -50
 	var/datum/mil_rank/military_rank = null
 
 	var/selected_faction // faction this ID syncs to.. where should this be set?
-	
-	var/selected_business 
-	
+	var/selected_business
+
 	var/list/approved_factions = list() // factions that have approved this card for use on their machines. format-- list("[faction.uid]")
 	var/validate_time = 0 // this should be set at the time of creation to check if the card is valid
 	var/valid = 1
+
 /obj/item/weapon/card/id/New()
 	..()
 	GLOB.all_id_cards |= src
@@ -274,7 +296,7 @@ var/const/NO_EMAG_ACT = -50
 	else
 		to_chat(usr, "<span class='warning'>It is too far away.</span>")
 
-/obj/item/weapon/card/id/proc/sync_from_record(var/datum/computer_file/crew_record/record)
+/obj/item/weapon/card/id/proc/sync_from_record(var/datum/computer_file/report/crew_record/record)
 	age = record.get_age()
 	blood_type = record.get_bloodtype()
 	dna_hash = record.get_dna()
@@ -291,7 +313,7 @@ var/const/NO_EMAG_ACT = -50
 	else
 		var/datum/world_faction/faction = get_faction(selected_faction)
 		if(!faction) return
-		var/datum/assignment/job = faction.get_assignment(record.assignment_uid)
+		var/datum/assignment/job = faction.get_assignment(record.assignment_uid, record.get_name())
 		if(!job)
 			assignment = "Unassigned"
 			rank = 0
@@ -326,7 +348,7 @@ var/const/NO_EMAG_ACT = -50
 
 /obj/item/weapon/card/id/proc/update_name()
 	if(!selected_business || selected_business == "")
-	
+
 		name = "[registered_name]'s ID Card"
 		if(military_rank && military_rank.name_short)
 			name = military_rank.name_short + " " + name
@@ -397,30 +419,49 @@ var/const/NO_EMAG_ACT = -50
 	var/list/final_access[0]
 	var/datum/world_faction/faction = get_faction(faction_uid)
 	if(faction)
-		if(faction.leader_name == registered_name)
+		if(faction.get_leadername() == registered_name)
 			faction.rebuild_all_access()
 			for(var/x in faction.all_access)
 				final_access |= text2num(x)
 			return final_access
-		if(faction.allow_unapproved_ids || approved_factions.Find(faction.uid))
-			var/datum/computer_file/crew_record/record = faction.get_record(registered_name)
-			if(record)
-				for(var/x in record.access)
-					final_access |= text2num(x)
-				if(faction.allow_id_access) final_access |= access
-				var/datum/assignment/assignment = faction.get_assignment(record.try_duty())
-				if(assignment)
-					for(var/i=1; i<=record.rank; i++)
-						var/datum/accesses/copy = assignment.accesses["[i]"]
-						if(copy)
-							for(var/x in copy.accesses)
-								final_access |= text2num(x)
-				return final_access
+		var/datum/computer_file/report/crew_record/record = faction.get_record(registered_name)
+		if(record)
+			for(var/x in record.access)
+				final_access |= text2num(x)
+			if(faction.allow_id_access) final_access |= access
+			var/datum/assignment/assignment = faction.get_assignment(record.try_duty(), registered_name)
+			if(assignment)
+				for(var/i=1; i<=record.rank; i++)
+					var/datum/accesses/copy = assignment.accesses["[i]"]
+					if(copy)
+						for(var/x in copy.accesses)
+							final_access |= text2num(x)
+			if(istype(faction, /datum/world_faction/democratic))
+				var/datum/world_faction/democratic/democratic = faction
+				var/datum/computer_file/report/crew_record/record2 = Retrieve_Record(registered_name)
+				if(record2)
+					var/datum/assignment/assignment2
+					switch(record2.citizenship)
+						if(RESIDENT)
+							assignment2 = democratic.resident_assignment
+						if(CITIZEN)
+							assignment2 = democratic.citizen_assignment
+						if(PRISONER)
+							assignment2 = democratic.prisoner_assignment
+					
+					if(assignment2)
+						for(var/i=1; i<=record.rank; i++)
+							var/datum/accesses/copy = assignment2.accesses["[i]"]
+							if(copy)
+								for(var/x in copy.accesses)
+									final_access |= text2num(x)
+			
+			return final_access
+		else
+			if(faction.allow_id_access)
+				return access
 			else
-				if(faction.allow_id_access)
-					return access
-				else
-					return list()
+				return list()
 	else
 		return access
 
@@ -478,7 +519,7 @@ var/const/NO_EMAG_ACT = -50
 	item_state = "tdgreen"
 	assignment = "Synthetic"
 
-/obj/item/weapon/card/id/synthetic/devalidate()	
+/obj/item/weapon/card/id/synthetic/devalidate()
 	valid = 1
 	return
 /obj/item/weapon/card/id/synthetic/New()
@@ -490,17 +531,17 @@ var/const/NO_EMAG_ACT = -50
 	var/list/final_access[0]
 	var/datum/world_faction/faction = get_faction(faction_uid)
 	if(faction)
-		if(faction.leader_name == registered_name)
+		if(faction.get_leadername() == registered_name)
 			faction.rebuild_all_access()
 			for(var/x in faction.all_access)
 				final_access |= text2num(x)
 			return final_access
-		var/datum/computer_file/crew_record/record = faction.get_record(registered_name)
+		var/datum/computer_file/report/crew_record/record = faction.get_record(registered_name)
 		if(record)
 			for(var/x in record.access)
 				final_access |= text2num(x)
 			if(faction.allow_id_access) final_access |= access
-			var/datum/assignment/assignment = faction.get_assignment(record.try_duty())
+			var/datum/assignment/assignment = faction.get_assignment(record.try_duty(), record.get_name())
 			if(assignment)
 				for(var/i=1; i<=record.rank; i++)
 					var/datum/accesses/copy = assignment.accesses["[i]"]

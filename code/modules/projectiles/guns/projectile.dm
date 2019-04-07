@@ -1,15 +1,10 @@
-#define HOLD_CASINGS	0 //do not do anything after firing. Manual action, like pump shotguns, or guns that want to define custom behaviour
-#define CLEAR_CASINGS	1 //clear chambered so that the next round will be automatically loaded and fired, but don't drop anything on the floor
-#define EJECT_CASINGS	2 //drop spent casings on the ground after firing
-#define CYCLE_CASINGS	3 //cycle casings, like a revolver. Also works for multibarrelled guns
-
 /obj/item/weapon/gun/projectile
 	name = "gun"
 	desc = "A gun that fires bullets."
 	icon_state = "revolver"
 	origin_tech = list(TECH_COMBAT = 2, TECH_MATERIAL = 2)
 	w_class = ITEM_SIZE_NORMAL
-	matter = list(DEFAULT_WALL_MATERIAL = 1000)
+	matter = list(MATERIAL_STEEL = 1000)
 	screen_shake = 1
 
 	var/caliber = "357"		//determines which casings will fit
@@ -31,24 +26,25 @@
 	var/auto_eject_sound = null
 
 	var/is_jammed = 0           //Whether this gun is jammed
-	var/jam_chance = 0          //Chance it jams on fire
+	var/jam_chance = 5          //Chance it jams on fire
 	//TODO generalize ammo icon states for guns
 	//var/magazine_states = 0
 	//var/list/icon_keys = list()		//keys
 	//var/list/ammo_states = list()	//values
 
-/obj/item/weapon/gun/projectile/New()
-	..()
-	if (starts_loaded)
-		if(ispath(ammo_type) && (load_method & (SINGLE_CASING|SPEEDLOADER)))
-			for(var/i in 1 to max_shells)
-				loaded += new ammo_type(src)
-		if(ispath(magazine_type) && (load_method & MAGAZINE))
-			ammo_magazine = new magazine_type(src)
+/obj/item/weapon/gun/projectile/Initialize()
+	. = ..()
+	if(!map_storage_loaded)
+		if(starts_loaded)
+			if(ispath(ammo_type) && (load_method & (SINGLE_CASING|SPEEDLOADER)))
+				for(var/i in 1 to max_shells)
+					loaded += new ammo_type(src)
+			if(ispath(magazine_type) && (load_method & MAGAZINE))
+				ammo_magazine = new magazine_type(src)
 	update_icon()
 
 /obj/item/weapon/gun/projectile/consume_next_projectile()
-	if(!is_jammed && prob(jam_chance))
+	if(!is_jammed && prob(jam_chance/5))
 		src.visible_message("<span class='danger'>\The [src] jams!</span>")
 		is_jammed = 1
 	if(is_jammed)

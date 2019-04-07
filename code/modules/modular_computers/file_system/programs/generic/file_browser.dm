@@ -5,10 +5,11 @@
 	program_icon_state = "generic"
 	program_menu_icon = "folder-collapsed"
 	size = 8
-	requires_ntnet = 0
-	available_on_ntnet = 0
-	undeletable = 1
+	requires_ntnet = FALSE
+	available_on_ntnet = FALSE
+	undeletable = TRUE
 	nanomodule_path = /datum/nano_module/program/computer_filemanager/
+	usage_flags = PROGRAM_ALL
 	var/open_file
 	var/error
 
@@ -144,7 +145,7 @@
 		var/datum/computer_file/C = F.clone(0)
 		HDD.store_file(C)
 	if(.)
-		GLOB.nanomanager.update_uis(NM)
+		SSnano.update_uis(NM)
 
 /datum/nano_module/program/computer_filemanager
 	name = "NTOS File Manager"
@@ -198,7 +199,7 @@
 					)))
 				data["usbfiles"] = usbfiles
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "file_manager.tmpl", "NTOS File Manager", 575, 700, state = state)
 		ui.auto_update_layout = 1

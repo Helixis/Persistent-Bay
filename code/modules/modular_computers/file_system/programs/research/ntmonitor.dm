@@ -5,9 +5,9 @@
 	program_menu_icon = "wrench"
 	extended_desc = "This program monitors the local NTNet network, provides access to logging systems, and allows for configuration changes"
 	size = 12
-	requires_ntnet = 1
-	required_access = core_access_wireless_programs
-	available_on_ntnet = 1
+	requires_ntnet = TRUE
+	required_access = core_access_machine_linking
+	available_on_ntnet = TRUE
 	nanomodule_path = /datum/nano_module/computer_ntnetmonitor/
 
 /datum/nano_module/computer_ntnetmonitor
@@ -34,7 +34,7 @@
 
 	data["banned_nids"] = list(ntnet_global.banned_nids)
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "ntnet_monitor.tmpl", "NTNet Diagnostics and Monitoring Tool", 575, 700, state = state)
 		if(host.update_layout())

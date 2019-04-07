@@ -1,7 +1,7 @@
 /obj/item/weapon/paper_bundle
 	name = "paper bundle"
 	gender = NEUTER
-	icon = 'icons/obj/bureaucracy.dmi'
+	icon = 'icons/obj/items/paper.dmi'
 	icon_state = "paper"
 	item_state = "paper"
 	randpixel = 8
@@ -134,11 +134,14 @@
 		user << browse(dat, "window=[name]")
 	else if(istype(pages[page], /obj/item/weapon/photo))
 		var/obj/item/weapon/photo/P = W
-		user << browse_rsc(P.img, "tmp_photo.png")
+		if(P.img)
+			user << browse_rsc(P.img, "tmp_photo.png")
+		else if(P.render)
+			user << browse_rsc(P.render.icon, "tmp_photo.png")
 		user << browse(dat + "<html><head><title>[P.name]</title></head>" \
 		+ "<body style='overflow:hidden'>" \
 		+ "<div> <img src='tmp_photo.png' width = '180'" \
-		+ "[P.scribble ? "<div> Written on the back:<br><i>[P.scribble]</i>" : ]"\
+		+ "[P.scribble ? "<div> Written on the back:<br><i>[P.scribble]</i>" : null]"\
 		+ "</body></html>", "window=[name]")
 
 /obj/item/weapon/paper_bundle/attack_self(mob/user as mob)
@@ -225,7 +228,7 @@
 	var/i = 0
 	var/photo
 	for(var/obj/O in src)
-		var/image/img = image('icons/obj/bureaucracy.dmi')
+		var/image/img = image('icons/obj/items/paper.dmi')
 		if(istype(O, /obj/item/weapon/paper))
 			img.icon_state = O.icon_state
 			img.pixel_x -= min(1*i, 2)
@@ -245,5 +248,5 @@
 		desc = "A single sheet of paper."
 	if(photo)
 		desc += "\nThere is a photo attached to it."
-	overlays += image('icons/obj/bureaucracy.dmi', "clip")
+	overlays += image('icons/obj/items/paper.dmi', "clip")
 	return

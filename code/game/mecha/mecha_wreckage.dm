@@ -31,7 +31,7 @@
 
 /obj/effect/decal/mecha_wreckage/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(isWelder(W))
-		var/obj/item/weapon/weldingtool/WT = W
+		var/obj/item/weapon/tool/weldingtool/WT = W
 		if(salvage_num <= 0)
 			to_chat(user, "You don't see anything that can be cut with [W].")
 			return
@@ -72,6 +72,16 @@
 			to_chat(user, "You don't see anything that can be pried with [W].")
 	else
 		..()
+
+	//In case you wanna get rid of a wreck
+	if(istype(W,/obj/item/weapon/pickaxe))
+		to_chat(usr, "<span class='notice'>You begin taking down \the [src].</span>")
+		if(do_after(usr, 30, src))
+			to_chat(usr, "<span class='notice'>You hammered \the [src] to scraps.</span>")
+			var/turf/ground = get_turf(src)
+			new /obj/effect/decal/cleanable/blood/oil(ground)
+			new /obj/effect/decal/cleanable/blood/gibs/robot(ground)
+			qdel(src)
 	return
 
 

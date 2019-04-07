@@ -4,9 +4,26 @@
 
 	appearance_flags = PIXEL_SCALE
 	animate_movement = 2
-	flags = PROXMOVE
+	movable_flags = MOVABLE_FLAG_PROXMOVE
 
 	virtual_mob = /mob/observer/virtual/mob
+
+	movement_handlers = list(
+		/datum/movement_handler/mob/relayed_movement,
+		/datum/movement_handler/mob/death,
+		/datum/movement_handler/mob/conscious,
+		/datum/movement_handler/mob/eye,
+		/datum/movement_handler/move_relay,
+		/datum/movement_handler/mob/buckle_relay,
+		/datum/movement_handler/mob/delay,
+		/datum/movement_handler/mob/stop_effect,
+		/datum/movement_handler/mob/physically_capable,
+		/datum/movement_handler/mob/physically_restrained,
+		/datum/movement_handler/mob/space,
+		/datum/movement_handler/mob/movement
+	)
+
+	var/mob_flags
 
 	var/list/client_images = list() // List of images applied to/removed from the client on login/logout
 	var/datum/mind/mind
@@ -57,11 +74,10 @@
 	var/atom/movable/pulling = null
 	var/other_mobs = null
 	var/next_move = null
-	var/transforming = null	//Carbon
 	var/hand = null
 	var/real_name = null
 	var/save_slot = 0
-	
+
 	var/bhunger = 0			//Carbon
 
 	var/druggy = 0			//Carbon
@@ -70,9 +86,8 @@
 	var/resting = 0			//Carbon
 	var/lying = 0
 	var/lying_prev = 0
-	var/canmove = 1
-	//Allows mobs to move through dense areas without restriction. For instance, in space or out of holder objects.
-	var/incorporeal_move = 0 //0 is off, 1 is normal, 2 is for ninjas.
+	var/riding = 0
+
 	var/unacidable = 0
 	var/list/pinned = list()            // List of things pinning this creature to walls (see living_defense.dm)
 	var/list/embedded = list()          // Embedded items, since simple mobs don't have organs.
@@ -93,7 +108,10 @@
 
 	var/shakecamera = 0
 	var/a_intent = I_HELP//Living
-	var/m_intent = "run"//Living
+
+	var/decl/move_intent/move_intent = /decl/move_intent/run
+	var/move_intents = list(/decl/move_intent/run, /decl/move_intent/walk)
+
 	var/obj/buckled = null//Living
 	var/obj/item/l_hand = null//Living
 	var/obj/item/r_hand = null//Living
@@ -117,7 +135,8 @@
 	var/list/mutations = list() //Carbon -- Doohl
 	//see: setup.dm for list of mutations
 
-	var/radiation = 0.0//Carbon
+	var/radiation = 0.0 // Carbon
+	var/phoronation = 0.0 // Sanity meter related to phoron exposure which carbons can have - more is scarier
 
 	var/voice_name = "unidentifiable voice"
 
@@ -170,5 +189,5 @@
 	var/spawn_loc // set to a faction_uid to have them spawn in that factions spawners
 	var/spawn_loc_2 // this is used for secondary cryobed networks
 	
-	
+	var/datum/skillset/skillset = /datum/skillset
 	

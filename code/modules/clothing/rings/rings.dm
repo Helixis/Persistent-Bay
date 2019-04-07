@@ -3,7 +3,7 @@
 /obj/item/clothing/ring/engagement
 	name = "engagement ring"
 	desc = "An engagement ring. It certainly looks expensive."
-	icon_state = "diamond"
+	icon_state = MATERIAL_DIAMOND
 
 /obj/item/clothing/ring/engagement/attack_self(mob/user)
 	user.visible_message("<span class='warning'>\The [user] gets down on one knee, presenting \the [src].</span>","<span class='warning'>You get down on one knee, presenting \the [src].</span>")
@@ -42,7 +42,7 @@
 //Reagent Rings
 
 /obj/item/clothing/ring/reagent
-	flags = OPENCONTAINER
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 	origin_tech = list(TECH_MATERIAL = 2, TECH_ILLEGAL = 4)
 
 /obj/item/clothing/ring/reagent/New()

@@ -82,16 +82,15 @@
 	if(restrained())	return 0
 
 	//Do we have a working jetpack?
-	var/obj/item/weapon/tank/jetpack/thrust
-	if(back)
-		if(istype(back,/obj/item/weapon/tank/jetpack))
-			thrust = back
-		else if(istype(back,/obj/item/weapon/rig))
-			var/obj/item/weapon/rig/rig = back
+	var/obj/item/weapon/tank/jetpack/thrust = has_item_equipped(/obj/item/weapon/tank/jetpack)
+	//If no regular jetpack, check for a rigsuit
+	if(!thrust)
+		var/obj/item/weapon/rig/rig = has_item_equipped(/obj/item/weapon/rig)
+		if(rig)
 			for(var/obj/item/rig_module/maneuvering_jets/module in rig.installed_modules)
 				thrust = module.jets
 				break
-
+	//If we got a form of jetpack handle it here
 	if(thrust)
 		if(((!check_drift) || (check_drift && thrust.stabilization_on)) && (!lying) && (thrust.allow_thrust(0.01, src)))
 			inertia_dir = 0
@@ -114,8 +113,8 @@
 	return prob_slip
 
 /mob/living/carbon/human/Check_Shoegrip()
-	if(species.flags & NO_SLIP)
+	if(species.species_flags & SPECIES_FLAG_NO_SLIP)
 		return 1
-	if(shoes && (shoes.item_flags & NOSLIP) && istype(shoes, /obj/item/clothing/shoes/magboots))  //magboots + dense_object = no floating
+	if(shoes && (shoes.item_flags & ITEM_FLAG_NOSLIP) && istype(shoes, /obj/item/clothing/shoes/magboots))  //magboots + dense_object = no floating
 		return 1
 	return 0

@@ -4,14 +4,14 @@
 	gender = PLURAL
 	icon = 'icons/obj/items.dmi'
 	icon_state = "handcuff"
-	flags = CONDUCT
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	slot_flags = SLOT_BELT
 	throwforce = 5
 	w_class = ITEM_SIZE_SMALL
 	throw_speed = 2
 	throw_range = 5
 	origin_tech = list(TECH_MATERIAL = 1)
-	matter = list(DEFAULT_WALL_MATERIAL = 500)
+	matter = list(MATERIAL_STEEL = 500)
 	var/elastic
 	var/dispenser = 0
 	var/breakouttime = 1200 //Deciseconds = 120s = 2 minutes
@@ -115,7 +115,7 @@ var/last_chew = 0
 	H.visible_message("<span class='warning'>\The [H] chews on \his [O.name]!</span>", "<span class='warning'>You chew on your [O.name]!</span>")
 	admin_attacker_log(H, "chewed on their [O.name]!")
 
-	O.take_damage(3,0, DAM_SHARP|DAM_EDGE ,"teeth marks")
+	O.take_damage(3, DAM_PIERCE, damsrc = "teeth marks")
 
 	last_chew = world.time
 
@@ -171,6 +171,6 @@ var/last_chew = 0
 	desc = "DIY!"
 	icon_state = "tape_cross"
 	item_state = null
-	icon = 'icons/obj/bureaucracy.dmi'
+	icon = 'icons/obj/items/tape.dmi'
 	breakouttime = 200
 	cuff_type = "duct tape"

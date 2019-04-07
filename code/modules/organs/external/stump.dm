@@ -12,10 +12,9 @@
 		parent_organ = limb.parent_organ
 	..(holder, internal)
 	if(istype(limb))
-		max_damage = limb.max_damage
-		if((limb.robotic >= ORGAN_ROBOT) && (!parent || (parent.robotic >= ORGAN_ROBOT)))
+		max_health = limb.max_health
+		if(BP_IS_ROBOTIC(limb) && (!parent || BP_IS_ROBOTIC(parent)))
 			robotize() //if both limb and the parent are robotic, the stump is robotic too
-
 /obj/item/organ/external/stump/is_stump()
 	return 1
 

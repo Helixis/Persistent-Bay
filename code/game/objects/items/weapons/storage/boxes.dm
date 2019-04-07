@@ -22,6 +22,7 @@
 /obj/item/weapon/storage/box
 	name = "box"
 	desc = "It's just an ordinary box."
+	icon = 'icons/obj/items/storage/boxes.dmi'
 	icon_state = "box"
 	item_state = "syringe_kit"
 	max_storage_space = DEFAULT_BOX_STORAGE
@@ -88,7 +89,7 @@
 					/obj/item/weapon/tank/emergency/nitrogen = 1,
 					/obj/item/device/flashlight/glowstick = 1,
 					/obj/item/weapon/reagent_containers/food/snacks/candy/proteinbar = 1)
-		
+
 /obj/item/weapon/storage/box/phoron/
 	name = "Phorosian survival kit"
 	desc = "A box decorated in warning colors that contains a limited supply of survival tools. The panel and purple stripe indicate this one contains Phoron."
@@ -295,7 +296,7 @@
 
 /obj/item/weapon/storage/box/monkeycubes/farwacubes
 	name = "farwa cube box"
-	desc = "Drymate brand farwa cubes, shipped from Ahdomai. Just add water!"
+	desc = "Drymate brand farwa cubes. Just add water!"
 	startswith = list(/obj/item/weapon/reagent_containers/food/snacks/monkeycube/wrapped/farwacube = 5)
 
 /obj/item/weapon/storage/box/monkeycubes/stokcubes
@@ -368,7 +369,7 @@
 	attackby(obj/item/weapon/flame/match/W as obj, mob/user as mob)
 		if(istype(W) && !W.lit && !W.burnt)
 			W.lit = 1
-			W.damtype = "burn"
+			W.damtype = DAM_BURN
 			W.icon_state = "match_lit"
 			START_PROCESSING(SSobj, W)
 		W.update_icon()
@@ -383,7 +384,7 @@
 
 /obj/item/weapon/storage/box/lights
 	name = "box of replacement bulbs"
-	icon = 'icons/obj/storage.dmi'
+	icon = 'icons/obj/items/storage/boxes.dmi'
 	icon_state = "light"
 	desc = "This box is shaped on the inside so that only light tubes and bulbs fit."
 	item_state = "syringe_kit"
@@ -434,7 +435,7 @@
 /obj/item/weapon/storage/box/freezer
 	name = "portable freezer"
 	desc = "This nifty shock-resistant device will keep your 'groceries' nice and non-spoiled."
-	icon = 'icons/obj/storage.dmi'
+	icon = 'icons/obj/items/storage/freezer.dmi'
 	icon_state = "portafreezer"
 	item_state = "medicalpack"
 	foldable = null
@@ -450,31 +451,31 @@
 	icon_state = "checkers"
 	max_storage_space = 24
 	foldable = null
-	can_hold = list(/obj/item/weapon/reagent_containers/food/snacks/checker)
-	startswith = list(/obj/item/weapon/reagent_containers/food/snacks/checker = 12,
-					/obj/item/weapon/reagent_containers/food/snacks/checker/red = 12)
+	can_hold = list(/obj/item/weapon/checker)
+	startswith = list(/obj/item/weapon/checker = 12,
+					/obj/item/weapon/checker/red = 12)
 
 /obj/item/weapon/storage/box/checkers/chess
 	name = "black chess box"
 	desc = "This box holds all the pieces needed for the black side of the chess board."
 	icon_state = "chess_b"
-	startswith = list(/obj/item/weapon/reagent_containers/food/snacks/checker/pawn = 8,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/knight = 2,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/bishop = 2,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/rook = 2,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/queen = 1,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/king = 1)
+	startswith = list(/obj/item/weapon/checker/pawn = 8,
+				/obj/item/weapon/checker/knight = 2,
+				/obj/item/weapon/checker/bishop = 2,
+				/obj/item/weapon/checker/rook = 2,
+				/obj/item/weapon/checker/queen = 1,
+				/obj/item/weapon/checker/king = 1)
 
 /obj/item/weapon/storage/box/checkers/chess/red
 	name = "red chess box"
 	desc = "This box holds all the pieces needed for the red side of the chess board."
 	icon_state = "chess_r"
-	startswith = list(/obj/item/weapon/reagent_containers/food/snacks/checker/pawn/red = 8,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/knight/red = 2,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/bishop/red = 2,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/rook/red = 2,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/queen/red = 1,
-				/obj/item/weapon/reagent_containers/food/snacks/checker/king/red = 1)
+	startswith = list(/obj/item/weapon/checker/pawn/red = 8,
+				/obj/item/weapon/checker/knight/red = 2,
+				/obj/item/weapon/checker/bishop/red = 2,
+				/obj/item/weapon/checker/rook/red = 2,
+				/obj/item/weapon/checker/queen/red = 1,
+				/obj/item/weapon/checker/king/red = 1)
 
 
 /obj/item/weapon/storage/box/headset

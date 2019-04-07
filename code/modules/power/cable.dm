@@ -27,6 +27,7 @@ var/list/possible_cable_coil_colours
 /obj/structure/cable
 	level = 1
 	anchored =1
+	dir = SOUTH
 	var/datum/powernet/powernet
 	name = "power cable"
 	desc = "A flexible superconducting cable for heavy-duty power transfer."
@@ -211,7 +212,7 @@ var/list/possible_cable_coil_colours
 		shock(user, 5, 0.2)
 
 	else
-		if (W.flags & CONDUCT)
+		if (W.obj_flags & OBJ_FLAG_CONDUCTIBLE)
 			shock(user, 50, 0.7)
 
 	src.add_fingerprint(user)
@@ -485,8 +486,8 @@ obj/structure/cable/proc/cableColor(var/colorC)
 	w_class = ITEM_SIZE_NORMAL
 	throw_speed = 2
 	throw_range = 5
-	matter = list("copper" = 20)
-	flags = CONDUCT
+	matter = list(MATERIAL_COPPER = 20)
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	slot_flags = SLOT_BELT
 	item_state = "coil"
 	attack_verb = list("whipped", "lashed", "disciplined", "flogged")
@@ -494,6 +495,14 @@ obj/structure/cable/proc/cableColor(var/colorC)
 
 /obj/item/stack/cable_coil/single
 	amount = 1
+	
+/obj/item/stack/cable_coil/five
+	amount = 5
+	
+/obj/item/stack/cable_coil/thirty
+	amount = 30
+	
+	
 
 /obj/item/stack/cable_coil/single/New(var/loc, var/length = 1, var/param_color = null)
 	..(loc, length, param_color)
@@ -525,12 +534,12 @@ obj/structure/cable/proc/cableColor(var/colorC)
 		var/obj/item/organ/external/S = H.organs_by_name[user.zone_sel.selecting]
 
 		if (!S) return
-		if(S.robotic < ORGAN_ROBOT || user.a_intent != I_HELP)
+		if(!BP_IS_ROBOTIC(S) || user.a_intent != I_HELP)
 			return ..()
 
 		var/use_amt = min(src.amount, ceil(S.burn_dam/3), 5)
 		if(can_use(use_amt))
-			if(S.robo_repair(3*use_amt, BURN, "some damaged wiring", src, user))
+			if(S.robo_repair(3*use_amt, DAM_BURN, "some damaged wiring", src, user))
 				src.use(use_amt)
 		return
 	return ..()

@@ -17,7 +17,7 @@
 	remains_type = /obj/effect/decal/cleanable/ash
 	death_message = "dissolves into ash..."
 
-	flags = NO_SCAN | NO_SLIP | NO_POISON | NO_EMBED
+	species_flags = SPECIES_FLAG_NO_SCAN | SPECIES_FLAG_NO_SLIP | SPECIES_FLAG_NO_POISON | SPECIES_FLAG_NO_EMBED
 	spawn_flags = SPECIES_IS_RESTRICTED
 
 	genders = list(NEUTER)
@@ -35,6 +35,7 @@
 		var/turf/T = H.loc
 		light_amount = T.get_lumcount() * 10
 	if(light_amount > 2) //if there's enough light, start dying
-		H.take_overall_damage(1,1)
+		H.take_overall_damage(1, DAM_BLUNT)
+		H.take_overall_damage(1, DAM_BURN)
 	else //heal in the dark
 		H.heal_overall_damage(1,1)

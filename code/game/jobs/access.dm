@@ -4,16 +4,22 @@
 /obj/var/list/req_one_access = list()
 /obj/var/req_access_faction = ""
 /obj/var/req_access_personal
+/obj/var/list/req_access_personal_list = list()
 /obj/var/req_access_business
 /obj/var/list/req_access_business_list = list()
 /obj/var/list/req_one_access_business_list = list()
 //returns 1 if this mob has sufficient access to use this object
 /obj/proc/allowed(mob/M)
 	//check if it doesn't require any access at all
-	if(src.check_access(null))
-		return 1
 	if(!istype(M))
 		return 0
+
+	if(req_access_personal_list && req_access_personal_list.len)
+		for(var/nam in req_access_personal_list)
+			if(M.get_id_name() == nam)
+				return 1
+		return 0
+
 	if(req_access_personal)
 		if(M.get_id_name() == req_access_personal)
 			return 1
@@ -26,16 +32,23 @@
 			if(employee)
 				var/pass = 1
 				var/one_pass = 0
-				for(var/x in req_access_business_list)
+				for(var/x in req_access_business_list)		//needs all
 					if(!(x in employee.accesses))
 						pass = 0
-				for(var/x in req_one_access_business_list)
-					if(!(x in employee.accesses))
-						one_pass = 1
-				if(!req_one_access_business_list.len) one_pass = 1
-				if(pass && one_pass)
+						break								//Break since we found one required access that we don't have on a list that we need ALL
+				if(req_one_access_business_list.len)
+					for(var/x in req_one_access_business_list)
+						if(x in employee.accesses)
+							one_pass = 1
+							break
+
+				if(pass && (one_pass || !req_one_access_business_list.len) )
 					return 1
-			return 0
+			return 0	
+	if(src.check_access(null))
+		return 1
+	
+
 	return check_access_list(M.GetAccess(req_access_faction))
 
 /atom/movable/proc/GetAccess(var/faction_uid)
@@ -66,6 +79,14 @@
 				return 1
 		return 0
 	return 1
+
+//Checks if the access (constant or list) is contained in one of the entries of access_patterns, a list of lists.
+/proc/has_access_pattern(list/access_patterns, access)
+	if(!islist(access))
+		access = list(access)
+	for(var/access_pattern in access_patterns)
+		if(has_access(access_pattern, list(), access))
+			return 1
 
 /proc/get_centcom_access(job)
 	switch(job)

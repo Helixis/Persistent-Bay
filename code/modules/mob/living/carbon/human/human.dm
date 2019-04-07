@@ -48,17 +48,24 @@
 	make_blood()
 
 /mob/living/carbon/human/Destroy()
-	GLOB.human_mob_list -= src
-	worn_underwear = null
+	for(var/organ in internal_organs)
+		if(src.loc && istype(organ, /obj/item/organ/internal/stack))
+			var/obj/item/organ/internal/stack/lace = organ
+			lace.removed()
+			lace.loc = loc
+			continue
+		qdel(organ)
 	for(var/organ in organs)
 		qdel(organ)
+	GLOB.human_mob_list -= src
+	worn_underwear = null
 	return ..()
 
 /mob/living/carbon/human/Stat()
 	. = ..()
 	if(statpanel("Status"))
 		stat("Intent:", "[a_intent]")
-		stat("Move Mode:", "[m_intent]")
+		stat("Move Mode:", "[move_intent.name]")
 
 		if(evacuation_controller)
 			var/eta_status = evacuation_controller.get_status_panel_eta()
@@ -102,7 +109,7 @@
 		if (1.0)
 			b_loss = 400
 			f_loss = 100
-			if (!prob(getarmor(null, "bomb")))
+			if (!prob(getarmor(null, DAM_BOMB)))
 				gib()
 				return
 			else
@@ -131,13 +138,14 @@
 				Paralyse(10)
 
 	// factor in armour
-	var/protection = blocked_mult(getarmor(null, "bomb"))
+	var/protection = blocked_mult(getarmor(null, DAM_BOMB))
 	b_loss *= protection
 	f_loss *= protection
 
 	// focus most of the blast on one organ
 	var/obj/item/organ/external/take_blast = pick(organs)
-	take_blast.take_damage(b_loss * 0.7, f_loss * 0.7, used_weapon = "Explosive blast")
+	take_blast.take_damage(b_loss * 0.7, DAM_BOMB, damsrc ="Explosive blast")
+	take_blast.take_damage(f_loss * 0.7, DAM_BURN, damsrc ="Explosive blast")
 
 	// distribute the remaining 30% on all limbs equally (including the one already dealt damage)
 	b_loss *= 0.3
@@ -152,7 +160,8 @@
 			loss_val = 0.4
 		else
 			loss_val = 0.05
-		temp.take_damage(b_loss * loss_val, f_loss * loss_val, used_weapon = weapon_message)
+		temp.take_damage(b_loss * loss_val, DAM_BOMB, damsrc = weapon_message)
+		temp.take_damage(f_loss * loss_val, DAM_BURN, damsrc = weapon_message)
 
 /mob/living/carbon/human/proc/implant_loyalty(mob/living/carbon/human/M, override = FALSE) // Won't override by default.
 	if(!config.use_loyalty_implants && !override) return // Nuh-uh.
@@ -436,9 +445,9 @@
 					else
 						perpname = name
 
-					var/datum/computer_file/crew_record/R = faction.get_record(perpname)
+					var/datum/computer_file/report/crew_record/R = faction.get_record(perpname)
 					if(R)
-						var/setcriminal = input(usr, "Specify a new criminal status for this person.", "Security HUD", R.get_criminalStatus()) in GLOB.security_statuses as null|text
+						var/setcriminal = input(usr, "Specify a new criminal status for this person.", "Security HUD", R.get_criminalStatus()) as null|anything in GLOB.security_statuses
 						if(hasHUD(usr, "security") && setcriminal)
 							R.set_criminalStatus(setcriminal)
 							modified = 1
@@ -473,7 +482,7 @@
 							perpname = tempPda.owner
 					else
 						perpname = src.name
-					var/datum/computer_file/crew_record/E = faction.get_record(perpname)
+					var/datum/computer_file/report/crew_record/E = faction.get_record(perpname)
 					if(E)
 						if(hasHUD(usr,"security"))
 							to_chat(usr, "<b>Name:</b> [E.get_name()]")
@@ -503,9 +512,9 @@
 					else
 						perpname = src.name
 
-					var/datum/computer_file/crew_record/E = faction.get_record(perpname)
+					var/datum/computer_file/report/crew_record/E = faction.get_record(perpname)
 					if(E)
-						var/setmedical = input(usr, "Specify a new medical status for this person.", "Medical HUD", E.get_status()) in GLOB.physical_statuses as null|text
+						var/setmedical = input(usr, "Specify a new medical status for this person.", "Medical HUD", E.get_status()) as null|anything in GLOB.physical_statuses
 						if(hasHUD(usr,"medical") && setmedical)
 							E.set_status(setmedical)
 							modified = 1
@@ -536,7 +545,7 @@
 							perpname = tempPda.owner
 					else
 						perpname = src.name
-					var/datum/computer_file/crew_record/E = get_crewmember_record(perpname)
+					var/datum/computer_file/report/crew_record/E = get_crewmember_record(perpname)
 					if(E)
 						if(hasHUD(usr,"medical"))
 							to_chat(usr, "<b>Name:</b> [E.get_name()]")
@@ -944,7 +953,7 @@
 	var/obj/item/organ/external/groin = src.get_organ(BP_GROIN)
 	if(groin && stomach_contents && stomach_contents.len)
 		for(var/obj/item/O in stomach_contents)
-			if(O.edge || O.sharp)
+			if(O.sharpness || ISDAMTYPE(O.damtype, DAM_PIERCE) || ISDAMTYPE(O.damtype, DAM_CUT))
 				if(prob(1))
 					stomach_contents.Remove(O)
 					if(can_feel_pain())
@@ -964,8 +973,9 @@
 			"<span class='warning'>Your movement jostles [O] in your [organ.name] painfully.</span>")
 		custom_pain(msg,40,affecting = organ)
 
-	organ.take_damage(rand(1,3), 0, 0)
-	if(!(organ.robotic >= ORGAN_ROBOT) && (should_have_organ(BP_HEART))) //There is no blood in protheses.
+	organ.take_damage(rand(1,3), DAM_CUT)
+	if(!BP_IS_ROBOTIC(organ) && (should_have_organ(BP_HEART))) //There is no blood in protheses.
+
 		organ.status |= ORGAN_BLEEDING
 		src.adjustToxLoss(rand(1,3))
 
@@ -1185,13 +1195,13 @@
 		to_chat(user, "<span class='warning'>They are missing that limb.</span>")
 		return 0
 
-	if(affecting.robotic >= ORGAN_ROBOT)
+	if(affecting.status & ORGAN_ROBOT)
 		to_chat(user, "<span class='warning'>That limb is robotic.</span>")
 		return 0
 
 	. = CAN_INJECT
 	for(var/obj/item/clothing/C in list(head, wear_mask, wear_suit, w_uniform, gloves, shoes))
-		if(C && (C.body_parts_covered & affecting.body_part) && (C.item_flags & THICKMATERIAL))
+		if(C && (C.body_parts_covered & affecting.body_part) && (C.item_flags & ITEM_FLAG_THICKMATERIAL))
 			if(istype(C, /obj/item/clothing/suit/space))
 				. = INJECTION_PORT //it was going to block us, but it's a space suit so it doesn't because it has some kind of port
 			else
@@ -1240,14 +1250,14 @@
 		return ..()
 
 /mob/living/carbon/human/getDNA()
-	if(species.flags & NO_SCAN)
+	if(species.species_flags & SPECIES_FLAG_NO_SCAN)
 		return null
 	if(isSynthetic())
 		return
 	..()
 
 /mob/living/carbon/human/setDNA()
-	if(species.flags & NO_SCAN)
+	if(species.species_flags & SPECIES_FLAG_NO_SCAN)
 		return
 	if(isSynthetic())
 		return
@@ -1268,7 +1278,7 @@
 	return 0
 
 /mob/living/carbon/human/slip(var/slipped_on, stun_duration=8)
-	if((species.flags & NO_SLIP) || (shoes && (shoes.item_flags & NOSLIP)))
+	if((species.species_flags & SPECIES_FLAG_NO_SLIP) || (shoes && (shoes.item_flags & ITEM_FLAG_NOSLIP)))
 		return 0
 	return !!(..(slipped_on,stun_duration))
 
@@ -1357,7 +1367,7 @@
 	set desc = "Try not to hurt them."
 	set category = "IC"
 
-	if(stat || species.flags & CAN_NAB) return
+	if(incapacitated() || species.species_flags & SPECIES_FLAG_CAN_NAB) return
 	pulling_punches = !pulling_punches
 	to_chat(src, "<span class='notice'>You are now [pulling_punches ? "pulling your punches" : "not pulling your punches"].</span>")
 	return
@@ -1436,7 +1446,7 @@
 	else if(organ_check in list(BP_LIVER, BP_KIDNEYS))
 		affecting = organs_by_name[BP_GROIN]
 
-	if(affecting && (affecting.robotic >= ORGAN_ROBOT))
+	if(affecting && (affecting.status & ORGAN_ROBOT))
 		return 0
 	return (species && species.has_organ[organ_check])
 
@@ -1447,13 +1457,13 @@
 		if(!istype(check_organ))
 			return 0
 		return check_organ.can_feel_pain()
-	return !(species.flags & NO_PAIN)
+	return !(species.species_flags & SPECIES_FLAG_NO_PAIN)
 
 /mob/living/carbon/human/get_breath_volume()
 	. = ..()
 	var/obj/item/organ/internal/heart/H = internal_organs_by_name[BP_HEART]
 	if(H)
-		. *= (H.robotic < ORGAN_ROBOT) ? pulse()/PULSE_NORM : 1.5
+		. *= !(H.status & ORGAN_ROBOT) ? pulse()/PULSE_NORM : 1.5
 
 /mob/living/carbon/human/need_breathe()
 	if(species.breathing_organ && should_have_organ(species.breathing_organ))
@@ -1523,7 +1533,7 @@
 	if(!is_asystole() || !should_have_organ(BP_HEART))
 		return
 	var/obj/item/organ/internal/heart/heart = internal_organs_by_name[BP_HEART]
-	if(istype(heart) && heart.robotic <= ORGAN_ROBOT && !(heart.status & ORGAN_DEAD))
+	if(istype(heart) && !(heart.status & ORGAN_DEAD))
 		var/species_organ = species.breathing_organ
 		var/active_breaths = 0
 		if(species_organ)

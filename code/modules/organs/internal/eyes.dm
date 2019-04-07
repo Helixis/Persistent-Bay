@@ -10,10 +10,9 @@
 	var/phoron_guard = 0
 	var/list/eye_colour = list(0,0,0)
 	var/innate_flash_protection = FLASH_PROTECTION_NONE
-	max_damage = 45
+	max_health = 45
 
 /obj/item/organ/internal/eyes/optics
-	robotic = ORGAN_ROBOT
 	organ_tag = BP_OPTICS
 
 /obj/item/organ/internal/eyes/optics/New()
@@ -35,12 +34,12 @@
 	..()
 	robotize()
 
-/obj/item/organ/internal/removed(var/mob/living/user)
+/obj/item/organ/internal/eyes/removed(var/mob/living/user)
 	..()
 	// Your eyes can't be disabled if you don't have eyes ;)
-	if(user.disabilities & NEARSIGHTED)
-		user.disabilities &= ~NEARSIGHTED
-		user.sdisabilities &= ~BLIND
+	if(owner && owner.disabilities & NEARSIGHTED)
+		owner.disabilities &= ~NEARSIGHTED
+		owner.sdisabilities &= ~BLIND
 
 
 /obj/item/organ/internal/eyes/replaced(var/mob/living/carbon/human/target)
@@ -62,11 +61,11 @@
 		owner.b_eyes ? owner.b_eyes : 0
 		)
 
-/obj/item/organ/internal/eyes/take_damage(amount, var/silent=0)
+/obj/item/organ/internal/eyes/take_damage(damage, damtype, armorbypass, damsrc, var/silent=0)
 	var/oldbroken = is_broken()
 	. = ..()
 	if(is_broken() && !oldbroken && owner && !owner.stat)
-		to_chat(owner, "<span class='danger'>You go blind!</span>")
+		to_chat(owner, SPAN_DANGER("You go blind!"))
 
 /obj/item/organ/internal/eyes/Process() //Eye damage replaces the old eye_stat var.
 	..()

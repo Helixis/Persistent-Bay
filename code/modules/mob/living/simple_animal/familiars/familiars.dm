@@ -10,7 +10,7 @@
 	universal_speak = 0
 	universal_understand = 1
 
-	min_gas = list("oxygen" = 1)
+	min_gas = list(GAS_OXYGEN = 1)
 	max_gas = null
 	unsuitable_atoms_damage = 1
 
@@ -134,7 +134,7 @@
 
 	speak_emote = list("squeeks")
 	holder_type = /obj/item/weapon/holder/mouse
-	pass_flags = PASSTABLE
+	pass_flags = PASS_FLAG_TABLE
 	mob_size = MOB_MINISCULE
 
 	response_harm = "stamps on"

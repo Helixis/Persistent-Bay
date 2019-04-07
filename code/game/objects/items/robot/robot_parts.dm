@@ -3,7 +3,7 @@
 	icon = 'icons/obj/robot_parts.dmi'
 	item_state = "buildpipe"
 	icon_state = "blank"
-	flags = CONDUCT
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	slot_flags = SLOT_BELT
 	var/list/part = null // Order of args is important for installing robolimbs.
 	var/sabotaged = 0 //Emagging limbs can have repercussions when installed as prosthetics.
@@ -93,10 +93,10 @@
 	var/obj/item/device/flash/flash2 = null
 
 /obj/item/robot_parts/head/can_install(mob/user)
-	var/success = TRUE;
+	var/success = TRUE
 	if(!(flash1 && flash2))
 		to_chat(user, "<span class='warning'>You need to attach a flash to it first!</span>")
-		success = FALSE:
+		success = FALSE
 	return success && ..();
 
 /obj/item/robot_parts/robot_suit
@@ -133,7 +133,7 @@
 
 /obj/item/robot_parts/robot_suit/attackby(obj/item/W as obj, mob/user as mob)
 	..()
-	if(istype(W, /obj/item/stack/material) && W.get_material_name() == DEFAULT_WALL_MATERIAL && !parts[BP_L_ARM] && !parts[BP_R_ARM] && !parts[BP_L_LEG] && !parts[BP_R_LEG] && !parts[BP_CHEST] && !parts[BP_HEAD])
+	if(istype(W, /obj/item/stack/material) && W.get_material_name() == MATERIAL_STEEL && !parts[BP_L_ARM] && !parts[BP_R_ARM] && !parts[BP_L_LEG] && !parts[BP_R_LEG] && !parts[BP_CHEST] && !parts[BP_HEAD])
 		var/obj/item/stack/material/M = W
 		if (M.use(1))
 			var/obj/item/weapon/secbot_assembly/ed209_assembly/B = new /obj/item/weapon/secbot_assembly/ed209_assembly
@@ -155,8 +155,8 @@
 			src.parts[part.bp_tag] = part
 			src.update_icon()
 
-			
-			
+
+
 	if(istype(W, /obj/item/device/lmi))
 		var/obj/item/device/lmi/M = W
 		if(check_completion())
@@ -221,8 +221,8 @@
 
 			qdel(src)
 		else
-			to_chat(user, "<span class='warning'>The LMI must go in after everything else!</span>")		
-			
+			to_chat(user, "<span class='warning'>The LMI must go in after everything else!</span>")
+
 	if(istype(W, /obj/item/device/mmi))
 		var/obj/item/device/mmi/M = W
 		if(check_completion())

@@ -20,7 +20,7 @@
 			var/mob/living/carbon/human/H = M
 			var/obj/item/organ/internal/I = H.internal_organs_by_name[target_organ]
 			if(I)
-				var/can_damage = I.max_damage - I.damage
+				var/can_damage = I.get_max_health() - I.get_damages()
 				if(can_damage > 0)
 					if(dam > can_damage)
 						I.take_damage(can_damage, silent=TRUE)
@@ -34,7 +34,7 @@
 /datum/reagent/toxin/plasticide
 	name = "Plasticide"
 	description = "Liquid plastic, do not eat."
-	taste_description = "plastic"
+	taste_description = MATERIAL_PLASTIC
 	reagent_state = LIQUID
 	color = "#cf3600"
 	strength = 5
@@ -61,7 +61,7 @@
 	description = "A highly poisonous liquid. Smells strongly of bleach."
 	reagent_state = LIQUID
 	taste_description = "bleach"
-	color = "#707C13"
+	color = "#707c13"
 	strength = 15
 	metabolism = REM
 
@@ -85,18 +85,21 @@
 	if(alien == IS_PHOROSIAN ) //pure phoron helps them regain blood, since it's a staple in their blood. Also promotes healing.
 		M.add_chemical_effect(CE_BLOODRESTORE, 8 * removed)
 		M.heal_organ_damage(3 * removed, 3 * removed)
+	if(alien != IS_PHOROSIAN)
+		M.phoronation += removed //you should definitely not inject phoron what are you doing
 	..()
 
 /datum/reagent/toxin/phoron/affect_touch(var/mob/living/carbon/M, var/alien, var/removed)
 	if(alien != IS_PHOROSIAN)
-		M.take_organ_damage(0, removed * 0.1) //being splashed directly with phoron causes minor chemical burns
+		M.apply_damage(removed * 0.1, DAM_BURN) //being splashed directly with phoron causes minor chemical burns
+		M.phoronation += removed * 0.1
 		if(prob(10 * fire_mult))
 			M.pl_effects()
 
 /datum/reagent/toxin/phoron/touch_turf(var/turf/simulated/T)
 	if(!istype(T))
 		return
-	T.assume_gas("phoron", volume, T20C)
+	T.assume_gas(GAS_PHORON, volume, T20C)
 	remove_self(volume)
 
 // Produced during deuterium synthesis. Super poisonous, SUPER flammable (doesn't need oxygen to burn).
@@ -109,8 +112,8 @@
 /datum/reagent/toxin/phoron/oxygen/touch_turf(var/turf/simulated/T)
 	if(!istype(T))
 		return
-	T.assume_gas("oxygen", ceil(volume/2), T20C)
-	T.assume_gas("phoron", ceil(volume/2), T20C)
+	T.assume_gas(GAS_OXYGEN, ceil(volume/2), T20C)
+	T.assume_gas(GAS_PHORON, ceil(volume/2), T20C)
 	remove_self(volume)
 
 /datum/reagent/toxin/cyanide //Fast and Lethal
@@ -244,15 +247,6 @@
 	if(alien == IS_DIONA)
 		M.adjustToxLoss(50 * removed)
 
-/datum/reagent/acid/polyacid
-	name = "Polytrinic acid"
-	description = "Polytrinic acid is a an extremely corrosive chemical substance."
-	taste_description = "acid"
-	reagent_state = LIQUID
-	color = "#8e18a9"
-	power = 10
-	meltdose = 4
-
 /datum/reagent/lexorin
 	name = "Lexorin"
 	description = "Lexorin temporarily stops respiration. Causes tissue damage."
@@ -265,11 +259,11 @@
 	if(alien == IS_DIONA)
 		return
 	if(alien == IS_SKRELL)
-		M.take_organ_damage(2.4 * removed, 0)
+		M.apply_damage(2.4 * removed, DAM_BLUNT)
 		if(M.losebreath < 22.5)
 			M.losebreath++
 	else
-		M.take_organ_damage(3 * removed, 0)
+		M.apply_damage(3 * removed, DAM_BLUNT)
 		if(M.losebreath < 15)
 			M.losebreath++
 
@@ -295,7 +289,7 @@
 		return
 
 	var/mob/living/carbon/human/H = M
-	if(istype(H) && (H.species.flags & NO_SCAN))
+	if(istype(H) && (H.species.species_flags & SPECIES_FLAG_NO_SCAN))
 		return
 
 	if(M.dna)
@@ -416,8 +410,8 @@
 		drug_strength = drug_strength * 0.8
 
 	M.druggy = max(M.druggy, drug_strength)
-	if(prob(10) && isturf(M.loc) && !istype(M.loc, /turf/space) && M.canmove && !M.restrained())
-		step(M, pick(GLOB.cardinal))
+	if(prob(10))
+		M.SelfMove(pick(GLOB.cardinal))
 	if(prob(7))
 		M.emote(pick("twitch", "drool", "moan", "giggle"))
 	M.add_chemical_effect(CE_PULSE, -1)
@@ -554,7 +548,7 @@
 	var/list/meatchunks = list()
 	for(var/limb_tag in list(BP_R_ARM, BP_L_ARM, BP_R_LEG,BP_L_LEG))
 		var/obj/item/organ/external/E = H.get_organ(limb_tag)
-		if(!E.is_stump() && E.robotic < ORGAN_ROBOT && E.species.name != SPECIES_PROMETHEAN)
+		if(!E.is_stump() && !BP_IS_ROBOTIC(E) && E.species.name != SPECIES_PROMETHEAN)
 			meatchunks += E
 	if(!meatchunks.len)
 		if(prob(10)) // only a 10% chance per ten units if your limbs are robotic
@@ -575,12 +569,12 @@
 		E.s_col_blend = ICON_ADD
 		E.status &= ~ORGAN_BROKEN
 		E.status |= ORGAN_MUTATED
-		E.cannot_break = 1
+		E.limb_flags = 0
 		E.dislocated = -1
 		E.nonsolid = 1
-		E.max_damage = 10
+		E.max_health = 10
 		E.update_icon(1)
-	O.max_damage = 20 // A little more durable than before, but not really.
+	O.max_health = 20 // A little more durable than before, but not really.
 	if(prob(10))
 		to_chat(H, "<span class='danger'>Your slimy [O.name]'s plops off!</span>")
 		O.droplimb()
@@ -594,11 +588,10 @@
 	color = "#13bc5e"
 
 /datum/reagent/aslimetoxin/affect_blood(var/mob/living/carbon/M, var/alien, var/removed) // TODO: check if there's similar code anywhere else
-	if(M.transforming)
+	if(HAS_TRANSFORMATION_MOVEMENT_HANDLER(M))
 		return
 	to_chat(M, "<span class='danger'>Your flesh rapidly mutates!</span>")
-	M.transforming = 1
-	M.canmove = 0
+	ADD_TRANSFORMATION_MOVEMENT_HANDLER(M)
 	M.icon = null
 	M.overlays.Cut()
 	M.set_invisibility(101)

@@ -35,6 +35,8 @@ var/list/mining_floors = list()
 	var/image/ore_overlay
 
 	has_resources = 1
+	has_gas_resources = 1
+
 	skip_icon_state = 1
 /turf/simulated/mineral/New()
 	if (!mining_walls["[src.z]"])
@@ -167,7 +169,7 @@ var/list/mining_floors = list()
 //Not even going to touch this pile of spaghetti
 /turf/simulated/mineral/attackby(obj/item/weapon/W as obj, mob/user as mob)
 
-	if (!(istype(usr, /mob/living/carbon/human) || ticker) && ticker.mode.name != "monkey")
+	if (!istype(usr, /mob/living/carbon/human))
 		to_chat(usr, "<span class='warning'>You don't have the dexterity to do this!</span>")
 		return
 
@@ -287,7 +289,7 @@ var/list/mining_floors = list()
 			next_rock += P.excavation_amount
 			while(next_rock > 50)
 				next_rock -= 50
-				var/obj/item/weapon/ore/O = new(src)
+				var/obj/item/stack/ore/O = new(src)
 				geologic_data.UpdateNearbyArtifactInfo(src)
 				O.geologic_data = geologic_data
 
@@ -298,15 +300,17 @@ var/list/mining_floors = list()
 	overlays -= ore_overlay
 	ore_overlay = null
 
-/turf/simulated/mineral/proc/DropMineral()
+/turf/simulated/mineral/proc/DropMineral(var/howmany)
 	if(!mineral)
 		return
 
 	clear_ore_effects()
-	var/obj/item/weapon/ore/O = new(src, mineral.name)
+	var/obj/item/stack/ore/O = new(src, mineral.name)
 	if(geologic_data && istype(O))
 		geologic_data.UpdateNearbyArtifactInfo(src)
 		O.geologic_data = geologic_data
+	if(howmany >= 0)
+		O.add(howmany-1)
 	return O
 
 /turf/simulated/mineral/proc/GetDrilled(var/artifact_fail = 0)
@@ -314,8 +318,8 @@ var/list/mining_floors = list()
 	if (mineral && mineral.ore_result_amount)
 
 		//if the turf has already been excavated, some of it's ore has been removed
-		for (var/i = 1 to mineral.ore_result_amount - mined_ore)
-			DropMineral()
+		//for (var/i = 1 to mineral.ore_result_amount - mined_ore)
+		DropMineral(mineral.ore_result_amount - mined_ore)
 
 	//destroyed artifacts have weird, unpleasant effects
 	//make sure to destroy them before changing the turf though
@@ -333,7 +337,7 @@ var/list/mining_floors = list()
 				M.flash_eyes()
 				if(prob(50))
 					M.Stun(5)
-		radiation_repository.flat_radiate(src, 25, 200)
+		SSradiation.flat_radiate(src, 25, 200)
 	//Add some rubble,  you did just clear out a big chunk of rock.
 
 	var/turf/simulated/asteroid/N = ChangeTurf(mined_turf)
@@ -358,7 +362,7 @@ var/list/mining_floors = list()
 		var/find = get_archeological_find_by_findtype(F.find_type)
 		new find(src)
 	else
-		var/obj/item/weapon/ore/strangerock/rock = new(src, inside_item_type = F.find_type)
+		var/obj/item/stack/ore/strangerock/rock = new(src, inside_item_type = F.find_type)
 		geologic_data.UpdateNearbyArtifactInfo(src)
 		rock.geologic_data = geologic_data
 
@@ -432,17 +436,16 @@ var/list/mining_floors = list()
 	var/dug = 0       //0 = has not yet been dug, 1 = has already been dug
 	var/overlay_detail
 	has_resources = 1
+	has_gas_resources = 1
+
 /turf/simulated/floor/asteroid
 	name = "sand"
 
 
 /turf/simulated/asteroid/Entered(atom/movable/M)
 	. = ..()
-	if(istype(M) && !istype(M, /mob/living/simple_animal) && !istype(M, /mob/observer) )
-		if(aggression_controller)
-			var/datum/aggression_machine/zone = aggression_controller.sectors_by_zlevel["[z]"]
-			if(zone)
-				zone.asteroid_targets |= M
+	if(istype(M, /mob/living/carbon) || istype(M, /mob/living/silicon))
+		SSasteroid.agitate(M)
 
 /turf/simulated/asteroid/after_load()
 	updateMineralOverlays(1)
@@ -552,7 +555,7 @@ var/list/mining_floors = list()
 	else if(istype(W,/obj/item/weapon/storage/ore))
 		var/obj/item/weapon/storage/ore/S = W
 		if(S.collection_mode)
-			for(var/obj/item/weapon/ore/O in contents)
+			for(var/obj/item/stack/ore/O in contents)
 				O.attackby(W,user)
 				return
 	else if(istype(W,/obj/item/weapon/storage/bag/fossils))
@@ -572,7 +575,7 @@ var/list/mining_floors = list()
 		return
 
 	for(var/i=0;i<(rand(3)+2);i++)
-		new/obj/item/weapon/ore/glass(src)
+		new/obj/item/stack/ore/glass(src)
 
 	dug = 1
 	icon_state = "asteroid_dug"

@@ -9,7 +9,7 @@
 	var/wax = 2000
 
 /obj/item/weapon/flame/candle/New()
-	wax = rand(800, 1000) // Enough for 27-33 minutes. 30 minutes on average.
+	wax = rand(21000, 22000)	//lasts between 5.8 - 6.1 hours
 	..()
 
 /obj/item/weapon/flame/candle/update_icon()
@@ -25,7 +25,7 @@
 /obj/item/weapon/flame/candle/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	..()
 	if(isWelder(W))
-		var/obj/item/weapon/weldingtool/WT = W
+		var/obj/item/weapon/tool/weldingtool/WT = W
 		if(WT.isOn()) //Badasses dont get blinded by lighting their candle with a welding tool
 			light("<span class='notice'>\The [user] casually lights the [name] with [W].</span>")
 	else if(istype(W, /obj/item/weapon/flame/lighter))
@@ -45,7 +45,7 @@
 /obj/item/weapon/flame/candle/proc/light(var/flavor_text = "<span class='notice'>\The [usr] lights the [name].</span>")
 	if(!src.lit)
 		src.lit = 1
-		//src.damtype = "fire"
+		//src.damtype = DAM_BURN
 		for(var/mob/O in viewers(usr, null))
 			O.show_message(flavor_text, 1)
 		set_light(CANDLE_LUM)
@@ -66,6 +66,7 @@
 
 /obj/item/weapon/flame/candle/attack_self(mob/user as mob)
 	if(lit)
+		usr.visible_message("[usr] blows on the [name], extinguishing the flame.", "You blow out the [name]'s flame.")
 		lit = 0
 		update_icon()
 		set_light(0)

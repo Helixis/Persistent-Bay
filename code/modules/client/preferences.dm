@@ -35,9 +35,10 @@ datum/preferences
 	// Persistent Edit, Adding the character list..
 	var/list/character_list = list()
 	var/list/icon_list = list()
-	
+
 	var/bonus_slots = 0
 	var/bonus_notes = ""
+
 /datum/preferences/New(client/C)
 	player_setup = new(src)
 	gender = pick(MALE, FEMALE)
@@ -58,32 +59,32 @@ datum/preferences
 		save_preferences()
 		save_character()
 
-/datum/preferences/proc/ZeroSkills(var/forced = 0)
-	for(var/V in SKILLS) for(var/datum/skill/S in SKILLS[V])
-		if(!skills.Find(S.ID) || forced)
-			skills[S.ID] = SKILL_NONE
+// /datum/preferences/proc/ZeroSkills(var/forced = 0)
+// 	for(var/V in SKILLS) for(var/datum/skill/S in SKILLS[V])
+// 		if(!skills.Find(S.ID) || forced)
+// 			skills[S.ID] = SKILL_NONE
 
-/datum/preferences/proc/CalculateSkillPoints()
-	used_skillpoints = 0
-	for(var/V in SKILLS) for(var/datum/skill/S in SKILLS[V])
-		var/multiplier = S.cost_multiplier
-		switch(skills[S.ID])
-			if(SKILL_NONE)
-				used_skillpoints += 0 * multiplier
-			if(SKILL_BASIC)
-				used_skillpoints += 1 * multiplier
-			if(SKILL_ADEPT)
-				// secondary skills cost less
-				if(S.secondary)
-					used_skillpoints += 1 * multiplier
-				else
-					used_skillpoints += 3 * multiplier
-			if(SKILL_EXPERT)
-				// secondary skills cost less
-				if(S.secondary)
-					used_skillpoints += 3 * multiplier
-				else
-					used_skillpoints += 6 * multiplier
+// /datum/preferences/proc/CalculateSkillPoints()
+// 	skillpoints = 0
+// 	for(var/V in SKILLS) for(var/datum/skill/S in SKILLS[V])
+// 		var/multiplier = S.cost_multiplier
+// 		switch(skills[S.ID])
+// 			if(SKILL_NONE)
+// 				used_skillpoints += 0 * multiplier
+// 			if(SKILL_BASIC)
+// 				used_skillpoints += 1 * multiplier
+// 			if(SKILL_ADEPT)
+// 				// secondary skills cost less
+// 				if(S.secondary)
+// 					used_skillpoints += 1 * multiplier
+// 				else
+// 					used_skillpoints += 3 * multiplier
+// 			if(SKILL_EXPERT)
+// 				// secondary skills cost less
+// 				if(S.secondary)
+// 					used_skillpoints += 3 * multiplier
+// 				else
+// 					used_skillpoints += 6 * multiplier
 
 /datum/preferences/proc/GetSkillClass(points)
 	return CalculateSkillClass(points, age)
@@ -160,9 +161,9 @@ datum/preferences
 		if(!real_name)
 			to_chat(usr, "You must select a valid character name")
 			return
-		if(get_crewmember_record(real_name))
-			to_chat(usr, "A character with that name already exists!")
-			return
+	//	if(get_crewmember_record(real_name))
+	//		to_chat(usr, "A character with that name already exists!")
+	//		return
 		if(!home_system)
 			to_chat(usr, "You must choose a valid early life")
 			return
@@ -266,7 +267,6 @@ datum/preferences
 		if(!O)
 			continue
 		O.status = 0
-		O.robotic = 0
 		O.model = null
 		if(status == "amputated")
 			character.organs_by_name[O.organ_tag] = null
@@ -362,12 +362,59 @@ datum/preferences
 	character.religion = religion
 
 	character.skills = skills
-	character.used_skillpoints = used_skillpoints
+	character.skillpoints = skillpoints
 
 	if(!character.isSynthetic())
 		character.nutrition = rand(140,360)
 
 	return
+
+/proc/UpdateCharacter(var/ind, var/ckey)
+	var/savefile/F = new(load_path(ckey, "[ind].sav"))
+	var/mob/M
+	F >> M
+	fdel(F)
+	F["name"] << M.real_name
+	F["mob"] << M
+	qdel(M)
+	
+/proc/Character(var/ind, var/ckey)
+	if(!fexists(load_path(ckey, "[ind].sav")))
+		return
+
+	var/savefile/F = new(load_path(ckey, "[ind].sav"))
+	var/mob/M
+	if(!F.dir.Find("mob"))
+		F >> M
+		sleep(10)
+		return M
+	F["mob"] >> M
+	return M
+
+/proc/CharacterName(var/ind, var/ckey)
+	if(!fexists(load_path(ckey, "[ind].sav")))
+		return
+
+	var/savefile/F = new(load_path(ckey, "[ind].sav"))
+	var/name
+	if(!F.dir.Find("name"))
+		var/mob/M
+		F >> M
+		sleep(10)
+		return M.real_name
+	F["name"] >> name
+	return name
+
+/proc/CharacterIcon(var/ind, var/ckey)
+	if(!fexists(load_path(ckey, "[ind].sav")))
+		return
+
+	var/mob/M = Character(ind, ckey)
+	M.regenerate_icons()
+	var/icon/I = get_preview_icon(M)
+	qdel(M)
+	return I
+
 /datum/preferences/proc/delete_character(var/slot)
 	var/path_to = load_path(client.ckey, "")
 	if(!slot) return
@@ -375,25 +422,33 @@ datum/preferences
 	if(character_list && (character_list.len >= slot))
 		character_list[slot] = "nothing"
 /datum/preferences/proc/load_characters()
-	var/path_to = load_path(client.ckey, "")
+/*	var/path_to = load_path(client.ckey, "")
 	character_list = list()
 	var/slots = config.character_slots
 	if(check_rights(R_ADMIN, 0, client))
 		slots += 2
 	slots += client.prefs.bonus_slots
+	var/list/loaded = list()
 	for(var/i=1, i<= slots, i++)
 		if(fexists("[path_to][i].sav"))
 			var/savefile/S =  new("[path_to][i].sav")
 			var/mob/M
 			S >> M
+			loaded |= M
 			if(M)
 				M.after_load()
 				for(var/datum/D in M.contents)
 					D.after_load()
+				for(var/mob/loaded_mob in SSmobs.mob_list)
+					if(loaded_mob in loaded) continue
+					if(!loaded_mob.perma_dead && loaded_mob.type != /mob/new_player && (loaded_mob.real_name == M.real_name) && (get_turf(loaded_mob)))
+						loaded_mob.save_slot = i
 				character_list += M
+				M.save_slot = i
 		else
 			character_list += "empty"
 	return 1
+	*/
 /datum/preferences/proc/open_load_dialog(mob/user)
 	var/dat  = list()
 	dat += "<body>"
@@ -449,3 +504,12 @@ datum/preferences
 /datum/preferences/proc/close_load_dialog(mob/user)
 	user << browse(null, "window=saves")
 	panel.close()
+
+
+/datum/preferences/proc/Slots()
+	var/slots = 2 + bonus_slots
+
+	if(check_rights(R_ADMIN, 0, client))
+		slots += 2
+
+	return slots

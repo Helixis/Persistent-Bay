@@ -7,7 +7,7 @@
 	preview_icon = 'icons/mob/human_races/species/phorosian/preview.dmi'
 	rarity_value = 5
 	unarmed_types = list(/datum/unarmed_attack/stomp, /datum/unarmed_attack/kick, /datum/unarmed_attack/punch, /datum/unarmed_attack/bite)
-	blurb = "Victims of Phoron Restructurant Syndrome, Phorosians are forced \
+	description = "Victims of Phoron Restructurant Syndrome, Phorosians are forced \
 	to use containment suits on oxygen-based stations as they burn when exposed.\
 	Problems with short term and long term memory alongside other mental \
 	impairments are rampant among them,and they often have to go through many \
@@ -18,11 +18,11 @@
 	has_floating_eyes = 1
 	num_alternate_languages = 1
 	hunger_factor = 0
-	breath_type = "phoron"
-	poison_types = list("oxygen" = TRUE) //Getting oxygen into your lungs HURTS
-	exhale_type = "hydrogen"
+	breath_type = GAS_PHORON
+	poison_types = list(GAS_OXYGEN = TRUE) //Getting oxygen into your lungs HURTS
+	exhale_type = GAS_HYDROGEN
 	siemens_coefficient = 0.7
-	flags = NO_POISON | NO_PAIN //They're sorta made out of poison
+	species_flags = SPECIES_FLAG_NO_POISON | SPECIES_FLAG_NO_PAIN //They're sorta made out of poison
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED
 	appearance_flags = HAS_EYE_COLOR
 	brute_mod =     0.7 //Phoron has made them resistant to damage
@@ -31,7 +31,7 @@
 	flesh_color = "#3b1077"
 	blood_color = "#4d224d"
 	reagent_tag = IS_PHOROSIAN
-	breath_volume= 1.4
+	breath_volume= 0.1
 
 	var/list/eye_overlays = list()
 
@@ -45,6 +45,7 @@
 
 
 	body_temperature = 330
+	base_temperature = 330
 	heat_discomfort_level = 360                   // Aesthetic messages about feeling warm.
 	cold_discomfort_level = 250
 	heat_discomfort_strings = list(
@@ -109,7 +110,7 @@
 	//Should they get exposed to oxygen, things get heated.
 	if(H.get_pressure_weakness()>0.6) //If air gets in, then well there's a problem.
 		var/datum/gas_mixture/environment = H.loc.return_air()
-		if(environment && environment.gas["oxygen"] && environment.gas["oxygen"] >= 0.5) //Phorosians so long as there's enough oxygen (0.5 moles, same as it takes to burn gaseous phoron).
+		if(environment && environment.gas[GAS_OXYGEN] && environment.gas[GAS_OXYGEN] >= 0.5) //Phorosians so long as there's enough oxygen (0.5 moles, same as it takes to burn gaseous phoron).
 			if(!H.oxyburn)
 				if(H.get_pressure_weakness() !=1)
 					H.visible_message("<span class='warning'>The internal seals on [H]'s suit break open! </span>","<span class='warning'>The internal seals on your suit break open!</span>")

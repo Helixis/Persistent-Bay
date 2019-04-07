@@ -30,10 +30,12 @@ atom/var/var/fingerprintslast = null
 	src.fingerprintshidden += "\[[time_stamp()]\] Real name: [M.real_name], Key: [M.key]"
 	return 1
 
-/atom/proc/add_fingerprint(mob/M, ignoregloves)
+/atom/proc/add_fingerprint(mob/M, ignoregloves, obj/item/tool)
 	if(isnull(M)) return
 	if(isAI(M)) return
 	if(!M || !M.key)
+		return
+	if(istype(tool) && (tool.item_flags & ITEM_FLAG_NO_PRINT))
 		return
 
 	add_hiddenprint(M)
@@ -149,7 +151,7 @@ atom/proc/add_fibers(mob/living/carbon/human/M)
 /mob/living/carbon/get_full_print()
 	if (!dna || (mFingerprints in mutations))
 		return FALSE
-	return md5(dna.uni_identity)
+	return md5(dna.real_name+"+fingerprint")
 
 /mob/living/carbon/human/get_full_print(ignoregloves)
 	if(!..())
@@ -158,19 +160,3 @@ atom/proc/add_fibers(mob/living/carbon/human/M)
 	var/obj/item/organ/external/E = organs_by_name[hand ? BP_L_HAND : BP_R_HAND]
 	if(E)
 		return E.get_fingerprint()
-
-/obj/item/organ/external/proc/get_fingerprint()
-	return
-
-/obj/item/organ/external/arm/get_fingerprint()
-	for(var/obj/item/organ/external/hand/H in children)
-		return H.get_fingerprint()
-
-/obj/item/organ/external/hand/get_fingerprint()
-	if(dna && !is_stump())
-		return md5(dna.uni_identity)
-
-/obj/item/organ/external/afterattack(atom/A, mob/user, proximity)
-	..()
-	if(proximity && get_fingerprint())
-		A.add_partial_print(get_fingerprint())

@@ -17,6 +17,10 @@
 	var/list/reagent_volumes = list()
 	var/list/reagent_names = list()
 
+/obj/item/weapon/reagent_containers/borghypo/standard
+	desc = "An advanced chemical synthesizer and injection system, this one only appears to dispense inaprovaline."
+	reagent_ids = list(/datum/reagent/inaprovaline)
+
 /obj/item/weapon/reagent_containers/borghypo/surgeon
 	reagent_ids = list(/datum/reagent/bicaridine, /datum/reagent/dexalin, /datum/reagent/tramadol)
 
@@ -67,7 +71,7 @@
 		if(!affected)
 			to_chat(user, "<span class='danger'>\The [H] is missing that limb!</span>")
 			return
-		else if(affected.robotic >= ORGAN_ROBOT)
+		else if(BP_IS_ROBOTIC(affected))
 			to_chat(user, "<span class='danger'>You cannot inject a robotic limb.</span>")
 			return
 

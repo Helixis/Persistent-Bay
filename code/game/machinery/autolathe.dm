@@ -1,6 +1,7 @@
 /obj/machinery/autolathe
 	name = "autolathe"
 	desc = "It produces items using metal and glass."
+	icon = 'icons/obj/machines/autolathe.dmi'
 	icon_state = "autolathe"
 	density = 1
 	anchored = 1
@@ -12,7 +13,7 @@
 	multiplier = 1
 
 	var/list/machine_recipes
-	var/list/stored_material = list(DEFAULT_WALL_MATERIAL = 0, "glass" = 0)
+	var/list/stored_material = list(MATERIAL_STEEL = 0, MATERIAL_GLASS = 0)
 	var/list/storage_capacity = 0
 	var/show_category = "All"
 
@@ -224,6 +225,7 @@
 		var/obj/item/stack/stack = eating
 		stack.use(max(1, round(total_used/mass_per_sheet))) // Always use at least 1 to prevent infinite materials.
 	else if(user.unEquip(O))
+		O.loc = null
 		qdel(O)
 
 	updateUsrDialog()
@@ -331,7 +333,7 @@
 	for(var/obj/item/weapon/stock_parts/manipulator/M in component_parts)
 		man_rating += M.rating
 
-	var/material/M = SSmaterials.get_material_by_name(DEFAULT_WALL_MATERIAL)
+	var/material/M = SSmaterials.get_material_by_name(MATERIAL_STEEL)
 	var/obj/item/stack/material/S = M.stack_type
 	storage_capacity = mb_rating * initial(S.perunit) * 15
 	build_time = 45 / man_rating

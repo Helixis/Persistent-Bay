@@ -36,7 +36,7 @@ var/list/gamemode_cache = list()
 	var/vote_no_default = 0				// vote does not default to nochange/norestart (tbi)
 	var/vote_no_dead = 0        		// dead people can't vote (tbi)
 	var/autosave_initial =  3 HOUR		//Length of time before the first autoSave
-	var/autosave_interval = 2 HOUR  //Length of time before next sequential autosave
+	var/autosave_interval = 3 HOUR  //Length of time before next sequential autosave
 //	var/enable_authentication = 0		// goon authentication
 	var/del_new_on_log = 1				// del's new players if they log before they spawn in
 	var/feature_object_spell_system = 0 //spawns a spellbook which gives object-type spells instead of verb-type spells for the wizard
@@ -98,6 +98,8 @@ var/list/gamemode_cache = list()
 	var/wikiurl
 	var/forumurl
 	var/githuburl
+	var/discordurl
+	var/donationsurl
 
 	var/forbid_singulo_possession = 0
 
@@ -140,6 +142,9 @@ var/list/gamemode_cache = list()
 	var/animal_delay = 0
 	var/maximum_mushrooms = 15 //After this amount alive, mushrooms will not boom boom
 
+	var/hub_link = ""
+	var/hub_name = ""
+	var/hub_desc = ""
 
 	var/admin_legacy_system = 0	//Defines whether the server uses the legacy admin system with admins.txt or the SQL system. Config option in config.txt
 	var/ban_legacy_system = 0	//Defines whether the server uses the legacy banning system with the files in /data or the SQL system. Config option in config.txt
@@ -343,10 +348,6 @@ var/list/gamemode_cache = list()
 
 				if ("log_runtime")
 					config.log_runtime = 1
-					var/newlog = file("data/logs/runtimes/runtime-[time2text(world.realtime, "YYYY-MM-DD")].log")
-					if(runtime_diary != newlog)
-						to_world_log("Now logging runtimes to data/logs/runtimes/runtime-[time2text(world.realtime, "YYYY-MM-DD")].log")
-						runtime_diary = newlog
 
 				if ("generate_asteroid")
 					config.generate_map = 1
@@ -411,6 +412,13 @@ var/list/gamemode_cache = list()
 
 				if ("serversuffix")
 					config.server_suffix = 1
+					
+				if("hub_name")
+					config.hub_name = value
+				if("hub_link")
+					config.hub_link = value
+				if("hub_desc")
+					config.hub_desc = value
 
 				if ("hostedby")
 					config.hostedby = value
@@ -432,6 +440,12 @@ var/list/gamemode_cache = list()
 
 				if ("githuburl")
 					config.githuburl = value
+
+				if ("donationsurl")
+					config.donationsurl = value
+
+				if ("discordurl")
+					config.discordurl = value
 
 				if ("ghosts_can_possess_animals")
 					config.ghosts_can_possess_animals = value
@@ -739,6 +753,8 @@ var/list/gamemode_cache = list()
 					radiation_material_resistance_divisor = text2num(value)
 				if("radiation_lower_limit")
 					radiation_lower_limit = text2num(value)
+				if("hub")
+					world.update_hub_visibility()
 
 				else
 					log_misc("Unknown setting in configuration: '[name]'")

@@ -9,8 +9,8 @@
 	program_menu_icon = "script"
 	extended_desc = "Fun for the whole family! Probably not an AAA title, but at least you can download it on the corporate network.."		// A nice description.
 	size = 5								// Size in GQ. Integers only. Smaller sizes should be used for utility/low use programs (like this one), while large sizes are for important programs.
-	requires_ntnet = 0						// This particular program does not require NTNet network conectivity...
-	available_on_ntnet = 1					// ... but we want it to be available for download.
+	requires_ntnet = FALSE						// This particular program does not require NTNet network conectivity...
+	available_on_ntnet = TRUE					// ... but we want it to be available for download.
 	nanomodule_path = /datum/nano_module/arcade_classic/	// Path of relevant nano module. The nano module is defined further in the file.
 	var/picked_enemy_name
 
@@ -70,7 +70,7 @@
 	data["gameover"] = gameover
 	data["information"] = information
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "arcade_classic.tmpl", "Defeat [enemy_name]", 500, 350, state = state)
 		if(host.update_layout())

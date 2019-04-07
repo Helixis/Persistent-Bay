@@ -93,7 +93,7 @@
 	if(!. || !in_depth)
 		return
 
-	var/datum/computer_file/crew_record/R = get_crewmember_record(old_name)
+	var/datum/computer_file/report/crew_record/R = get_crewmember_record(old_name)
 	if(R)
 		R.set_name(new_name)
 
@@ -214,6 +214,9 @@
 	else if(lying)
 		plane = LYING_HUMAN_PLANE
 		layer = LYING_HUMAN_LAYER
+	else if(riding)
+		plane = ABOVE_HUMAN_PLANE
+		layer = VEHICLE_LOAD_LAYER
 	else
 		..()
 

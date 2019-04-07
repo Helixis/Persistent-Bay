@@ -1,10 +1,11 @@
 /obj/machinery/computer/gyrotron_control
 	name = "gyrotron control console"
-	icon = 'icons/obj/machines/power/fusion.dmi'
-	icon_state = "engine"
+	icon_keyboard = "med_key"
+	icon_screen = "gyrotron_screen"
 	light_color = COLOR_BLUE
-
-	var/id_tag
+	idle_power_usage = 250
+	active_power_usage = 500
+	id_tag = null
 	var/scan_range = 25
 
 /obj/machinery/computer/gyrotron_control/attack_ai(var/mob/user)

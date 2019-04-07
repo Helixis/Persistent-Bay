@@ -39,7 +39,7 @@
 	HELMET_TYPE = /obj/item/clothing/head/helmet/space
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_eva)
+	req_access = list()		//none of the current core accesses fit a general EVA cycler
 
 /obj/machinery/suit_storage_unit/atmos
 	name = "Atmospherics Voidsuit Storage Unit"
@@ -62,7 +62,7 @@
 	BOOTS_TYPE = /obj/item/clothing/shoes/magboots
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_engine)
+	req_access = list(core_access_engineering_programs)
 	islocked = 1
 
 /obj/machinery/suit_storage_unit/engineering/alt
@@ -82,7 +82,7 @@
 	BOOTS_TYPE = /obj/item/clothing/shoes/magboots
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_medical)
+	req_access = list(core_access_medical_programs)
 	islocked = 1
 
 /obj/machinery/suit_storage_unit/medical/alt
@@ -97,7 +97,7 @@
 	BOOTS_TYPE = /obj/item/clothing/shoes/magboots
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_mining)
+	req_access = list(core_access_order_approval) //closest thing to mining access
 	islocked = 1
 
 /obj/machinery/suit_storage_unit/mining/alt
@@ -112,7 +112,7 @@
 	BOOTS_TYPE = /obj/item/clothing/shoes/magboots
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_xenoarch)
+	req_access = list(core_access_science_programs)
 	islocked = 1
 
 /obj/machinery/suit_storage_unit/security
@@ -122,7 +122,7 @@
 	BOOTS_TYPE = /obj/item/clothing/shoes/magboots
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_security)
+	req_access = list(core_access_security_programs)
 	islocked = 1
 
 /obj/machinery/suit_storage_unit/security/alt
@@ -137,7 +137,7 @@
 	BOOTS_TYPE = /obj/item/clothing/shoes/magboots
 	TANK_TYPE = /obj/item/weapon/tank/oxygen
 	MASK_TYPE = /obj/item/clothing/mask/breath
-	req_access = list(access_syndicate)
+	req_access = list(core_access_security_programs) 	//security are the closest thing we have to antags
 	islocked = 1
 
 
@@ -154,6 +154,18 @@
 		TANK = new TANK_TYPE(src)
 	if(MASK_TYPE)
 		MASK = new MASK_TYPE(src)
+
+	component_parts = list()
+	component_parts += new /obj/item/weapon/circuitboard/suit_storage_unit(src)
+	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+	component_parts += new /obj/item/weapon/stock_parts/console_screen(src)
+	RefreshParts()
+
+/obj/machinery/suit_storage_unit/dismantle()
+	src.dump_everything()
+	return ..()
+
 
 /obj/machinery/suit_storage_unit/update_icon()
 	var/hashelmet = 0
@@ -443,17 +455,17 @@
 	for(i=0,i<4,i++)
 		sleep(50)
 		if(src.OCCUPANT)
-			OCCUPANT.apply_effect(50, IRRADIATE, blocked = OCCUPANT.getarmor(null, "rad"))
+			OCCUPANT.apply_effect(50, IRRADIATE, blocked = OCCUPANT.getarmor(null, DAM_RADS))
 			var/obj/item/organ/internal/xenos/nutrients/rad_organ = locate() in OCCUPANT.internal_organs
 			if (!rad_organ)
 				if (OCCUPANT.can_feel_pain())
 					OCCUPANT.emote("scream")
 				if(src.issuperUV)
 					var/burndamage = rand(28,35)
-					OCCUPANT.take_organ_damage(0,burndamage)
+					OCCUPANT.apply_damage(burndamage, DAM_BURN)
 				else
 					var/burndamage = rand(6,10)
-					OCCUPANT.take_organ_damage(0,burndamage)
+					OCCUPANT.apply_damage(burndamage, DAM_BURN)
 		if(i==3) //End of the cycle
 			if(!src.issuperUV)
 				if(src.HELMET)
@@ -503,10 +515,10 @@
 		spawn(50)
 			if(src.OCCUPANT)
 				if(src.issuperUV)
-					OCCUPANT.take_organ_damage(0,40)
+					OCCUPANT.apply_damage(40, DAM_BURN)
 					to_chat(user, "Test. You gave him 40 damage")
 				else
-					OCCUPANT.take_organ_damage(0,8)
+					OCCUPANT.apply_damage(8, DAM_BURN)
 					to_chat(user, "Test. You gave him 8 damage")
 	return*/
 
@@ -595,14 +607,23 @@
 
 
 /obj/machinery/suit_storage_unit/attackby(obj/item/I as obj, mob/user as mob)
-	if(!src.ispowered)
+	if(isScrewdriver(I) && src.islocked)
+		to_chat(user, "<span class='warning'>The maintenance panel is locked.</span>")
 		return
-	if(isScrewdriver(I))
-		src.panelopen = !src.panelopen
-		playsound(src.loc, 'sound/items/Screwdriver.ogg', 100, 1)
-		to_chat(user, text("<span class='notice'>You [] the unit's maintenance panel.</span>",(src.panelopen ? "open up" : "close") ))
+
+	if(default_deconstruction_screwdriver(user, I))
 		src.updateUsrDialog()
 		return
+	if(default_deconstruction_crowbar(user, I))
+		src.updateUsrDialog()
+		return
+	if(default_part_replacement(user, I))
+		src.updateUsrDialog()
+		return
+
+	if(!src.ispowered)
+		return
+
 	if ( istype(I, /obj/item/grab) )
 		var/obj/item/grab/G = I
 		if( !(ismob(G.affecting)) )
@@ -728,7 +749,7 @@
 	icon = 'icons/obj/suitstorage.dmi'
 	icon_state = "suitstorage000000100"
 
-	req_access = list(access_captain,access_heads)
+	req_access = list(core_access_engineering_programs)
 
 	var/active = 0          // PLEASE HOLD.
 	var/safeties = 1        // The cycler won't start with a living thing inside it unless safeties are off.
@@ -761,65 +782,99 @@
 	target_species = species[1]
 	if(!target_department || !target_species) qdel(src)
 
+	component_parts = list()
+	component_parts += new /obj/item/weapon/circuitboard/suit_cycler(src)
+	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+	component_parts += new /obj/item/weapon/stock_parts/manipulator(src)
+	component_parts += new /obj/item/weapon/stock_parts/console_screen(src)
+	component_parts += new /obj/item/weapon/stock_parts/scanning_module(src)
+	component_parts += new /obj/item/stack/cable_coil(src,1)
+	RefreshParts()
+
 /obj/machinery/suit_cycler/Destroy()
 	qdel(wires)
 	wires = null
 	return ..()
 
+/obj/machinery/suit_cycler/dismantle()
+	force_eject_occupant(usr)
+	eject_suit()
+	eject_helmet()
+	return ..()
+
 /obj/machinery/suit_cycler/engineering
 	name = "Engineering suit cycler"
 	model_text = "Engineering"
-	req_access = list(access_construction)
+	req_access = list(core_access_engineering_programs)
 	departments = list("Engineering","Atmos")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI) //Add Unathi when sprites exist for their suits.
 
 /obj/machinery/suit_cycler/mining
 	name = "Mining suit cycler"
 	model_text = "Mining"
-	req_access = list(access_mining)
+	req_access = list(core_access_order_approval) //closest thing to mining access
 	departments = list("Mining")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
 
 /obj/machinery/suit_cycler/science
 	name = "Excavation suit cycler"
 	model_text = "Excavation"
-	req_access = list(access_xenoarch)
+	req_access = list(core_access_science_programs)
 	departments = list("Science")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
 
 /obj/machinery/suit_cycler/security
 	name = "Security suit cycler"
 	model_text = "Security"
-	req_access = list(access_security)
+	req_access = list(core_access_security_programs)
 	departments = list("Security")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
 
 /obj/machinery/suit_cycler/medical
 	name = "Medical suit cycler"
 	model_text = "Medical"
-	req_access = list(access_medical)
+	req_access = list(core_access_medical_programs)
 	departments = list("Medical")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
 
 /obj/machinery/suit_cycler/syndicate
 	name = "Nonstandard suit cycler"
 	model_text = "Nonstandard"
-	req_access = list(access_syndicate)
+	req_access = list(core_access_security_programs) //security are the closest thing we have to antags
 	departments = list("Mercenary")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
 	can_repair = 1
 
 /obj/machinery/suit_cycler/pilot
-	name = "Pilot suit cycler"
+	name = "Red EVA suit cycler"
 	model_text = "Pilot"
-	req_access = list(access_mining_office)
+	req_access = list()	//Pilot suit in its current state is pretty much a civilian voidsuit
 	departments = list("Pilot")
+	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
+
+/obj/machinery/suit_cycler/eva
+	name = "EVA suit cycler"
+	model_text = "Explorer"
+	req_access = list() //none of the current core accesses fit a general EVA cycler
+	departments = list("EVA")
 	species = list(SPECIES_HUMAN,SPECIES_SKRELL,SPECIES_UNATHI)
 
 /obj/machinery/suit_cycler/attack_ai(mob/user as mob)
 	return src.attack_hand(user)
 
 /obj/machinery/suit_cycler/attackby(obj/item/I as obj, mob/user as mob)
+
+	if(isScrewdriver(I) && locked) //Don't let random people dismantle the thing to get the stuff inside
+		to_chat(user, "<span class='warning'>The maintenance panel is locked.</span>")
+		return
+
+	if(default_deconstruction_screwdriver(user, I))
+		src.updateUsrDialog()
+		return
+	if(default_deconstruction_crowbar(user, I))
+		return
+	if(default_part_replacement(user, I))
+		return
 
 	if(electrified != 0)
 		if(src.shock(user, 100))
@@ -841,7 +896,7 @@
 			to_chat(user, "<span class='danger'>The suit cycler is locked.</span>")
 			return
 
-		if(src.contents.len > 0)
+		if(src.occupant || src.suit || src.helmet)
 			to_chat(user, "<span class='danger'>There is no room inside the cycler for [G.affecting.name].</span>")
 			return
 
@@ -862,12 +917,6 @@
 			src.updateUsrDialog()
 
 			return
-	else if(isScrewdriver(I))
-
-		panel_open = !panel_open
-		to_chat(user, "You [panel_open ?  "open" : "close"] the maintenance panel.")
-		src.updateUsrDialog()
-		return
 
 	else if(istype(I,/obj/item/clothing/head/helmet/space) && !istype(I, /obj/item/clothing/head/helmet/space/rig))
 
@@ -982,15 +1031,21 @@
 	onclose(user, "suit_cycler")
 	return
 
+/obj/machinery/suit_cycler/proc/eject_suit()
+	if(!suit) return
+	suit.loc = get_turf(src)
+	suit = null
+
+/obj/machinery/suit_cycler/proc/eject_helmet()
+	if(!helmet) return
+	helmet.loc = get_turf(src)
+	helmet = null
+
 /obj/machinery/suit_cycler/Topic(href, href_list)
 	if(href_list["eject_suit"])
-		if(!suit) return
-		suit.loc = get_turf(src)
-		suit = null
+		eject_suit()
 	else if(href_list["eject_helmet"])
-		if(!helmet) return
-		helmet.loc = get_turf(src)
-		helmet = null
+		eject_helmet()
 	else if(href_list["select_department"])
 		var/choice = input("Please select the target department paintjob.","Suit cycler",null) as null|anything in departments
 		if(choice) target_department = choice
@@ -1080,10 +1135,10 @@
 	if(occupant)
 		if(prob(radiation_level*2)) occupant.emote("scream")
 		if(radiation_level > 2)
-			occupant.take_organ_damage(0,radiation_level*2 + rand(1,3))
+			occupant.apply_damage(radiation_level*2 + rand(1,3), DAM_BURN)
 		if(radiation_level > 1)
-			occupant.take_organ_damage(0,radiation_level + rand(1,3))
-		occupant.apply_effect(radiation_level*10, IRRADIATE, blocked = occupant.getarmor(null, "rad"))
+			occupant.apply_damage(radiation_level + rand(1,3), DAM_BURN)
+		occupant.apply_effect(radiation_level*10, IRRADIATE, blocked = occupant.getarmor(null, DAM_RADS))
 
 /obj/machinery/suit_cycler/proc/finished_job()
 	var/turf/T = get_turf(src)
@@ -1111,15 +1166,7 @@
 
 	eject_occupant(usr)
 
-/obj/machinery/suit_cycler/proc/eject_occupant(mob/user as mob)
-
-	if(locked || active)
-		to_chat(user, "<span class='warning'>The cycler is locked.</span>")
-		return
-
-	if (!occupant)
-		return
-
+/obj/machinery/suit_cycler/proc/force_eject_occupant(mob/user as mob)
 	if (occupant.client)
 		occupant.client.eye = occupant.client.mob
 		occupant.client.perspective = MOB_PERSPECTIVE
@@ -1130,6 +1177,17 @@
 	add_fingerprint(usr)
 	src.updateUsrDialog()
 	src.update_icon()
+
+/obj/machinery/suit_cycler/proc/eject_occupant(mob/user as mob)
+
+	if(locked || active)
+		to_chat(user, "<span class='warning'>The cycler is locked.</span>")
+		return
+
+	if (!occupant)
+		return
+
+	force_eject_occupant()
 
 	return
 

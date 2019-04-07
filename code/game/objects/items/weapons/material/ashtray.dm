@@ -7,6 +7,8 @@ var/global/list/ashtray_cache = list()
 	force_divisor = 0.1
 	thrown_force_divisor = 0.1
 	randpixel = 5
+	damtype = DAM_BLUNT
+	mass = 1
 	var/image/base_image
 	var/max_butts = 10
 
@@ -90,10 +92,10 @@ var/global/list/ashtray_cache = list()
 	return ..()
 
 /obj/item/weapon/material/ashtray/plastic/New(var/newloc)
-	..(newloc, "plastic")
+	..(newloc, MATERIAL_PLASTIC)
 
 /obj/item/weapon/material/ashtray/bronze/New(var/newloc)
-	..(newloc, "bronze")
+	..(newloc, MATERIAL_BRONZE)
 
 /obj/item/weapon/material/ashtray/glass/New(var/newloc)
-	..(newloc, "glass")
+	..(newloc, MATERIAL_GLASS)

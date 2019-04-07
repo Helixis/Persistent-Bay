@@ -9,8 +9,8 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 	size = 8
 	program_icon_state = "warrant"
 	program_menu_icon = "star"
-	requires_ntnet = 1
-	available_on_ntnet = 1
+	requires_ntnet = TRUE
+	available_on_ntnet = TRUE
 	required_access = core_access_security_programs
 	usage_flags = PROGRAM_ALL
 	nanomodule_path = /datum/nano_module/digitalwarrant/
@@ -52,7 +52,7 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 		data["searchwarrants"] = searchwarrants.len ? searchwarrants : null
 		data["archivedwarrants"] = archivedwarrants.len? archivedwarrants :null
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "digitalwarrant.tmpl", name, 700, 450, state = state)
 		ui.auto_update_layout = 1
@@ -73,7 +73,7 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 				activewarrant = W
 				break
 
-	// The following actions will only be possible if the user has an ID with security access equipped. This is in line with modular computer framework's authentication methods,
+	// The following actions will only be possible if the user has an ID with command access equipped. This is in line with modular computer framework's authentication methods,
 	// which also use RFID scanning to allow or disallow access to some functions. Anyone can view warrants, editing requires ID. This also prevents situations where you show a tablet
 	// to someone who is to be arrested, which allows them to change the stuff there.
 
@@ -81,9 +81,6 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 	if(!istype(user))
 		return
 	var/obj/item/weapon/card/id/I = user.GetIdCard()
-	if(!istype(I) || !I.registered_name || !(access_security in I.access))
-		to_chat(user, "Authentication error: Unable to locate ID with apropriate access to allow this operation.")
-		return
 
 	if(href_list["sendtoarchive"])
 		. = 1
@@ -124,7 +121,7 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 	if(href_list["deletewarrant"])
 		. = 1
 		if(!activewarrant)
-			for(var/datum/computer_file/crew_record/W in GLOB.all_crew_records)
+			for(var/datum/computer_file/report/crew_record/W in GLOB.all_crew_records)
 				if(W.uid == text2num(href_list["deletewarrant"]))
 					activewarrant = W
 					break
@@ -134,7 +131,7 @@ LEGACY_RECORD_STRUCTURE(all_warrants, warrant)
 	if(href_list["editwarrantname"])
 		. = 1
 		var/namelist = list()
-		for(var/datum/computer_file/crew_record/CR in GLOB.all_crew_records)
+		for(var/datum/computer_file/report/crew_record/CR in GLOB.all_crew_records)
 			namelist += CR.get_name()
 		var/new_name = sanitize(input(usr, "Please input name") as null|anything in namelist)
 		if(CanInteract(user, GLOB.default_state))

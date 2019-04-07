@@ -7,10 +7,10 @@
 	extended_desc = "This program connects to sensors to provide information about electrical systems"
 	ui_header = "power_norm.gif"
 	required_access = core_access_engineering_programs
-	requires_ntnet = 1
+	requires_ntnet = TRUE
 	network_destination = "power monitoring system"
 	size = 9
-	var/has_alert = 0
+	var/has_alert = FALSE
 
 /datum/computer_file/program/power_monitor/process_tick()
 	..()
@@ -72,7 +72,7 @@
 	if(focus)
 		data["focus"] = focus.return_reading_data()
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "power_monitor.tmpl", "Power Monitoring Console", 800, 500, state = state)
 		if(host.update_layout()) // This is necessary to ensure the status bar remains updated along with rest of the UI.
@@ -100,7 +100,7 @@
 	if(active_sensor == removed_sensor)
 		active_sensor = null
 		if(update_ui)
-			GLOB.nanomanager.update_uis(src)
+			SSnano.update_uis(src)
 	grid_sensors -= removed_sensor
 	GLOB.destroyed_event.unregister(removed_sensor, src, /datum/nano_module/power_monitor/proc/remove_sensor)
 

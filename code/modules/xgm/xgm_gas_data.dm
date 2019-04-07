@@ -32,7 +32,7 @@
 	var/overlay_limit = null
 
 	var/flags = 0
-	var/burn_product = "carbon_dioxide"
+	var/burn_product = GAS_CO2
 	var/breathed_product
 	var/component_reagents
 
@@ -62,7 +62,7 @@
 	for(var/r in (typesof(/datum/reagent) - /datum/reagent))
 		var/datum/reagent/reagent = new r
 
-		var/gas_id = lowertext(reagent.name)
+		var/gas_id = reagent.gas_id ? reagent.gas_id : lowertext(reagent.name)
 		if(gas_id in gas_data.gases) //Prevents the creation of reagent gases that already exist IE: Phoron
 			continue
 		gas_data.gases +=                     gas_id					//Default values for reagent gases can be found in Chemistry-Reagents.dm

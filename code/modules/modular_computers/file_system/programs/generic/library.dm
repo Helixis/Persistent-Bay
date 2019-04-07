@@ -13,8 +13,8 @@ The answer was five and a half years -ZeroBits
 	program_icon_state = "word"
 	program_menu_icon = "note"
 	size = 6
-	requires_ntnet = 1
-	available_on_ntnet = 1
+	requires_ntnet = TRUE
+	available_on_ntnet = TRUE
 
 	nanomodule_path = /datum/nano_module/library
 
@@ -51,7 +51,7 @@ The answer was five and a half years -ZeroBits
 		data["book_list"] = all_entries
 		data["scanner"] = istype(scanner)
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "library.tmpl", "Library Program", 575, 700, state = state)
 		ui.auto_update_layout = 1

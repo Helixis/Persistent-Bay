@@ -3,7 +3,7 @@
 		last_power_usage = 0
 		return 0
 
-	if(damage > broken_damage)
+	if(get_health() <= (break_threshold * get_max_health()))
 		shutdown_computer()
 		return 0
 
@@ -36,7 +36,7 @@
 	var/static/list/beepsounds = list('sound/effects/compbeep1.ogg','sound/effects/compbeep2.ogg','sound/effects/compbeep3.ogg','sound/effects/compbeep4.ogg','sound/effects/compbeep5.ogg')
 	if(enabled && world.time > ambience_last_played + 60 SECONDS && prob(1))
 		ambience_last_played = world.time
-		playsound(src.loc, pick(beepsounds),15,1,10, is_ambiance = 1)
+		playsound(src.loc, pick(beepsounds),15,1,10, is_ambience = 1)
 
 // Used to perform preset-specific hardware changes.
 /obj/item/modular_computer/proc/install_default_hardware()
@@ -57,16 +57,76 @@
 
 /obj/item/modular_computer/New()
 	START_PROCESSING(SSobj, src)
-	install_default_hardware()
-	if(hard_drive)
-		install_default_programs()
+	..()
+	ADD_SAVED_VAR(enabled)
+	ADD_SAVED_VAR(screen_on)
+	ADD_SAVED_VAR(active_program)
+	ADD_SAVED_VAR(bsod)
+	ADD_SAVED_VAR(idle_threads)
+	ADD_SAVED_VAR(processor_unit)
+	ADD_SAVED_VAR(network_card)
+	ADD_SAVED_VAR(hard_drive)
+	ADD_SAVED_VAR(battery_module)
+	ADD_SAVED_VAR(card_slot)
+	ADD_SAVED_VAR(nano_printer)
+	ADD_SAVED_VAR(portable_drive)
+	ADD_SAVED_VAR(ai_slot)
+	ADD_SAVED_VAR(tesla_link)
+	ADD_SAVED_VAR(scanner)
+	ADD_SAVED_VAR(logistic_processor)
+	ADD_SAVED_VAR(stored_pen)
+
+	ADD_SKIP_EMPTY(active_program)
+	ADD_SKIP_EMPTY(idle_threads)
+	ADD_SKIP_EMPTY(processor_unit)
+	ADD_SKIP_EMPTY(network_card)
+	ADD_SKIP_EMPTY(hard_drive)
+	ADD_SKIP_EMPTY(battery_module)
+	ADD_SKIP_EMPTY(card_slot)
+	ADD_SKIP_EMPTY(nano_printer)
+	ADD_SKIP_EMPTY(portable_drive)
+	ADD_SKIP_EMPTY(ai_slot)
+	ADD_SKIP_EMPTY(tesla_link)
+	ADD_SKIP_EMPTY(scanner)
+	ADD_SKIP_EMPTY(logistic_processor)
+	ADD_SKIP_EMPTY(stored_pen)
+
+/obj/item/modular_computer/Initialize()
+	. = ..()
+	if(!map_storage_loaded)
+		install_default_hardware()
+		if(hard_drive)
+			install_default_programs()
+		if(scanner)
+			scanner.do_after_install(null, src)
+		if(stores_pen && ispath(stored_pen))
+			stored_pen = new stored_pen(src)
 	update_icon()
 	update_verbs()
+	update_name()
+	update_uis()
+
+/obj/item/modular_computer/after_load()
+	. = ..()
+	if(active_program)
+		run_program(active_program.filename)
+
+/obj/item/modular_computer/after_load()
 	..()
+	update_verbs()
+
+/obj/item/modular_computer/Initialize()
+	. = ..()
+	if(!map_storage_loaded)
+		install_default_hardware()
+		if(hard_drive)
+			install_default_programs()
 
 /obj/item/modular_computer/Destroy()
 	kill_program(1)
 	STOP_PROCESSING(SSobj, src)
+	if(istype(stored_pen))
+		QDEL_NULL(stored_pen)
 	for(var/obj/item/weapon/computer_hardware/CH in src.get_all_components())
 		uninstall_component(null, CH)
 		qdel(CH)
@@ -93,7 +153,7 @@
 			overlays.Add(icon_state_screensaver)
 		set_light(0)
 		return
-	set_light(light_strength)
+	set_light(0.2, 0.1, light_strength)
 	if(active_program)
 		overlays.Add(active_program.program_icon_state ? active_program.program_icon_state : icon_state_menu)
 	else
@@ -105,7 +165,7 @@
 	if(tesla_link)
 		tesla_link.enabled = 1
 	var/issynth = issilicon(user) // Robots and AIs get different activation messages.
-	if(damage > broken_damage)
+	if(get_health() <= (break_threshold * get_max_health()))
 		if(issynth)
 			to_chat(user, "You send an activation signal to \the [src], but it responds with an error code. It must be damaged.")
 		else
@@ -174,7 +234,7 @@
 
 	idle_threads.Add(active_program)
 	active_program.program_state = PROGRAM_STATE_BACKGROUND // Should close any existing UIs
-	GLOB.nanomanager.close_uis(active_program.NM ? active_program.NM : active_program)
+	SSnano.close_uis(active_program.NM ? active_program.NM : active_program)
 	active_program = null
 	update_icon()
 	if(istype(user))
@@ -220,11 +280,11 @@
 
 /obj/item/modular_computer/proc/update_uis()
 	if(active_program) //Should we update program ui or computer ui?
-		GLOB.nanomanager.update_uis(active_program)
+		SSnano.update_uis(active_program)
 		if(active_program.NM)
-			GLOB.nanomanager.update_uis(active_program.NM)
+			SSnano.update_uis(active_program.NM)
 	else
-		GLOB.nanomanager.update_uis(src)
+		SSnano.update_uis(src)
 
 /obj/item/modular_computer/proc/check_update_ui_need()
 	var/ui_update_needed = 0
@@ -279,3 +339,36 @@
 		autorun.stored_data = null
 	else
 		autorun.stored_data = program
+
+/obj/item/modular_computer/GetIdCard()
+	if(card_slot && card_slot.can_broadcast && istype(card_slot.stored_card))
+		return card_slot.stored_card
+
+/obj/item/modular_computer/proc/update_name()
+	return
+
+/obj/item/modular_computer/proc/get_cell()
+	if(battery_module)
+		return battery_module.get_cell()
+
+/obj/item/modular_computer/proc/has_terminal(mob/user)
+	for(var/datum/terminal/terminal in terminals)
+		if(terminal.get_user() == user)
+			return terminal
+
+/obj/item/modular_computer/proc/open_terminal(mob/user)
+	if(!enabled)
+		return
+	if(has_terminal(user))
+		return
+	LAZYADD(terminals, new /datum/terminal/(user, src))
+
+/obj/item/modular_computer/proc/handle_updates(shutdown_after)
+	updating = TRUE
+	update_progress = 0
+	update_postshutdown = shutdown_after
+
+/obj/item/modular_computer/proc/process_updates()
+	if(update_progress < updates)
+		update_progress += rand(0, 2500)
+		return

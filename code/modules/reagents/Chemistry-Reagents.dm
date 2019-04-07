@@ -28,6 +28,7 @@
 	var/gas_flags =    		XGM_GAS_REAGENT_GAS
 	var/gas_burn_product
 	var/gas_overlay = "generic"
+	var/gas_id									// Override for reagents inwhich name != id of parent gas
 	// END GAS DATA
 
 /datum/reagent/New(var/datum/reagents/holder)
@@ -45,6 +46,9 @@
 	return
 
 /datum/reagent/proc/touch_turf(var/turf/T, var/amount) // Cleaner cleaning, lube lubbing, etc, all go here
+	return
+
+/datum/reagent/proc/touch_target(var/mob/M, var/amount, var/bodypart, var/blocked)
 	return
 
 /datum/reagent/proc/on_mob_life(var/mob/living/carbon/M, var/alien, var/location) // Currently, on_mob_life is called on carbons. Any interaction with non-carbon mobs (lube) will need to be done in touch_mob.

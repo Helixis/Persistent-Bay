@@ -1,7 +1,7 @@
 /datum/species/monkey
 	name = "Monkey"
 	name_plural = "Monkeys"
-	blurb = "Ook."
+	description = "Ook."
 
 	icobase =         'icons/mob/human_races/species/monkey/monkey_body.dmi'
 	deform =          'icons/mob/human_races/species/monkey/monkey_body.dmi'
@@ -37,7 +37,7 @@
 	swap_flags = MONKEY|SLIME|SIMPLE_ANIMAL
 	push_flags = MONKEY|SLIME|SIMPLE_ANIMAL|ALIEN
 
-	pass_flags = PASSTABLE
+	pass_flags = PASS_FLAG_TABLE
 	holder_type = /obj/item/weapon/holder
 	has_limbs = list(
 		BP_CHEST =  list("path" = /obj/item/organ/external/chest),
@@ -56,8 +56,8 @@
 /datum/species/monkey/handle_npc(var/mob/living/carbon/human/H)
 	if(H.stat != CONSCIOUS)
 		return
-	if(prob(33) && H.canmove && isturf(H.loc) && !H.pulledby) //won't move if being pulled
-		step(H, pick(GLOB.cardinal))
+	if(prob(33) && isturf(H.loc) && !H.pulledby) //won't move if being pulled
+		H.SelfMove(pick(GLOB.cardinal))
 	if(prob(1))
 		H.emote(pick("scratch","jump","roll","tail"))
 
@@ -80,7 +80,7 @@
 	..()
 	H.item_state = lowertext(name)
 
-/datum/species/monkey/tajaran
+/datum/species/monkey/xeno
 	name = "Farwa"
 	name_plural = "Farwa"
 	health_hud_intensity = 2
@@ -88,7 +88,6 @@
 	icobase = 'icons/mob/human_races/species/monkey/farwa_body.dmi'
 	deform = 'icons/mob/human_races/species/monkey/farwa_body.dmi'
 
-	greater_form = "Tajaran"
 	default_language = "Farwa"
 	flesh_color = "#afa59e"
 	base_color = "#333333"

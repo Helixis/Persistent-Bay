@@ -4,39 +4,49 @@
 	icon = 'icons/obj/items.dmi'
 	icon_state = "fire_extinguisher0"
 	item_state = "fire_extinguisher"
-	hitsound = 'sound/weapons/smash.ogg'
-	flags = CONDUCT
+	sound_hit = 'sound/weapons/smash.ogg'
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	throwforce = 10
 	w_class = ITEM_SIZE_NORMAL
 	throw_speed = 2
 	throw_range = 10
 	force = 10.0
-	matter = list(DEFAULT_WALL_MATERIAL = 90)
+	matter = list(MATERIAL_STEEL = 180)
 	attack_verb = list("slammed", "whacked", "bashed", "thunked", "battered", "bludgeoned", "thrashed")
 
 	var/spray_particles = 3
 	var/spray_amount = 120	//units of liquid per spray - 120 -> same as splashing them with a bucket per spray
 	var/max_water = 2000
+	var/start_with_water = 1
 	var/last_use = 1.0
 	var/safety = 1
 	var/sprite_name = "fire_extinguisher"
+
+/obj/item/weapon/extinguisher/empty
+	start_with_water = 0
 
 /obj/item/weapon/extinguisher/mini
 	name = "fire extinguisher"
 	desc = "A light and compact fibreglass-framed model fire extinguisher."
 	icon_state = "miniFE0"
 	item_state = "miniFE"
-	hitsound = null	//it is much lighter, after all.
+	sound_hit = null	//it is much lighter, after all.
 	throwforce = 2
 	w_class = ITEM_SIZE_SMALL
 	force = 3.0
+	matter = list(MATERIAL_STEEL = 90)
 	spray_amount = 80
 	max_water = 1000
 	sprite_name = "miniFE"
 
+/obj/item/weapon/extinguisher/mini/empty
+	start_with_water = 0
+
 /obj/item/weapon/extinguisher/New()
 	create_reagents(max_water)
-	reagents.add_reagent(/datum/reagent/water, max_water)
+	if (start_with_water == 0)
+		(reagents.add_reagent(max_water))
+	else reagents.add_reagent(/datum/reagent/water, max_water)
 	..()
 
 /obj/item/weapon/extinguisher/examine(mob/user)
@@ -61,10 +71,10 @@
 
 		src.last_use = world.time
 		reagents.splash(M, min(reagents.total_volume, spray_amount))
-		
+
 		user.visible_message("<span class='notice'>\The [user] sprays \the [M] with \the [src].</span>")
 		playsound(src.loc, 'sound/effects/extinguish.ogg', 75, 1, -3)
-		
+
 		return 1 // No afterattack
 	return ..()
 

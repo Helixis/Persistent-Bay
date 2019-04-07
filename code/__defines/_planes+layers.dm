@@ -98,7 +98,7 @@ What is the naming convention for planes or layers?
 
 #define ABOVE_TURF_PLANE              -18 // For items which should appear above turfs but below other objects and hiding mobs, eg: wires & pipes
 
-	#define HOLOMAP_LAYER               1 // NOTE: ENSURE this is equal to the one at ABOVE_PLATING_PLANE!
+	//#define HOLOMAP_LAYER               1 // NOTE: ENSURE this is equal to the one at ABOVE_PLATING_PLANE!
 	#define DECAL_LAYER                 2
 	#define RUNE_LAYER                  3
 	#define ABOVE_TILE_LAYER            4
@@ -120,6 +120,7 @@ What is the naming convention for planes or layers?
 	#define BELOW_TABLE_LAYER       0.75
 	#define TABLE_LAYER             1
 	#define BELOW_OBJ_LAYER         2
+	#define MACHINERY_LAYER			2.9
 	// OBJ_LAYER                    3
 	#define ABOVE_OBJ_LAYER         4
 	#define CLOSED_DOOR_LAYER       5
@@ -149,8 +150,10 @@ What is the naming convention for planes or layers?
 #define ABOVE_HUMAN_PLANE              -6 // For things that should appear above humans.
 
 	#define ABOVE_HUMAN_LAYER  0
-	#define VEHICLE_LOAD_LAYER 1
-	#define CAMERA_LAYER       2
+	#define VEHICLE_BASE_LAYER 1
+	#define VEHICLE_LOAD_LAYER 2
+	#define VEHICLE_TOP_LAYER  3
+	#define CAMERA_LAYER       4
 
 #define BLOB_PLANE                     -5 // For Blobs, which are above humans.
 

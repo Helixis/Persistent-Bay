@@ -32,17 +32,17 @@
 /datum/event/radiation_storm/proc/radiate()
 	var/radiation_level = rand(15, 35)
 	for(var/z in GLOB.using_map.station_levels)
-		radiation_repository.z_radiate(locate(1, 1, z), radiation_level, 1)
+		SSradiation.z_radiate(locate(1, 1, z), radiation_level, 1)
 
 	for(var/mob/living/carbon/C in GLOB.living_mob_list_)
 		var/area/A = get_area(C)
 		if(!A)
 			continue
-		if(A.flags & AREA_RAD_SHIELDED)
+		if(A.area_flags & AREA_FLAG_RAD_SHIELDED)
 			continue
 		if(istype(C,/mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
-			if(prob(5 * (0.01 * (100 - H.getarmor(null, "rad")))))
+			if(prob(5 * (0.01 * (100 - H.getarmor(null, DAM_RADS)))))
 				if (prob(75))
 					randmutb(H) // Applies bad mutation
 					domutcheck(H,null,MUTCHK_FORCED)

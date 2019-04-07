@@ -15,7 +15,8 @@
 	var/charge			                // Current charge
 	var/maxcharge = 1000 // Capacity in Wh
 	var/overlay_state
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 50)
+	var/self_recharge = 0
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 50)
 
 
 /obj/item/weapon/cell/New()
@@ -26,7 +27,18 @@
 
 /obj/item/weapon/cell/Initialize()
 	. = ..()
+	START_PROCESSING(SSobj, src)
 	update_icon()
+
+/obj/item/weapon/cell/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/item/weapon/cell/Process()
+	var/power = Clamp(charge + self_recharge, 0, maxcharge)
+	if(charge != power)
+		update_icon()
+	charge = power
 
 /obj/item/weapon/cell/drain_power(var/drain_check, var/surge, var/power = 0)
 
@@ -132,29 +144,34 @@
 	throw_speed = 5
 	throw_range = 7
 	maxcharge = 100
-	matter = list(DEFAULT_WALL_MATERIAL = 70, "glass" = 5)
+	matter = list(MATERIAL_STEEL = 70, MATERIAL_GLASS = 5)
 
 /obj/item/weapon/cell/device/variable/New(newloc, charge_amount)
-	maxcharge = charge_amount
+	if(charge_amount)
+		maxcharge = charge_amount
 	..(newloc)
 
 /obj/item/weapon/cell/device/standard
 	name = "standard device power cell"
 	maxcharge = 25
 
+/obj/item/weapon/cell/device/standard/empty/New()
+	..()
+	charge = 0
+
 /obj/item/weapon/cell/device/high
 	name = "advanced device power cell"
 	desc = "A small power cell designed to power more energy-demanding devices."
 	icon_state = "hdevice"
 	maxcharge = 100
-	matter = list(DEFAULT_WALL_MATERIAL = 70, "glass" = 6)
+	matter = list(MATERIAL_STEEL = 70, MATERIAL_GLASS = 6)
 
 /obj/item/weapon/cell/crap
 	name = "old power cell"
 	desc = "A cheap old power cell. It's probably been in use for quite some time now."
 	origin_tech = list(TECH_POWER = 0)
 	maxcharge = 100
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 40)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 40)
 
 /obj/item/weapon/cell/crap/empty
 	charge = 0
@@ -164,7 +181,7 @@
 	desc = "A standard and relatively cheap power cell, commonly used."
 	origin_tech = list(TECH_POWER = 0)
 	maxcharge = 250
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 40)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 40)
 
 /obj/item/weapon/cell/crap/empty/New()
 	..()
@@ -176,7 +193,7 @@
 	desc = "A special power cell designed for heavy-duty use in area power controllers."
 	origin_tech = list(TECH_POWER = 1)
 	maxcharge = 500
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 50)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 50)
 
 
 /obj/item/weapon/cell/high
@@ -185,7 +202,7 @@
 	origin_tech = list(TECH_POWER = 2)
 	icon_state = "hcell"
 	maxcharge = 1000
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 60)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 60)
 
 /obj/item/weapon/cell/high/empty/New()
 	..()
@@ -198,7 +215,7 @@
 	origin_tech = list(TECH_POWER = 3)
 	icon_state = "hcell"
 	maxcharge = 1500
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 70)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 70)
 
 
 /obj/item/weapon/cell/super
@@ -207,7 +224,7 @@
 	origin_tech = list(TECH_POWER = 5)
 	icon_state = "scell"
 	maxcharge = 2000
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 70)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 70)
 
 /obj/item/weapon/cell/super/empty/New()
 	..()
@@ -220,7 +237,7 @@
 	origin_tech = list(TECH_POWER = 6)
 	icon_state = "hpcell"
 	maxcharge = 3000
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 80)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 80)
 
 /obj/item/weapon/cell/hyper/empty/New()
 	..()
@@ -233,7 +250,7 @@
 	icon_state = "icell"
 	origin_tech =  null
 	maxcharge = 3000
-	matter = list(DEFAULT_WALL_MATERIAL = 700, "glass" = 80)
+	matter = list(MATERIAL_STEEL = 700, MATERIAL_GLASS = 80)
 
 /obj/item/weapon/cell/infinite/check_charge()
 	return 1
@@ -249,7 +266,7 @@
 	icon = 'icons/obj/power.dmi' //'icons/obj/harvest.dmi'
 	icon_state = "potato_cell" //"potato_battery"
 	maxcharge = 20
-
+	self_recharge = 0.2
 
 /obj/item/weapon/cell/slime
 	name = "charged slime core"
@@ -258,4 +275,5 @@
 	icon = 'icons/mob/slimes.dmi' //'icons/obj/harvest.dmi'
 	icon_state = "yellow slime extract" //"potato_battery"
 	maxcharge = 200
+	self_recharge = 1
 	matter = null

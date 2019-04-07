@@ -16,7 +16,8 @@
 		T.update_icon()
 
 //Creates a new turf
-/turf/proc/ChangeTurf(var/turf/N, var/tell_universe=1, var/force_lighting_update = 0)
+/turf/proc/ChangeTurf(var/turf/N, var/tell_universe=1, var/force_lighting_update = 0, var/space_override = 0)
+	var/old_density = density
 	var/old_type = src.type
 	var/old_resources = null
 	if(istype(src, /turf/simulated))
@@ -26,7 +27,7 @@
 		return
 
 	// This makes sure that turfs are not changed to space when one side is part of a zone
-	if(N == /turf/space)
+	if(N == /turf/space && !space_override)
 		for(var/atom/movable/lighting_overlay/overlay in contents)
 			overlay.loc = null
 			qdel(overlay)
@@ -37,10 +38,6 @@
 	var/obj/fire/old_fire = fire
 	var/old_opacity = opacity
 	var/old_dynamic_lighting = dynamic_lighting
-//	var/old_affecting_lights = affecting_lights
-//	var/old_lighting_overlay = lighting_overlay
-//	var/old_corners = corners
-
 //	log_debug("Replacing [src.type] with [N]")
 
 
@@ -60,6 +57,8 @@
 	W.opaque_counter = opaque_counter
 
 	if(ispath(N, /turf/simulated))
+		var/turf/simulated/simu = W
+		simu.resources = old_resources
 		if(old_fire)
 			fire = old_fire
 		if (istype(W,/turf/simulated/floor) && old_type == /turf/simulated/asteroid)
@@ -86,19 +85,10 @@
 		lighting_clear_overlay()
 	if((old_opacity != opacity) || (dynamic_lighting != old_dynamic_lighting))
 		reconsider_lights()
-	/**
-	if(lighting_overlays_initialised)
-		lighting_overlay = old_lighting_overlay
-		affecting_lights = old_affecting_lights
-		corners = old_corners
-		if((old_opacity != opacity) || (dynamic_lighting != old_dynamic_lighting))
-			reconsider_lights()
-		if(dynamic_lighting != old_dynamic_lighting)
-			if(dynamic_lighting)
-				lighting_build_overlay()
-			else
-				lighting_clear_overlay()
-	**/
+	if(density != old_density)
+		GLOB.density_set_event.raise_event(src, old_density, density)
+
+
 /turf/proc/transport_properties_from(turf/other)
 	if(!istype(other, src.type))
 		return 0
@@ -112,6 +102,13 @@
 		src.update_icon()
 	return 1
 
+/turf/simulated/wall/transport_properties_from(turf/simulated/wall/other)
+	if(!..())
+		return 0
+	material = other.material
+	p_material = other.p_material
+
+
 //I would name this copy_from() but we remove the other turf from their air zone for some reason
 /turf/simulated/floor/transport_properties_from(turf/simulated/other)
 	if(!..())
@@ -119,11 +116,6 @@
 	if(istype(other, /turf/simulated/floor))
 		var/turf/simulated/floor/F = other
 		set_flooring(F.flooring)
-
-/turf/simulated/floor/transport_properties_from(turf/simulated/other)
-	if(!..())
-		return 0
-
 	if(other.zone)
 		if(!src.air)
 			src.make_air()
@@ -133,6 +125,6 @@
 
 
 //No idea why resetting the base appearence from New() isn't enough, but without this it doesn't work
-/turf/simulated/shuttle/wall/corner/transport_properties_from(turf/simulated/other)
+/turf/simulated/wall/shuttle/corner/transport_properties_from(turf/simulated/other)
 	. = ..()
 	reset_base_appearance()

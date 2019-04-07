@@ -1,19 +1,21 @@
+#define DUCTTAPE_NEEDED_SPLINT 8
+
 /obj/item/stack/rods
 	name = "metal rod"
 	desc = "Some rods. Can be used for building, or something."
 	singular_name = "metal rod"
 	icon_state = "rods"
-	flags = CONDUCT
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	w_class = ITEM_SIZE_LARGE
 	force = 9.0
 	throwforce = 15.0
 	throw_speed = 5
 	throw_range = 20
-	matter = list(DEFAULT_WALL_MATERIAL = 1875)
+	matter = list(MATERIAL_STEEL = 1875)
 	max_amount = 100
-	center_of_mass = null
 	attack_verb = list("hit", "bludgeoned", "whacked")
 	lock_picking_level = 3
+	materials_per_unit = list(MATERIAL_STEEL = 1875)
 
 /obj/item/stack/rods/ten
 	amount = 10
@@ -30,13 +32,9 @@
 	charge_costs = list(500)
 	stacktype = /obj/item/stack/rods
 
-/obj/item/stack/rods/New()
-	..()
-	update_icon()
-
 /obj/item/stack/rods/attackby(obj/item/W as obj, mob/user as mob)
 	if(isWelder(W))
-		var/obj/item/weapon/weldingtool/WT = W
+		var/obj/item/weapon/tool/weldingtool/WT = W
 
 		if(get_amount() < 2)
 			to_chat(user, "<span class='warning'>You need at least two rods to do this.</span>")
@@ -56,10 +54,16 @@
 		return
 
 	if (istype(W, /obj/item/weapon/tape_roll))
+		if(get_amount() < 1)
+			user.visible_message("<span class='warning'>You need at least a [singular_name] to make a splint!</span>")
+			return
+		var/obj/item/weapon/tape_roll/thetape = W
+		if(!thetape.use_tape(DUCTTAPE_NEEDED_SPLINT))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_SPLINT] strips of tape to make a splint!</span>")
+			return
 		var/obj/item/stack/medical/splint/ghetto/new_splint = new(user.loc)
 		new_splint.dropInto(loc)
 		new_splint.add_fingerprint(user)
-
 		user.visible_message("<span class='notice'>\The [user] constructs \a [new_splint] out of a [singular_name].</span>", \
 				"<span class='notice'>You use make \a [new_splint] out of a [singular_name].</span>")
 		src.use(1)
@@ -107,11 +111,3 @@
 	else
 		icon = initial(icon)
 		icon_state = initial(icon_state)
-
-/obj/item/stack/rods/use()
-	. = ..()
-	update_icon()
-
-/obj/item/stack/rods/add()
-	. = ..()
-	update_icon()

@@ -18,10 +18,10 @@
 		amount_per_transfer_from_this = N
 
 /obj/item/weapon/reagent_containers/New()
+	create_reagents(volume)
 	..()
 	if(!possible_transfer_amounts)
 		src.verbs -= /obj/item/weapon/reagent_containers/verb/set_APTFT
-	create_reagents(volume)
 
 /obj/item/weapon/reagent_containers/attack_self(mob/user as mob)
 	return
@@ -37,8 +37,8 @@
 /obj/item/weapon/reagent_containers/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(istype(W, /obj/item/weapon/pen) || istype(W, /obj/item/device/flashlight/pen))
 		var/tmp_label = sanitizeSafe(input(user, "Enter a label for [name]", "Label", label_text), MAX_NAME_LEN)
-		if(length(tmp_label) > 10)
-			to_chat(user, "<span class='notice'>The label can be at most 10 characters long.</span>")
+		if(length(tmp_label) > 20)
+			to_chat(user, "<span class='notice'>The label can be at most 20 characters long.</span>")
 		else
 			to_chat(user, "<span class='notice'>You set the label to \"[tmp_label]\".</span>")
 			label_text = tmp_label
@@ -55,6 +55,10 @@
 /obj/item/weapon/reagent_containers/proc/standard_dispenser_refill(var/mob/user, var/obj/structure/reagent_dispensers/target) // This goes into afterattack
 	if(!istype(target))
 		return 0
+
+	if(target.tankcap)
+		to_chat(user, SPAN_NOTICE("\The [target]'s tank cap is opened for pouring."))
+		return standard_pour_into(user, target)
 
 	if(!target.reagents || !target.reagents.total_volume)
 		to_chat(user, "<span class='notice'>[target] is empty.</span>")
@@ -187,3 +191,23 @@
 			set_APTFT()
 	else
 		return ..()
+
+/obj/item/weapon/reagent_containers/verb/verb_set_label(L as text)
+	set name = "Set Container Label"
+	set category = "Object"
+	set src in view(usr, 1)
+
+	setLabel(L, usr)
+
+/obj/item/weapon/reagent_containers/proc/setLabel(L, mob/user = null)
+	if(L)
+		if(user)
+			to_chat(user, "<span class='notice'>You set the label on \the [src] to '[L]'.</span>")
+
+		label_text = L
+		name = "[initial(name)] - '[L]'"
+	else
+		if(user)
+			to_chat(user, "<span class='notice'>You clear the label on \the [src].</span>")
+		label_text = ""
+		name = initial(name)

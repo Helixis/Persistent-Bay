@@ -2,10 +2,11 @@
 	var/active = 0
 	var/active_force
 	var/active_throwforce
-	sharp = 0
-	edge = 0
 	armor_penetration = 50
-	flags = NOBLOODY
+	damtype = DAM_BLUNT
+	atom_flags = ATOM_FLAG_NO_BLOOD
+	mass = 0.5
+	icon = 'icons/obj/weapons/melee/energy.dmi'
 
 /obj/item/weapon/melee/energy/proc/activate(mob/living/user)
 	anchored = 1
@@ -14,9 +15,9 @@
 	active = 1
 	force = active_force
 	throwforce = active_throwforce
-	sharp = 1
-	edge = 1
+	sharpness = 1
 	slot_flags |= SLOT_DENYPOCKET
+	damtype = DAM_ENERGY
 	playsound(user, 'sound/weapons/saberon.ogg', 50, 1)
 
 /obj/item/weapon/melee/energy/proc/deactivate(mob/living/user)
@@ -27,16 +28,17 @@
 	active = 0
 	force = initial(force)
 	throwforce = initial(throwforce)
-	sharp = initial(sharp)
-	edge = initial(edge)
+	sharpness = initial(sharpness)
 	slot_flags = initial(slot_flags)
+	damtype = DAM_BLUNT
 
 /obj/item/weapon/melee/energy/attack_self(mob/living/user as mob)
 	if (active)
 		if ((CLUMSY in user.mutations) && prob(50))
 			user.visible_message("<span class='danger'>\The [user] accidentally cuts \himself with \the [src].</span>",\
 			"<span class='danger'>You accidentally cut yourself with \the [src].</span>")
-			user.take_organ_damage(5,5)
+			user.apply_damage(5, DAM_CUT)
+			user.apply_damage(5, DAM_BURN)
 		deactivate(user)
 	else
 		activate(user)
@@ -61,31 +63,32 @@
 	name = "energy axe"
 	desc = "An energised battle axe."
 	icon_state = "axe0"
-	//active_force = 150 //holy...
-	active_force = 60
-	active_throwforce = 35
-	//force = 40
-	//throwforce = 25
-	force = 20
-	throwforce = 10
+	damtype = DAM_CUT
+	active_force = 18
+	active_throwforce = 14
+	force = 12
+	throwforce = 7
 	throw_speed = 1
 	throw_range = 5
 	w_class = ITEM_SIZE_NORMAL
-	flags = CONDUCT | NOBLOODY
+	atom_flags = ATOM_FLAG_NO_BLOOD
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	origin_tech = list(TECH_MAGNET = 3, TECH_COMBAT = 4)
 	attack_verb = list("attacked", "chopped", "cleaved", "torn", "cut")
-	sharp = 1
-	edge = 1
+	sharpness = 1
+	mass = 2.5
 
 /obj/item/weapon/melee/energy/axe/activate(mob/living/user)
 	..()
 	icon_state = "axe1"
 	to_chat(user, "<span class='notice'>\The [src] is now energised.</span>")
+	damtype = list(DAM_ENERGY = force/2, DAM_CUT = force)
 
 /obj/item/weapon/melee/energy/axe/deactivate(mob/living/user)
 	..()
 	icon_state = initial(icon_state)
 	to_chat(user, "<span class='notice'>\The [src] is de-energised. It's just a regular axe now.</span>")
+	damtype = DAM_CUT
 
 /*
  * Energy Sword
@@ -95,17 +98,18 @@
 	name = "energy sword"
 	desc = "May the force be within you."
 	icon_state = "sword0"
-	active_force = 30
-	active_throwforce = 20
+	damtype = DAM_BLUNT
+	active_force = 15
+	active_throwforce = 10
 	force = 3
-	throwforce = 5
+	throwforce = 2
 	throw_speed = 1
 	throw_range = 5
 	w_class = ITEM_SIZE_SMALL
-	flags = NOBLOODY
+	atom_flags = ATOM_FLAG_NO_BLOOD
 	origin_tech = list(TECH_MAGNET = 3, TECH_ILLEGAL = 4)
-	sharp = 1
-	edge = 1
+	sharpness = 1
+	mass = 0.8
 	var/blade_color
 
 /obj/item/weapon/melee/energy/sword/dropped(var/mob/user)
@@ -134,6 +138,7 @@
 	..()
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	icon_state = "sword[blade_color]"
+	damtype = DAM_CUT && DAM_ENERGY
 
 /obj/item/weapon/melee/energy/sword/deactivate(mob/living/user)
 	if(active)
@@ -141,6 +146,7 @@
 	..()
 	attack_verb = list()
 	icon_state = initial(icon_state)
+	damtype = DAM_BLUNT
 
 /obj/item/weapon/melee/energy/sword/handle_shield(mob/user, var/damage, atom/damage_source = null, mob/attacker = null, var/def_zone = null, var/attack_text = "the attack")
 	if(active && default_parry_check(user, attacker, damage_source) && prob(50))
@@ -170,17 +176,18 @@
 	name = "energy blade"
 	desc = "A concentrated beam of energy in the shape of a blade. Very stylish... and lethal."
 	icon_state = "blade"
-	force = 40 //Normal attacks deal very high damage - about the same as wielded fire axe
-	armor_penetration = 100
-	sharp = 1
-	edge = 1
+	damtype = DAM_BLUNT
+	force = 20 //Normal attacks deal very high damage - about the same as wielded fire axe
+	armor_penetration = 10
+	sharpness = 1
 	anchored = 1    // Never spawned outside of inventory, should be fine.
 	throwforce = 1  //Throwing or dropping the item deletes it.
 	throw_speed = 1
 	throw_range = 1
 	w_class = ITEM_SIZE_TINY //technically it's just energy or something, I dunno
-	flags = NOBLOODY
+	atom_flags = ATOM_FLAG_NO_BLOOD
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	mass = 0.5
 	var/mob/living/creator
 	var/datum/effect/effect/system/spark_spread/spark_system
 

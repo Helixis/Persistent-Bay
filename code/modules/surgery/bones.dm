@@ -2,8 +2,8 @@
 //////////////////////////////////////////////////////////////////
 //						BONE SURGERY							//
 //////////////////////////////////////////////////////////////////
-
-
+#define DUCTTAPE_NEEDED_BONEGELLING 30
+#define DUCTTAPE_NEEDED_POST_BONEGELLING 15
 
 
 
@@ -23,10 +23,15 @@
 	shock_level = 20
 
 /datum/surgery_step/glue_bone/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		if(!thetape.has_enough_tape_left(DUCTTAPE_NEEDED_BONEGELLING))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_BONEGELLING] tape strip\s to do this!</span>")
+			return 0
 	if (!hasorgans(target))
 		return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return affected && (affected.robotic < ORGAN_ROBOT) && affected.how_open() >= 2 && affected.stage == 0
+	return affected && (!BP_IS_ROBOTIC(affected)) && affected.how_open() >= 2 && affected.stage == 0
 
 /datum/surgery_step/glue_bone/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
@@ -43,6 +48,9 @@
 	user.visible_message("<span class='notice'>[user] applies some [tool.name] to [bone]</span>", \
 		"<span class='notice'>You apply some [tool.name] to [bone].</span>")
 	affected.stage = 1
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		thetape.use_tape(DUCTTAPE_NEEDED_BONEGELLING)
 
 /datum/surgery_step/glue_bone/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
@@ -56,7 +64,7 @@
 /datum/surgery_step/set_bone
 	allowed_tools = list(
 	/obj/item/weapon/bonesetter = 100,	\
-	/obj/item/weapon/wrench = 75		\
+	/obj/item/weapon/tool/wrench = 75		\
 	)
 
 	min_duration = 60
@@ -68,7 +76,7 @@
 	if (!hasorgans(target))
 		return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return affected && affected.organ_tag != BP_HEAD && !(affected.robotic >= ORGAN_ROBOT) && affected.how_open() >= SURGERY_RETRACTED && affected.stage == 1
+	return affected && affected.organ_tag != BP_HEAD && !BP_IS_ROBOTIC(affected) && affected.how_open() >= SURGERY_RETRACTED && affected.stage == 1
 
 /datum/surgery_step/set_bone/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
@@ -95,7 +103,7 @@
 	user.visible_message("<span class='warning'>[user]'s hand slips, damaging the [affected.encased ? affected.encased : "bones"] in [target]'s [affected.name] with \the [tool]!</span>" , \
 		"<span class='warning'>Your hand slips, damaging the [affected.encased ? affected.encased : "bones"] in [target]'s [affected.name] with \the [tool]!</span>")
 	affected.fracture()
-	affected.take_damage(5, used_weapon = tool)
+	affected.take_damage(5, damsrc = tool)
 
 
 //////////////////////////////////////////////////////////////////
@@ -104,7 +112,7 @@
 /datum/surgery_step/mend_skull
 	allowed_tools = list(
 	/obj/item/weapon/bonesetter = 100,	\
-	/obj/item/weapon/wrench = 75		\
+	/obj/item/weapon/tool/wrench = 75		\
 	)
 
 	min_duration = 60
@@ -116,7 +124,7 @@
 	if (!hasorgans(target))
 		return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return affected && affected.organ_tag == BP_HEAD && (affected.robotic < ORGAN_ROBOT) && affected.how_open() >= SURGERY_RETRACTED && affected.stage == 1
+	return affected && affected.organ_tag == BP_HEAD && (!BP_IS_ROBOTIC(affected)) && affected.how_open() >= SURGERY_RETRACTED && affected.stage == 1
 
 /datum/surgery_step/mend_skull/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	user.visible_message("[user] is beginning to piece together [target]'s skull with \the [tool]."  , \
@@ -134,7 +142,7 @@
 	user.visible_message("<span class='warning'>[user]'s hand slips, damaging [target]'s face with \the [tool]!</span>"  , \
 		"<span class='warning'>Your hand slips, damaging [target]'s face with \the [tool]!</span>")
 	var/obj/item/organ/external/head/h = affected
-	affected.take_damage(10, used_weapon = tool)
+	affected.take_damage(10, damsrc = tool)
 	h.disfigured = 1
 
 //////////////////////////////////////////////////////////////////
@@ -153,10 +161,15 @@
 	shock_level = 20
 
 /datum/surgery_step/finish_bone/can_use(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		if(!thetape.has_enough_tape_left(DUCTTAPE_NEEDED_POST_BONEGELLING))
+			user.visible_message("<span class='warning'>You need at least [DUCTTAPE_NEEDED_POST_BONEGELLING] tape strip\s to do this!</span>")
+			return 0
 	if (!hasorgans(target))
 		return 0
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
-	return affected && affected.how_open() >= SURGERY_RETRACTED && !(affected.robotic >= ORGAN_ROBOT) && affected.stage == 2
+	return affected && affected.how_open() >= SURGERY_RETRACTED && !BP_IS_ROBOTIC(affected) && affected.stage == 2
 
 /datum/surgery_step/finish_bone/begin_step(mob/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
@@ -172,8 +185,14 @@
 		"<span class='notice'>You have mended the damaged [bone] with \the [tool].</span>" )
 	affected.status &= ~ORGAN_BROKEN
 	affected.stage = 0
+	if(istype(tool, /obj/item/weapon/tape_roll))
+		var/obj/item/weapon/tape_roll/thetape = tool
+		thetape.use_tape(DUCTTAPE_NEEDED_POST_BONEGELLING)
 
 /datum/surgery_step/finish_bone/fail_step(mob/living/user, mob/living/carbon/human/target, target_zone, obj/item/tool)
 	var/obj/item/organ/external/affected = target.get_organ(target_zone)
 	user.visible_message("<span class='warning'>[user]'s hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>" , \
 	"<span class='warning'>Your hand slips, smearing [tool] in the incision in [target]'s [affected.name]!</span>")
+
+#undef DUCTTAPE_NEEDED_BONEGELLING
+#undef DUCTTAPE_NEEDED_POST_BONEGELLING

@@ -38,10 +38,31 @@
 		return 0
 	else
 		return 1
-/datum/random_map/noise/ore/rich/apply_to_turf(var/x,var/y)
+
+/*
+Low Tier asteroids
+
+Iron-Tin Asteroids
+	Solid-Heavy (building and fabricators)
+	Reagent-Heavy (grinding for reagents)
+	Low amounts of silver
+Aluminum-Zinc Asteroids
+	Solid-Heavy (building and fabricators)
+	Reagent-Heavy (grinding for reagents)
+	Low amounts of gold
+*/
+
+/datum/random_map/noise/ore/iron_tin_solid_heavy/apply_to_turf(var/x,var/y)
 
 	var/tx = ((origin_x-1)+x)*chunk_size
 	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
 
 	for(var/i=0,i<chunk_size,i++)
 		for(var/j=0,j<chunk_size,j++)
@@ -51,162 +72,1039 @@
 			if(!priority_process)
 				CHECK_TICK
 			T.resources = list()
-			T.resources["sand"] = rand(3,5)
-			T.resources["graphene"] = rand(3,5)
-
-			var/tmp_cell
-			TRANSLATE_AND_VERIFY_COORD(x, y)
+			T.resources[MATERIAL_SAND] = rand(3,5)
 
 			if(tmp_cell < rare_val)      // Surface metals.
-				T.resources["hematite"] =     rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["copper"] = rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["gold"] =     	  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["silver"] =		  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["pitchblende"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["rock salt"] =    rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["pyrite"] =   	  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["cinnabar"] =     rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["phosphorite"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["potash"] =		  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["bauxite"] =   	  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["quartz"] =   	  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["spodumene"] =    rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["diamond"] =  0
-				T.resources["phoron"] =   0
-				T.resources["platinum"] = 0
-				T.resources["tungsten"] = 0
-				T.resources["hydrogen"] = 0
-				T.resources["bluespace crystal"] = 0
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CASSITERITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
 			else if(tmp_cell < deep_val) // Rare metals.
-				T.resources["gold"] =     rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["silver"] =   rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["pitchblende"] =  rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["phoron"] =   rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["tungsten"] = 0
-				T.resources["platinum"] = 0
-				T.resources["hydrogen"] = 0
-				if(prob(1)) // 1 percent
-					T.resources["bluespace crystal"] = 1
-				else
-					T.resources["bluespace crystal"] = 0
-				T.resources["diamond"] =  0
-				T.resources["hematite"] =     0
-				T.resources["copper"] =   0
-				T.resources["rock salt"] =     0
-				T.resources["pyrite"] =   0
-				T.resources["cinnabar"] =   0
-				T.resources["phosphorite"] =   0
-				T.resources["potash"] =  0
-				T.resources["bauxite"] =   0
-				T.resources["quartz"] =  0
-				T.resources["spodumene"] =  0
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CASSITERITE] =			rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
 			else                             // Deep metals.
-				T.resources["pitchblende"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["diamond"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["tungsten"] = rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["phoron"] =   rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["platinum"] =   rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["hydrogen"] = rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				if(prob(5)) // 5 percent
-					T.resources["bluespace crystal"] = 1
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_CASSITERITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SILVER] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+
+	..() // For normal gas resources
+
+/datum/random_map/noise/ore/iron_tin_reagent_heavy/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CASSITERITE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CASSITERITE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else                             // Deep metals.
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_CASSITERITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+
+	..() // For normal gas resources
+
+/datum/random_map/noise/ore/aluminum_zinc_solid_heavy/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_BAUXITE] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPHALERITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_BAUXITE] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPHALERITE] =			rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else                             // Deep metals.
+				T.resources[MATERIAL_BAUXITE] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_SPHALERITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GOLD] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+
+	..() // For normal gas resources
+
+/datum/random_map/noise/ore/aluminum_zinc_reagent_heavy/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_BAUXITE] =				rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPHALERITE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_BAUXITE] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPHALERITE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else                             // Deep metals.
+				T.resources[MATERIAL_BAUXITE] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_SPHALERITE] =			rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_BOHMEITE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+
+	..() // For normal gas resources
+
+/*
+High Tier asteroids
+
+Silver-Tungsten Asteroids
+	Solid-Heavy
+	Medium amount of pitchblende
+	Medium amount of iron
+	Medium amount of lead
+	Low amount of reagents
+	Low amount of phoron
+	Low amount of Bluespace Crystals
+Gold-Platinum Asteroids
+	Solid-Heavy
+	Medium amount of diamond
+	Medium amount of aluminum
+	Medium amount of lead
+	Low amount of reagents
+	Low amount of phoron
+	Low amount of Bluespace Crystals
+Titanium-Fusion Asteroids
+	Solid-Heavy
+	Medium amount of lead
+	Medium amount of hydrogen
+	Medium amount of deuterium/tritium
+	Medium amount of phoron
+	Low amount of Bluespace Crystals
+	No Reagents
+*/
+
+/datum/random_map/noise/ore/silver_tungsten/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_SILVER] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TUNGSTEN] = 			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_HEMATITE] =   			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PITCHBLENDE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BAUXITE] =				0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_SILVER] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_TUNGSTEN] = 			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_HEMATITE] =   			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PITCHBLENDE] =			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_BAUXITE] =				0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else                             // Deep metals.
+				T.resources[MATERIAL_SILVER] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_TUNGSTEN] = 			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_HEMATITE] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PITCHBLENDE] =			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				if(prob(0.5)) // half a percent
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 1
 				else
-					T.resources["bluespace crystal"] = 0
-				T.resources["hematite"] =     0
-				T.resources["copper"] =   0
-				T.resources["rock salt"] =     0
-				T.resources["pyrite"] =   0
-				T.resources["cinnabar"] =   0
-				T.resources["phosphorite"] =   0
-				T.resources["potash"] =  0
-				T.resources["bauxite"] =   0
-				T.resources["quartz"] =  0
-				T.resources["spodumene"] =  0
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BAUXITE] =				0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_DIAMOND] =  			0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
 
+	..() // For normal gas resources
 
+/datum/random_map/noise/ore/gold_platinum/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_GOLD] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PLATINUM] = 			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_BAUXITE] =   			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_DIAMOND] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_HEMATITE] =			0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_GOLD] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PLATINUM] = 			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_BAUXITE] =   			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_DIAMOND] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GRAPHITE] =			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_PITCHBLENDE] =  		0
+				T.resources[MATERIAL_HEMATITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+			else                             // Deep metals.
+				T.resources[MATERIAL_GOLD] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PLATINUM] = 			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_BAUXITE] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_DIAMOND] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				if(prob(0.5)) // half a percent
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 1
+				else
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_HEMATITE] =			0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_PITCHBLENDE] =  		0
+				T.resources[MATERIAL_TITANIUM] =			0
+				T.resources[MATERIAL_DEUTERIUM] =			0
+				T.resources[MATERIAL_TRITIUM] =				0
+
+	..() // For normal gas resources
+
+/datum/random_map/noise/ore/titanium_fusion/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_TITANIUM] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_DEUTERIUM] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TRITIUM] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_HEMATITE] =			0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_PITCHBLENDE] =			0
+				T.resources[MATERIAL_PHORON] =   			0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_DIAMOND] =				0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+
+				T.gas_resources[GAS_DEUTERIUM] =		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_HELIUM] = 		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_TRITIUM] =		rand(GAS_RESOURCE_LOWEST_MIN,	GAS_RESOURCE_LOWEST_MAX)
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_TITANIUM] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_DEUTERIUM] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TRITIUM] =				rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_HYDROGEN] = 			rand(RESOURCE_LOWEST_MIN, 	RESOURCE_LOWEST_MAX)
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_DIAMOND] =				0
+				T.resources[MATERIAL_GALENA] =				0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_PITCHBLENDE] =  		0
+				T.resources[MATERIAL_HEMATITE] =			0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 		0
+
+				T.gas_resources[GAS_DEUTERIUM] =		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_HELIUM] = 		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_TRITIUM] =		rand(GAS_RESOURCE_LOWEST_MIN,	GAS_RESOURCE_LOWEST_MAX)
+			else                             // Deep metals.
+				T.resources[MATERIAL_TITANIUM] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_DEUTERIUM] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_TRITIUM] =				rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHORON] =   			rand(RESOURCE_MID_MIN, 	RESOURCE_MID_MAX)
+				if(prob(0.5)) // half a percent
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 1
+				else
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 0
+				T.resources[MATERIAL_TUNGSTEN] = 			0
+				T.resources[MATERIAL_HYDROGEN] = 			0
+				T.resources[MATERIAL_HEMATITE] =			0
+				T.resources[MATERIAL_GRAPHITE] =			0
+				T.resources[MATERIAL_SPHALERITE] =			0
+				T.resources[MATERIAL_TETRAHEDRITE] =		0
+				T.resources[MATERIAL_ROCK_SALT] =			0
+				T.resources[MATERIAL_PYRITE] =				0
+				T.resources[MATERIAL_CINNABAR] =			0
+				T.resources[MATERIAL_PHOSPHORITE] =			0
+				T.resources[MATERIAL_POTASH] =				0
+				T.resources[MATERIAL_QUARTZ] =				0
+				T.resources[MATERIAL_SPODUMENE] =			0
+				T.resources[MATERIAL_FREIBERGITE] =			0
+				T.resources[MATERIAL_BOHMEITE] =			0
+				T.resources[MATERIAL_CASSITERITE] =			0
+				T.resources[MATERIAL_SILVER] =				0
+				T.resources[MATERIAL_HEMATITE] =   			0
+				T.resources[MATERIAL_ILMENITE] = 			0
+				T.resources[MATERIAL_PITCHBLENDE] =  		0
+				T.resources[MATERIAL_GOLD] =				0
+				T.resources[MATERIAL_PLATINUM] = 			0
+				T.resources[MATERIAL_BAUXITE] =   			0
+				T.resources[MATERIAL_DIAMOND] =				0
+
+				T.gas_resources[GAS_DEUTERIUM] =		rand(GAS_RESOURCE_MID_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_HELIUM] = 		rand(GAS_RESOURCE_MID_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_TRITIUM] =		rand(GAS_RESOURCE_MID_MIN,	GAS_RESOURCE_MID_MAX)
+
+	..() // For normal gas resources
+/datum/random_map/noise/ore/rich/apply_to_turf(var/x,var/y)
+
+	var/tx = ((origin_x-1)+x)*chunk_size
+	var/ty = ((origin_y-1)+y)*chunk_size
+
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Solid Resources
+
+	for(var/i=0,i<chunk_size,i++)
+		for(var/j=0,j<chunk_size,j++)
+			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
+			if(!istype(T) || !T.has_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+			T.resources = list()
+			T.resources[MATERIAL_SAND] = rand(3,5)
+			T.resources[MATERIAL_GRAPHITE] = rand(RESOURCE_HIGH_MIN,  RESOURCE_HIGH_MAX)
+
+			if(tmp_cell < rare_val)      // Surface metals.
+				T.resources[MATERIAL_HEMATITE] =			rand(RESOURCE_HIGH_MIN,	RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_GOLD] =					rand(RESOURCE_LOWEST_MIN,	RESOURCE_LOWEST_MAX)
+				T.resources[MATERIAL_SILVER] =				rand(RESOURCE_LOW_MIN, 	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PITCHBLENDE] =		rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_ROCK_SALT] =			rand(RESOURCE_MID_MIN,	RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PYRITE] =				rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_CINNABAR] =			rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHOSPHORITE] =		rand(RESOURCE_LOW_MIN,	RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_POTASH] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_BAUXITE] =   	  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_QUARTZ] =				rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPODUMENE] =			rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SPHALERITE] =		rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_GALENA] =				rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_CASSITERITE] =		rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TETRAHEDRITE] =	rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_FREIBERGITE] =		rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_ILMENITE] = 0
+				T.resources[MATERIAL_DIAMOND] =  0
+				T.resources[MATERIAL_PHORON] =   0
+				T.resources[MATERIAL_PLATINUM] = 0
+				T.resources[MATERIAL_TUNGSTEN] = 0
+				T.resources[MATERIAL_HYDROGEN] = 0
+				T.resources[MATERIAL_BSPACE_CRYSTAL] = 0
+			else if(tmp_cell < deep_val) // Rare metals.
+				T.resources[MATERIAL_GOLD] =     rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_SILVER] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PITCHBLENDE] =  rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_PHORON] =   rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_TUNGSTEN] = 0
+				T.resources[MATERIAL_PLATINUM] = 0
+				T.resources[MATERIAL_HYDROGEN] = 0
+				if(prob(0.25)) // .5 percent
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 1
+				else
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 0
+				T.resources[MATERIAL_DIAMOND] =  0
+				T.resources[MATERIAL_HEMATITE] =     0
+				T.resources[MATERIAL_ROCK_SALT] =     0
+				T.resources[MATERIAL_PYRITE] =   0
+				T.resources[MATERIAL_CINNABAR] =   0
+				T.resources[MATERIAL_PHOSPHORITE] =   0
+				T.resources[MATERIAL_POTASH] =  0
+				T.resources[MATERIAL_BAUXITE] =   0
+				T.resources[MATERIAL_QUARTZ] =  0
+				T.resources[MATERIAL_SPODUMENE] =  0
+				T.resources[MATERIAL_ILMENITE] = 0
+				T.resources[MATERIAL_SPHALERITE] = 0
+				T.resources[MATERIAL_GALENA] =	0
+				T.resources[MATERIAL_CASSITERITE] =	0
+				T.resources[MATERIAL_TETRAHEDRITE] =	0
+				T.resources[MATERIAL_FREIBERGITE] =	0
+			else                             // Deep metals.
+				T.resources[MATERIAL_PITCHBLENDE] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_DIAMOND] =  rand(RESOURCE_LOWEST_MIN,  RESOURCE_LOWEST_MAX)
+				T.resources[MATERIAL_TUNGSTEN] = rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				T.resources[MATERIAL_PHORON] =   rand(RESOURCE_HIGH_MIN,  RESOURCE_HIGH_MAX)
+				T.resources[MATERIAL_PLATINUM] =   rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_HYDROGEN] = rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
+				T.resources[MATERIAL_ILMENITE] =    rand(GAS_RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
+				if(prob(0.5)) // half a percent
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 1
+				else
+					T.resources[MATERIAL_BSPACE_CRYSTAL] = 0
+				T.resources[MATERIAL_HEMATITE] =     0
+				T.resources[MATERIAL_ROCK_SALT] =     0
+				T.resources[MATERIAL_PYRITE] =   0
+				T.resources[MATERIAL_CINNABAR] =   0
+				T.resources[MATERIAL_PHOSPHORITE] =   0
+				T.resources[MATERIAL_POTASH] =  0
+				T.resources[MATERIAL_BAUXITE] =   0
+				T.resources[MATERIAL_QUARTZ] =  0
+				T.resources[MATERIAL_SPODUMENE] =  0
+				T.resources[MATERIAL_SPHALERITE] = 0
+				T.resources[MATERIAL_GALENA] =	0
+				T.resources[MATERIAL_CASSITERITE] =	0
+				T.resources[MATERIAL_TETRAHEDRITE] =	0
+				T.resources[MATERIAL_FREIBERGITE] =	0
+
+	// Gas Resources
+
+	for(var/k=0,k<chunk_size,k++)
+		for(var/l=0,l<chunk_size,l++)
+			var/turf/simulated/T = locate(tx+l, ty+k, origin_z)
+			if(!istype(T) || !T.has_gas_resources)
+				continue
+			if(!priority_process)
+				CHECK_TICK
+
+			T.gas_resources = list()
+
+			if(tmp_cell < rare_val)      // Surface gases
+				T.gas_resources[GAS_NITROGEN] = 		rand(GAS_RESOURCE_HIGH_MIN,	GAS_RESOURCE_HIGH_MAX)
+				T.gas_resources[GAS_HYDROGEN] = 		rand(GAS_RESOURCE_MID_MIN,  GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_DEUTERIUM] =		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_HELIUM] = 		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_OXYGEN]	= 		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_CO2] = rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_N2O] = rand(GAS_RESOURCE_LOWEST_MIN,	GAS_RESOURCE_LOWEST_MAX) // Sleeping agent is largely useless, so an abundance isn't needed
+				T.gas_resources[GAS_TRITIUM] =		0
+				T.gas_resources[GAS_PHORON] =			0
+			else if(tmp_cell < deep_val) // Rare gases
+				T.gas_resources[GAS_OXYGEN]	= 		rand(GAS_RESOURCE_HIGH_MIN, 	GAS_RESOURCE_HIGH_MAX)
+				T.gas_resources[GAS_HYDROGEN] = 		rand(GAS_RESOURCE_MID_MIN,  GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_DEUTERIUM] =		rand(GAS_RESOURCE_MID_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_HELIUM] = 		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_TRITIUM] =		rand(GAS_RESOURCE_LOW_MIN,	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_CO2] = rand(GAS_RESOURCE_LOWEST_MIN, GAS_RESOURCE_LOWEST_MAX)
+				T.gas_resources[GAS_PHORON] =			rand(GAS_RESOURCE_LOWEST_MIN,	GAS_RESOURCE_LOWEST_MAX)
+				T.gas_resources[GAS_NITROGEN] = 		0
+				T.gas_resources[GAS_N2O] = 0
+			else						 // Deep gases
+				T.gas_resources[GAS_DEUTERIUM] =		rand(GAS_RESOURCE_HIGH_MIN, GAS_RESOURCE_HIGH_MAX)
+				T.gas_resources[GAS_HELIUM] = 		rand(GAS_RESOURCE_MID_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_TRITIUM] =		rand(GAS_RESOURCE_MID_MIN,	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_OXYGEN]	= 		rand(GAS_RESOURCE_MID_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_PHORON] =			rand(GAS_RESOURCE_LOW_MIN,	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_HYDROGEN] = 		rand(GAS_RESOURCE_LOW_MIN,  GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_NITROGEN] = 		0
+				T.gas_resources[GAS_N2O] = 0
+				T.gas_resources[GAS_CO2] = 0
 
 /datum/random_map/noise/ore/apply_to_turf(var/x,var/y)
 
 	var/tx = ((origin_x-1)+x)*chunk_size
 	var/ty = ((origin_y-1)+y)*chunk_size
 
-	for(var/i=0,i<chunk_size,i++)
-		for(var/j=0,j<chunk_size,j++)
-			var/turf/simulated/T = locate(tx+j, ty+i, origin_z)
-			if(!istype(T) || !T.has_resources)
+	var/tmp_cell
+	var/current_cell = get_map_cell(x,y)
+	if(current_cell)
+		tmp_cell = map[current_cell]
+
+	// Gas resources
+
+	for(var/k=0,k<chunk_size,k++)
+		for(var/l=0,l<chunk_size,l++)
+			var/turf/simulated/T = locate(tx+l, ty+k, origin_z)
+			if(!istype(T) || !T.has_gas_resources)
 				continue
 			if(!priority_process)
 				CHECK_TICK
-			T.resources = list()
-			T.resources["sand"] = rand(3,5)
-			T.resources["graphene"] = rand(3,5)
 
-			var/tmp_cell
-			TRANSLATE_AND_VERIFY_COORD(x, y)
+			T.gas_resources = list()
 
-			if(tmp_cell < rare_val)      // Surface metals.
-				T.resources["hematite"] =     rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["copper"] =   rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["rock salt"] =     rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["pyrite"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["cinnabar"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["phosphorite"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["potash"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["bauxite"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["quartz"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["spodumene"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["gold"] =     rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["silver"] =   rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["pitchblende"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["diamond"] =  0
-				T.resources["phoron"] =   0
-				T.resources["tungsten"] = 0
-				T.resources["hydrogen"] = 0
-				T.resources["bluespace crystal"] = 0
-			else if(tmp_cell < deep_val) // Rare metals.
-				T.resources["gold"] =     rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["silver"] =   rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["pitchblende"] =  rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-		//		T.resources["phoron"] =   rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-				T.resources["tungsten"] = 0
-				T.resources["hydrogen"] = 0
-		//		if(prob(1)) // 1 percent
-		//			T.resources["bluespace crystal"] = 1
-		//		else
-		//			T.resources["bluespace crystal"] = 0
-				T.resources["diamond"] =  	  0
-				T.resources["hematite"] =     0
-				T.resources["copper"] = 0
-				T.resources["rock salt"] =    0
-				T.resources["pyrite"] =   	  0
-				T.resources["cinnabar"] =     0
-				T.resources["phosphorite"] =  0
-				T.resources["potash"] =		  0
-				T.resources["bauxite"] =      0
-				T.resources["quartz"] =   	  0
-				T.resources["spodumene"] = 	  0
-			else                             // Deep metals.
-				T.resources["pitchblende"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["diamond"] =  rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-				T.resources["tungsten"] = rand(RESOURCE_LOW_MIN,  RESOURCE_LOW_MAX)
-		//		T.resources["phoron"] =   rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["platinum"] = rand(RESOURCE_HIGH_MIN, RESOURCE_HIGH_MAX)
-				T.resources["hydrogen"] = rand(RESOURCE_MID_MIN,  RESOURCE_MID_MAX)
-		//		if(prob(5)) // 5 percent
-		//			T.resources["bluespace crystal"] = 1
-		//		else
-		//			T.resources["bluespace crystal"] = 0
-				T.resources["hematite"] =     0
-				T.resources["copper"] = 0
-				T.resources["gold"] =     0
-				T.resources["silver"] =   0
-				T.resources["rock salt"] =    0
-				T.resources["pyrite"] =   	  0
-				T.resources["cinnabar"] =     0
-				T.resources["phosphorite"] =  0
-				T.resources["potash"] =		  0
-				T.resources["bauxite"] =      0
-				T.resources["quartz"] =   	  0
-				T.resources["spodumene"] = 	  0
+			if(tmp_cell < rare_val)      // Surface gases
+				T.gas_resources[GAS_NITROGEN] = 		rand(GAS_RESOURCE_MID_MIN,	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_HYDROGEN] = 		rand(GAS_RESOURCE_LOW_MIN,  GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_CO2] = rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_OXYGEN]	= 		rand(GAS_RESOURCE_LOWEST_MIN, 	GAS_RESOURCE_LOWEST_MAX)
+				T.gas_resources[GAS_N2O] = rand(GAS_RESOURCE_LOWEST_MIN,	GAS_RESOURCE_LOWEST_MAX) // Sleeping agent is largely useless, so an abundance isn't needed
+				T.gas_resources[GAS_PHORON] =			0
+			else if(tmp_cell < deep_val) // Rare gases
+				T.gas_resources[GAS_OXYGEN]	= 		rand(GAS_RESOURCE_MID_MIN, 	GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_HYDROGEN] = 		rand(GAS_RESOURCE_MID_MIN,  GAS_RESOURCE_MID_MAX)
+				T.gas_resources[GAS_CO2] = 0
+				T.gas_resources[GAS_PHORON] =			0
+				T.gas_resources[GAS_NITROGEN] = 		0
+				T.gas_resources[GAS_N2O] = 0
+			else						 // Deep gases
+				T.gas_resources[GAS_OXYGEN]	= 		rand(GAS_RESOURCE_LOW_MIN, 	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_PHORON] =			rand(GAS_RESOURCE_LOW_MIN,	GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_HYDROGEN] = 		rand(GAS_RESOURCE_LOW_MIN,  GAS_RESOURCE_LOW_MAX)
+				T.gas_resources[GAS_NITROGEN] = 		0
+				T.gas_resources[GAS_N2O] = 0
+				T.gas_resources[GAS_CO2] = 0
 
 
 /datum/random_map/noise/ore/get_map_char(var/value)

@@ -389,7 +389,7 @@ var/global/floorIsLava = 0
 					if(CHANNEL.is_admin_channel)
 						dat+="<B><FONT style='BACKGROUND-COLOR: LightGreen'><A href='?src=\ref[src];ac_show_channel=\ref[CHANNEL]'>[CHANNEL.channel_name]</A></FONT></B><BR>"
 					else
-						dat+="<B><A href='?src=\ref[src];ac_show_channel=\ref[CHANNEL]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : ()]<BR></B>"
+						dat+="<B><A href='?src=\ref[src];ac_show_channel=\ref[CHANNEL]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : null]<BR></B>"
 			dat+={"<BR><HR><A href='?src=\ref[src];ac_refresh=1'>Refresh</A>
 				<BR><A href='?src=\ref[src];ac_setScreen=[0]'>Back</A>
 			"}
@@ -473,7 +473,7 @@ var/global/floorIsLava = 0
 				dat+="<I>No feed channels found active...</I><BR>"
 			else
 				for(var/datum/feed_channel/CHANNEL in news_network.network_channels)
-					dat+="<A href='?src=\ref[src];ac_pick_censor_channel=\ref[CHANNEL]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : ()]<BR>"
+					dat+="<A href='?src=\ref[src];ac_pick_censor_channel=\ref[CHANNEL]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : null]<BR>"
 			dat+="<BR><A href='?src=\ref[src];ac_setScreen=[0]'>Cancel</A>"
 		if(11)
 			dat+={"
@@ -486,7 +486,7 @@ var/global/floorIsLava = 0
 				dat+="<I>No feed channels found active...</I><BR>"
 			else
 				for(var/datum/feed_channel/CHANNEL in news_network.network_channels)
-					dat+="<A href='?src=\ref[src];ac_pick_d_notice=\ref[CHANNEL]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : ()]<BR>"
+					dat+="<A href='?src=\ref[src];ac_pick_d_notice=\ref[CHANNEL]'>[CHANNEL.channel_name]</A> [(CHANNEL.censored) ? ("<FONT COLOR='red'>***</FONT>") : null]<BR>"
 
 			dat+="<BR><A href='?src=\ref[src];ac_setScreen=[0]'>Back</A>"
 		if(12)
@@ -815,7 +815,7 @@ var/global/floorIsLava = 0
 
 	if(!check_rights(R_ADMIN))
 		return
-	Save_World()
+	SSautosave.Save()
 
 
 /datum/admins/proc/changeambience()
@@ -825,45 +825,163 @@ var/global/floorIsLava = 0
 
 	if(!check_rights(R_ADMIN))
 		return
-	var/choice = input("Choose the zlevel to change ambience on. The 2 lower zlevels are included.", "Zlevel") as anything in ambient_controller.zlevel_data|null
+	var/choice = input("Choose the zlevel to change ambience on.", "Zlevel") as anything in SSmusic.zLevelAmbience|null
 	if(choice)
-		var/datum/music_controller/controller = ambient_controller.zlevel_data[choice]
-		if(!controller)
-			message_admins("zlevel with no music controller [choice]")
-			return
-		var/choice2 = input("Choose the type of ambient music to play.", "Tone") as anything in list("action", "neutral", "fun", "dark", "none")|null
-		if(choice2)
-			if(choice2 == "none") controller.tone = null
-			else
-				if(choice2 != controller.tone)
-					controller.timetostop = 0
-					controller.tone = choice2
+		var/datum/music_controller/controller = SSmusic.zLevelAmbience[choice]
+		var/choice2 = input("Choose the type of ambient music to play.", "Tone") as anything in SSmusic.genres|null|"None"
 
-/datum/admins/proc/buildaccounts()
+		if(choice2)
+			if(choice2 == "None")
+				controller.genre = list()
+			else
+				controller.genre = choice2
+
+
+/datum/admins/proc/fixemail()
 	set category = "Server"
-	set desc="Build accounts"
-	set name="Build accounts"
+	set desc="Refactor Email accounts"
+	set name="Refactor Email accounts"
 
 	if(!check_rights(R_ADMIN))
 		return
-	for(var/datum/computer_file/crew_record/record in GLOB.all_crew_records)
-		if(!record.linked_account)
-			record.linked_account = create_account(record.get_name(), 0, null)
-			record.linked_account.remote_access_pin = 1111
+	for(var/datum/computer_file/data/email_account/account in ntnet_global.email_accounts)
+		for(var/datum/computer_file/report/crew_record/record in GLOB.all_crew_records)
+			if(replacetext(record.get_name(), " ", "_") == account.login)
+				record.email = account
 
-/datum/admins/proc/retrieve_account()
+/datum/admins/proc/buildemail()
 	set category = "Server"
-	set desc="Retrieve Account"
-	set name="Retrieve Account"
+	set desc="Build Email accounts"
+	set name="Build Email accounts"
+
+	if(!check_rights(R_ADMIN))
+		return
+	for(var/datum/computer_file/report/crew_record/record in GLOB.all_crew_records)
+		if(!record.email)
+			record.email = new()
+			record.email.login = "[replacetext(record.get_name(), " ", "_")]@freemail.nt"
+			record.email.password = "recovery[rand(1,99)]"
+
+/datum/admins/proc/fixrecords()
+	set category = "Server"
+	set desc="Fixes crew records"
+	set name="fix crew recrods"
+
+	if(!check_rights(R_ADMIN))
+		return
+	var/savefile/f = new("map_saves/records.sav")
+	var/list/recovered = list()
+	var/list/recovering = list()
+	from_file(f["records"],recovered)
+	for(var/datum/computer_file/report/crew_record/record in recovered)
+		var/found = 0
+		for(var/datum/computer_file/report/crew_record/record2 in GLOB.all_crew_records)
+			found = 1
+			if(!record2.linked_account)
+				record2.linked_account = record.linked_account
+				record2.linked_account.after_load()
+		if(!found)
+			recovering |= record
+	GLOB.all_crew_records |= recovering
+
+/datum/admins/proc/autocryo()
+	set category = "Server"
+	set desc="Autocryo"
+	set name="autocryo"
+
+	if(!check_rights(R_ADMIN))
+		return
+	var/obj/machinery/cryopod/cryo = new()
+	for(var/mob/living/carbon/human/H in world)
+		if(!H.loc) continue
+		cryo.occupant = H
+		cryo.despawnOccupant(1)
+
+/datum/admins/proc/spacejunk()
+	set category = "Server"
+	set desc="Delete Space Junk"
+	set name="Delete Space Junk"
+
+	if(!check_rights(R_ADMIN))
+		return
+	for(var/turf/space/T in world)
+		var/found_lattice
+		if(!istype(T.loc, /area/space))
+			continue
+		for(var/obj/structure/lattice/lattice in T.contents)
+			found_lattice = 1
+			break
+		for(var/obj/structure/grille/grille in T.contents)
+			found_lattice = 1
+		if(found_lattice) continue
+		for(var/obj/ob in T.contents)
+			ob.loc = null
+			qdel(ob)
+
+/datum/admins/proc/retrieve_email()
+	set category = "Server"
+	set desc = "Retrieve Email"
+	set name = "Retrieve Email"
 
 	if(!check_rights(R_ADMIN))
 		return
 	var/real_name = input("Enter the real name to search for", "Real name") as text|null
 	if(real_name)
-		for(var/datum/computer_file/crew_record/record in GLOB.all_crew_records)
+		for(var/datum/computer_file/report/crew_record/record in GLOB.all_crew_records)
 			if(record.get_name() == real_name)
-				to_chat(usr, "Account details: account number # [record.linked_account.account_number] pin # [record.linked_account.remote_access_pin]")
+				if(!record.email)
+					to_chat(usr, "THE ACCOUNT FOR [real_name] is broken")
+					return
+				to_chat(usr, "Account details: login:[record.email.login] password: [record.email.password]")
 				break
+
+/datum/admins/proc/retrieve_account()
+	set category = "Server"
+	set desc ="Retrieve Money Account"
+	set name ="Retrieve Money Account"
+
+	if(!check_rights(R_ADMIN))
+		return
+	var/real_name = input("Enter the real name to search for", "Real name") as text|null
+	if(real_name)
+		for(var/datum/computer_file/report/crew_record/record in GLOB.all_crew_records)
+			if(record.get_name() == real_name)
+				if(record.linked_account && istype(record.linked_account, /datum/money_account))
+					if(record.linked_account.account_number == 0)
+						message_admins("BROKEN ACCOUNT FOR [real_name] GENERATING")
+						record.linked_account = create_account(record.get_name(), 0, null)
+						record.linked_account.remote_access_pin = rand(1111,9999)
+						record.linked_account = record.linked_account.after_load()
+						record.linked_account.money = 1000
+						to_chat(usr, "Account details: account number # [record.linked_account.account_number] pin # [record.linked_account.remote_access_pin]")
+						return
+					to_chat(usr, "Account details: account number # [record.linked_account.account_number] pin # [record.linked_account.remote_access_pin]")
+					var/money = round(input("Enter money amount", "New amount") as num|null)
+					if(money)
+						record.linked_account.money = money
+
+				else
+					message_admins("BROKEN ACCOUNT FOR [real_name] GENERATING")
+					record.linked_account = create_account(record.get_name(), 0, null)
+					record.linked_account.remote_access_pin = rand(1111,9999)
+					record.linked_account = record.linked_account.after_load()
+					record.linked_account.money = 1000
+					to_chat(usr, "Account details: account number # [record.linked_account.account_number] pin # [record.linked_account.remote_access_pin]")
+
+
+/datum/admins/proc/buildaccounts()
+	set category = "Server"
+	set desc="Build Money accounts"
+	set name="Build Money accounts"
+
+	if(!check_rights(R_ADMIN))
+		return
+	for(var/datum/computer_file/report/crew_record/record in GLOB.all_crew_records)
+		if(!record.linked_account || !istype(record.linked_account, /datum/money_account))
+			record.linked_account = create_account(record.get_name(), 0, null)
+			record.linked_account.remote_access_pin = rand(1111,9999)
+			record.linked_account = record.linked_account.after_load()
+			record.linked_account.money = 1000
 
 /datum/admins/proc/delete_account()
 	set category = "Server"
@@ -874,33 +992,10 @@ var/global/floorIsLava = 0
 		return
 	var/real_name = input("Enter the real name to record clear", "Real name") as text|null
 	if(real_name)
-		for(var/datum/computer_file/crew_record/record in GLOB.all_crew_records)
+		for(var/datum/computer_file/report/crew_record/record in GLOB.all_crew_records)
 			if(record.get_name() == real_name)
 				GLOB.all_crew_records -= record
 				qdel(record)
-
-/datum/admins/proc/savechars()
-	set category = "Server"
-	set desc="Saves Characters"
-	set name="Save Characters"
-
-	if(!check_rights(R_ADMIN))
-		return
-	for(var/mob/mobbie in GLOB.all_cryo_mobs)
-		if(!mobbie.stored_ckey) continue
-		var/save_path = load_path(mobbie.stored_ckey, "")
-		if(fexists("[save_path][mobbie.save_slot].sav"))
-			fdel("[save_path][mobbie.save_slot].sav")
-		var/savefile/f = new("[save_path][mobbie.save_slot].sav")
-		f << mobbie
-	for(var/datum/mind/employee in ticker.minds)
-		if(!employee.current || !employee.current.ckey) continue
-		var/save_path = load_path(employee.current.ckey, "")
-		if(fexists("[save_path][employee.current.save_slot].sav"))
-			fdel("[save_path][employee.current.save_slot].sav")
-		var/savefile/f = new("[save_path][employee.current.save_slot].sav")
-		f << employee.current
-		to_chat(employee.current, "You character has been saved.")
 
 /datum/admins/proc/loadnow()
 	set category = "Server"
@@ -931,11 +1026,14 @@ var/global/floorIsLava = 0
 	if(!check_rights(R_ADMIN))
 		return
 
-	world.visibility = !(world.visibility)
-	var/long_message = " toggled hub visibility.  The server is now [world.visibility ? "visible" : "invisible"] ([world.visibility])."
+	//BYOND hates actually changing world.visibility at runtime, so let's just change if we give it the hub password.
+	world.update_hub_visibility() //proc defined in hub.dm
+	var/long_message = "toggled hub visibility. The server is now [GLOB.visibility_pref ? "visible" : "invisible"] ([GLOB.visibility_pref])."
+	if (GLOB.visibility_pref && !world.reachable)
+		message_admins("WARNING: The server will not show up on the hub because byond is detecting that a firewall is blocking incoming connections.")
 
 	send2adminirc("[key_name(src)]" + long_message)
-	log_and_message_admins("toggled hub visibility ([long_message]).")
+	log_and_message_admins(long_message)
 	feedback_add_details("admin_verb","THUB") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc
 
 /datum/admins/proc/toggletraitorscaling()
@@ -946,23 +1044,6 @@ var/global/floorIsLava = 0
 	log_admin("[key_name(usr)] toggled Traitor Scaling to [config.traitor_scaling].")
 	message_admins("[key_name_admin(usr)] toggled Traitor Scaling [config.traitor_scaling ? "on" : "off"].", 1)
 	feedback_add_details("admin_verb","TTS") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
-/datum/admins/proc/startnow()
-	set category = "Server"
-	set desc="Start the round RIGHT NOW"
-	set name="Start Now"
-	if(!ticker)
-		alert("Unable to start the game as it is not set up.")
-		return
-	if(ticker.current_state == GAME_STATE_PREGAME && !(initialization_stage & INITIALIZATION_NOW))
-		log_admin("[usr.key] has started the game.")
-		message_admins("<font color='blue'>[usr.key] has started the game.</font>")
-		feedback_add_details("admin_verb","SN") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-		initialization_stage |= INITIALIZATION_NOW
-		return 1
-	else
-		to_chat(usr, "<span class='warning'>Error: Start Now: Game has already started.</span>")
-		return 0
 
 /datum/admins/proc/toggleenter()
 	set category = "Server"
@@ -1039,25 +1120,6 @@ var/global/floorIsLava = 0
 	log_and_message_admins("toggled Space Ninjas [config.ninjas_allowed ? "on" : "off"].")
 	feedback_add_details("admin_verb","TSN") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
-/datum/admins/proc/delay()
-	set category = "Server"
-	set desc="Delay the game start/end"
-	set name="Delay"
-
-	if(!check_rights(R_SERVER))	return
-	if (!ticker || ticker.current_state != GAME_STATE_PREGAME)
-		ticker.delay_end = !ticker.delay_end
-		log_and_message_admins("[ticker.delay_end ? "delayed the round end" : "has made the round end normally"].")
-		return //alert("Round end delayed", null, null, null, null, null)
-	round_progressing = !round_progressing
-	if (!round_progressing)
-		to_world("<b>The game start has been delayed.</b>")
-		log_admin("[key_name(usr)] delayed the game.")
-	else
-		to_world("<b>The game will start soon.</b>")
-		log_admin("[key_name(usr)] removed the delay.")
-	feedback_add_details("admin_verb","DELAY") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
 /datum/admins/proc/adjump()
 	set category = "Server"
 	set desc="Toggle admin jumping"
@@ -1117,40 +1179,40 @@ var/global/floorIsLava = 0
 ////////////////////////////////////////////////////////////////////////////////////////////////ADMIN HELPER PROCS
 
 /proc/is_special_character(var/character) // returns 1 for special characters and 2 for heroes of gamemode
-	if(!ticker || !ticker.mode)
-		return 0
-	var/datum/mind/M
-	if (ismob(character))
-		var/mob/C = character
-		M = C.mind
-	else if(istype(character, /datum/mind))
-		M = character
+	return 0	// They lied, no one is special (No antags)
 
-	if(M)
-		if(ticker.mode.antag_templates && ticker.mode.antag_templates.len)
-			for(var/datum/antagonist/antag in ticker.mode.antag_templates)
-				if(antag.is_antagonist(M))
-					return 2
-		if(M.special_role)
-			return 1
+/datum/admins/proc/mass_debug_closet_icons()
 
-	if(isrobot(character))
-		var/mob/living/silicon/robot/R = character
-		if(R.emagged)
-			return 1
+	set name = "Mass Debug Closet Icons"
+	set desc = "Spawn every possible custom closet. Do not do this on live."
+	set category = "Debug"
 
-	return 0
+	if(!check_rights(R_SPAWN))	
+		return
 
-/datum/admins/proc/spawn_fruit(seedtype in plant_controller.seeds)
+	if((input(usr, "Are you sure you want to spawn all these closets?", "So Many Closets") as null|anything in list("No", "Yes")) == "Yes")
+		log_admin("[key_name(usr)] mass-spawned closets (icon debug), if this is a live server you should yell at them.")
+		var/x = 0
+		var/y = 0
+		for(var/check_appearance in typesof(/decl/closet_appearance))
+			x++
+			if(x > 10)
+				x = 0
+				y++
+			var/turf/T = locate(usr.x+x, usr.y+y, usr.z)
+			if(T)
+				new /obj/structure/closet/debug(T, check_appearance)
+
+/datum/admins/proc/spawn_fruit(seedtype in SSplants.seeds)
 	set category = "Debug"
 	set desc = "Spawn the product of a seed."
 	set name = "Spawn Fruit"
 
 	if(!check_rights(R_SPAWN))	return
 
-	if(!seedtype || !plant_controller.seeds[seedtype])
+	if(!seedtype || !SSplants.seeds[seedtype])
 		return
-	var/datum/seed/S = plant_controller.seeds[seedtype]
+	var/datum/seed/S = SSplants.seeds[seedtype]
 	S.harvest(usr,0,0,1)
 	log_admin("[key_name(usr)] spawned [seedtype] fruit at ([usr.x],[usr.y],[usr.z])")
 
@@ -1194,16 +1256,16 @@ var/global/floorIsLava = 0
 		for(var/datum/custom_item/item in current_items)
 			to_chat(usr, "- name: [item.name] icon: [item.item_icon] path: [item.item_path] desc: [item.item_desc]")
 
-/datum/admins/proc/spawn_plant(seedtype in plant_controller.seeds)
+/datum/admins/proc/spawn_plant(seedtype in SSplants.seeds)
 	set category = "Debug"
 	set desc = "Spawn a spreading plant effect."
 	set name = "Spawn Plant"
 
 	if(!check_rights(R_SPAWN))	return
 
-	if(!seedtype || !plant_controller.seeds[seedtype])
+	if(!seedtype || !SSplants.seeds[seedtype])
 		return
-	new /obj/effect/vine(get_turf(usr), plant_controller.seeds[seedtype])
+	new /obj/effect/vine(get_turf(usr), SSplants.seeds[seedtype])
 	log_admin("[key_name(usr)] spawned [seedtype] vines at ([usr.x],[usr.y],[usr.z])")
 
 /datum/admins/proc/spawn_atom(var/object as text)
@@ -1256,80 +1318,6 @@ var/global/floorIsLava = 0
 	M.mind.edit_memory()
 	feedback_add_details("admin_verb","STP") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
-/datum/admins/proc/show_game_mode()
-	set category = "Admin"
-	set desc = "Show the current round configuration."
-	set name = "Show Game Mode"
-
-	if(!ticker || !ticker.mode)
-		alert("Not before roundstart!", "Alert")
-		return
-
-	var/out = "<font size=3><b>Current mode: [ticker.mode.name] (<a href='?src=\ref[ticker.mode];debug_antag=self'>[ticker.mode.config_tag]</a>)</b></font><br/>"
-	out += "<hr>"
-
-	if(ticker.mode.ert_disabled)
-		out += "<b>Emergency Response Teams:</b> <a href='?src=\ref[ticker.mode];toggle=ert'>disabled</a>"
-	else
-		out += "<b>Emergency Response Teams:</b> <a href='?src=\ref[ticker.mode];toggle=ert'>enabled</a>"
-	out += "<br/>"
-
-	if(ticker.mode.deny_respawn)
-		out += "<b>Respawning:</b> <a href='?src=\ref[ticker.mode];toggle=respawn'>disallowed</a>"
-	else
-		out += "<b>Respawning:</b> <a href='?src=\ref[ticker.mode];toggle=respawn'>allowed</a>"
-	out += "<br/>"
-
-	out += "<b>Shuttle delay multiplier:</b> <a href='?src=\ref[ticker.mode];set=shuttle_delay'>[ticker.mode.shuttle_delay]</a><br/>"
-
-	if(ticker.mode.auto_recall_shuttle)
-		out += "<b>Shuttle auto-recall:</b> <a href='?src=\ref[ticker.mode];toggle=shuttle_recall'>enabled</a>"
-	else
-		out += "<b>Shuttle auto-recall:</b> <a href='?src=\ref[ticker.mode];toggle=shuttle_recall'>disabled</a>"
-	out += "<br/><br/>"
-
-	if(ticker.mode.event_delay_mod_moderate)
-		out += "<b>Moderate event time modifier:</b> <a href='?src=\ref[ticker.mode];set=event_modifier_moderate'>[ticker.mode.event_delay_mod_moderate]</a><br/>"
-	else
-		out += "<b>Moderate event time modifier:</b> <a href='?src=\ref[ticker.mode];set=event_modifier_moderate'>unset</a><br/>"
-
-	if(ticker.mode.event_delay_mod_major)
-		out += "<b>Major event time modifier:</b> <a href='?src=\ref[ticker.mode];set=event_modifier_severe'>[ticker.mode.event_delay_mod_major]</a><br/>"
-	else
-		out += "<b>Major event time modifier:</b> <a href='?src=\ref[ticker.mode];set=event_modifier_severe'>unset</a><br/>"
-
-	out += "<hr>"
-
-	if(ticker.mode.antag_tags && ticker.mode.antag_tags.len)
-		out += "<b>Core antag templates:</b></br>"
-		for(var/antag_tag in ticker.mode.antag_tags)
-			out += "<a href='?src=\ref[ticker.mode];debug_antag=[antag_tag]'>[antag_tag]</a>.</br>"
-
-	if(ticker.mode.round_autoantag)
-		out += "<b>Autotraitor <a href='?src=\ref[ticker.mode];toggle=autotraitor'>enabled</a></b>."
-		if(ticker.mode.antag_scaling_coeff > 0)
-			out += " (scaling with <a href='?src=\ref[ticker.mode];set=antag_scaling'>[ticker.mode.antag_scaling_coeff]</a>)"
-		else
-			out += " (not currently scaling, <a href='?src=\ref[ticker.mode];set=antag_scaling'>set a coefficient</a>)"
-		out += "<br/>"
-	else
-		out += "<b>Autotraitor <a href='?src=\ref[ticker.mode];toggle=autotraitor'>disabled</a></b>.<br/>"
-
-	out += "<b>All antag ids:</b>"
-	if(ticker.mode.antag_templates && ticker.mode.antag_templates.len).
-		for(var/datum/antagonist/antag in ticker.mode.antag_templates)
-			antag.update_current_antag_max()
-			out += " <a href='?src=\ref[ticker.mode];debug_antag=[antag.id]'>[antag.id]</a>"
-			out += " ([antag.get_antag_count()]/[antag.cur_max]) "
-			out += " <a href='?src=\ref[ticker.mode];remove_antag_type=[antag.id]'>\[-\]</a><br/>"
-	else
-		out += " None."
-	out += " <a href='?src=\ref[ticker.mode];add_antag_type=1'>\[+\]</a><br/>"
-
-	usr << browse(out, "window=edit_mode[src]")
-	feedback_add_details("admin_verb","SGM")
-
-
 /datum/admins/proc/toggletintedweldhelmets()
 	set category = "Debug"
 	set desc="Reduces view range when wearing welding helmets"
@@ -1377,9 +1365,9 @@ var/global/floorIsLava = 0
 		to_chat(usr, "<b>No AIs located</b>")//Just so you know the thing is actually working and not just ignoring you.
 
 
-/datum/admins/proc/show_skills()
+/datum/admins/proc/show_skills(mob/M)
 	set category = "Admin"
-	set name = "Show Skills"
+	set name = "Skill Panel"
 
 	if (!istype(src,/datum/admins))
 		src = usr.client.holder
@@ -1387,12 +1375,15 @@ var/global/floorIsLava = 0
 		to_chat(usr, "Error: you are not an admin!")
 		return
 
-	var/mob/living/carbon/human/M = input("Select mob.", "Select mob.") as null|anything in GLOB.human_mob_list
-	if(!M) return
-
-	show_skill_window(usr, M)
-
-	return
+	if(!M)
+		M = input("Select mob.", "Select mob.") as null|anything in GLOB.player_list
+	if(!istype(M))
+		return
+	var/datum/nano_module/skill_ui/NM = /datum/nano_module/skill_ui
+	if(is_admin(usr))
+		NM = /datum/nano_module/skill_ui/admin //They get the fancy version that lets you change skills and debug stuff.
+	NM = new NM(usr, override = M.skillset)
+	NM.ui_interact(usr)
 
 /client/proc/update_mob_sprite(mob/living/carbon/human/H as mob)
 	set category = "Admin"
@@ -1508,49 +1499,6 @@ var/global/floorIsLava = 0
 	qdel(frommob)
 	return 1
 
-/datum/admins/proc/force_antag_latespawn()
-	set category = "Admin"
-	set name = "Force Template Spawn"
-	set desc = "Force an antagonist template to spawn."
-
-	if (!istype(src,/datum/admins))
-		src = usr.client.holder
-	if (!istype(src,/datum/admins))
-		to_chat(usr, "Error: you are not an admin!")
-		return
-
-	if(!ticker || !ticker.mode)
-		to_chat(usr, "Mode has not started.")
-		return
-
-	var/list/all_antag_types = all_antag_types()
-	var/antag_type = input("Choose a template.","Force Latespawn") as null|anything in all_antag_types
-	if(!antag_type || !all_antag_types[antag_type])
-		to_chat(usr, "Aborting.")
-		return
-
-	var/datum/antagonist/antag = all_antag_types[antag_type]
-	message_admins("[key_name(usr)] attempting to force latespawn with template [antag.id].")
-	antag.attempt_auto_spawn()
-
-/datum/admins/proc/force_mode_latespawn()
-	set category = "Admin"
-	set name = "Force Mode Spawn"
-	set desc = "Force autotraitor to proc."
-
-	if (!istype(src,/datum/admins))
-		src = usr.client.holder
-	if (!istype(src,/datum/admins) || !check_rights(R_ADMIN))
-		to_chat(usr, "Error: you are not an admin!")
-		return
-
-	if(!ticker || !ticker.mode)
-		to_chat(usr, "Mode has not started.")
-		return
-
-	log_and_message_admins("attempting to force mode autospawn.")
-	ticker.mode.process_autoantag()
-
 /datum/admins/proc/paralyze_mob(mob/H as mob in GLOB.player_list)
 	set category = "Admin"
 	set name = "Toggle Paralyze"
@@ -1569,7 +1517,6 @@ var/global/floorIsLava = 0
 			H.paralysis = 0
 			msg = "has unparalyzed [key_name(H)]."
 		log_and_message_admins(msg)
-
 
 /datum/admins/proc/sendFax()
 	set category = "Special Verbs"
@@ -1614,8 +1561,8 @@ datum/admins/var/obj/item/weapon/paper/admin/faxreply // var to hold fax replies
 	if(shouldStamp)
 		P.stamps += "<hr><i>This paper has been stamped by the [P.origin] Quantum Relay.</i>"
 
-		var/image/stampoverlay = image('icons/obj/bureaucracy.dmi')
-		var/{x; y;}
+		var/image/stampoverlay = image('icons/obj/items/paper.dmi')
+		var/x; var/y;
 		x = rand(-2, 0)
 		y = rand(-1, 2)
 		P.offset_x += x
@@ -1659,4 +1606,16 @@ datum/admins/var/obj/item/weapon/paper/admin/faxreply // var to hold fax replies
 	spawn(100)
 		qdel(P)
 		faxreply = null
+	return
+
+/datum/admins/proc/generate_beacon()
+	set category = "Debug"
+	set desc = "Spawn the Nexus Gov + a beacon at (100,100,1)"
+	set name = "Generate Faction Beacon"
+	LAZYINITLIST(GLOB.all_world_factions)
+	spawn_nexus_gov()
+	var/obj/structure/frontier_beacon/beacon
+	beacon = new /obj/structure/frontier_beacon(locate(100,100,1)) //
+	beacon.req_access_faction = "nexus"
+	to_chat(usr, "<b>Frontier Beacon and Nexus.)</b>")
 	return

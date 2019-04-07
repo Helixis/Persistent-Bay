@@ -27,6 +27,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	var/disabilities = 0
 
 	var/has_cortical_stack = FALSE
+	var/has_vatgrown_chip = FALSE
 	var/equip_preview_mob = EQUIP_PREVIEW_ALL
 
 	var/icon/bgstate = "000"
@@ -58,6 +59,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	from_file(S["organ_data"],pref.organ_data)
 	from_file(S["rlimb_data"],pref.rlimb_data)
 	from_file(S["has_cortical_stack"],pref.has_cortical_stack)
+	from_file(S["has_vatgrown_chip"],pref.has_vatgrown_chip)
 	from_file(S["body_markings"],pref.body_markings)
 	pref.preview_icon = null
 	from_file(S["bgstate"], pref.bgstate)
@@ -84,6 +86,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	to_file(S["organ_data"],pref.organ_data)
 	to_file(S["rlimb_data"],pref.rlimb_data)
 	to_file(S["has_cortical_stack"],pref.has_cortical_stack)
+	to_file(S["has_vatgrown_chip"],pref.has_vatgrown_chip)
 	to_file(S["body_markings"],pref.body_markings)
 	to_file(S["bgstate"],pref.bgstate)
 
@@ -106,10 +109,13 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	pref.b_eyes			= sanitize_integer(pref.b_eyes, 0, 255, initial(pref.b_eyes))
 	pref.b_type			= sanitize_text(pref.b_type, initial(pref.b_type))
 	pref.has_cortical_stack = sanitize_bool(pref.has_cortical_stack, initial(pref.has_cortical_stack))
+	pref.has_vatgrown_chip = sanitize_bool(pref.has_vatgrown_chip, initial(pref.has_vatgrown_chip))
 
 	var/datum/species/mob_species = all_species[pref.species]
 	if(mob_species && mob_species.spawn_flags & SPECIES_NO_LACE)
 		pref.has_cortical_stack = FALSE
+	if(mob_species && mob_species.spawn_flags & SPECIES_HAS_VATCHIP)
+		pref.has_vatgrown_chip = TRUE
 
 	var/low_skin_tone = mob_species ? (35 - mob_species.max_skin_tone()) : -185
 	sanitize_integer(pref.s_tone, low_skin_tone, 34, initial(pref.s_tone))
@@ -268,8 +274,10 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 			reset_limbs() // Safety for species with incompatible manufacturers; easier than trying to do it case by case.
 			pref.body_markings.Cut() // Basically same as above.
+			pref.randomize_appearance_and_body_for()	//to get rid of any previous species traits
+			pref.real_name = null	//to make sure vatgrown don't get any disallowed names
 
-			prune_occupation_prefs()
+			//prune_occupation_prefs()
 			return TOPIC_REFRESH_UPDATE_PREVIEW
 
 	else if(href_list["hair_color"])
@@ -563,7 +571,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 	dat += "<center><h2>[current_species.name] \[<a href='?src=\ref[src];show_species=1'>change</a>\]</h2></center><hr/>"
 	dat += "<table padding='8px'>"
 	dat += "<tr>"
-	dat += "<td width = 400>[current_species.blurb]</td>"
+	dat += "<td width = 400>[current_species.get_description()]</td>"
 	dat += "<td width = 200 align='center'>"
 	if(current_species.preview_icon)
 		usr << browse_rsc(icon(icon = current_species.preview_icon, icon_state = ""), "species_preview_[current_species.name].png")
@@ -578,13 +586,13 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		dat += "</br><b>Does not have blood.</b>"
 	if(!current_species.has_organ[BP_LUNGS])
 		dat += "</br><b>Does not breathe.</b>"
-	if(current_species.flags & NO_SCAN)
+	if(current_species.species_flags & SPECIES_FLAG_NO_SCAN)
 		dat += "</br><b>Does not have DNA.</b>"
-	if(current_species.flags & NO_PAIN)
+	if(current_species.species_flags & SPECIES_FLAG_NO_PAIN)
 		dat += "</br><b>Does not feel pain.</b>"
-	if(current_species.flags & NO_SLIP)
+	if(current_species.species_flags & SPECIES_FLAG_NO_SLIP)
 		dat += "</br><b>Has excellent traction.</b>"
-	if(current_species.flags & NO_POISON)
+	if(current_species.species_flags & SPECIES_FLAG_NO_POISON)
 		dat += "</br><b>Immune to most poisons.</b>"
 	if(current_species.appearance_flags & HAS_A_SKIN_TONE)
 		dat += "</br><b>Has a variety of skin tones.</b>"
@@ -592,7 +600,7 @@ var/global/list/valid_bloodtypes = list("A+", "A-", "B+", "B-", "AB+", "AB-", "O
 		dat += "</br><b>Has a variety of skin colours.</b>"
 	if(current_species.appearance_flags & HAS_EYE_COLOR)
 		dat += "</br><b>Has a variety of eye colours.</b>"
-	if(current_species.flags & IS_PLANT)
+	if(current_species.species_flags & SPECIES_FLAG_IS_PLANT)
 		dat += "</br><b>Has a plantlike physiology.</b>"
 	dat += "</small></td>"
 	dat += "</tr>"

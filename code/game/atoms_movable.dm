@@ -4,6 +4,8 @@
 	appearance_flags = TILE_BOUND
 	glide_size = 8
 
+	var/movable_flags
+
 	var/last_move = null
 	var/anchored = 0
 	// var/elevation = 2    - not used anywhere
@@ -18,6 +20,7 @@
 	var/moved_recently = 0
 	var/mob/pulledby = null
 	var/item_state = null // Used to specify the item state for the on-mob overlays.
+	var/mass = 1.5
 
 /atom/movable/Destroy()
 	. = ..()
@@ -136,6 +139,7 @@
 	var/dist_travelled = 0
 	var/dist_since_sleep = 0
 	var/area/a = get_area(src.loc)
+	var/firstStep	//only a flag to prevent splashing contents on the first step
 	if(dist_x > dist_y)
 		var/error = dist_x/2 - dist_y
 
@@ -148,6 +152,10 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
+				if (istype(src, /obj/item/weapon/reagent_containers) && src.is_open_container())
+					if(!firstStep) //i figured i wanted to start splashing one turf ahead and not directly next to the player
+						firstStep = 1
+					else src.reagents.splash(loc, src.reagents.maximum_volume/4)
 				hit_check(speed)
 				error += dist_x
 				dist_travelled++
@@ -160,6 +168,10 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
+				if (istype(src, /obj/item/weapon/reagent_containers) && src.is_open_container())
+					if(!firstStep) //i figured i wanted to start splashing one turf ahead and not directly next to the player
+						firstStep = 1
+					else src.reagents.splash(loc, src.reagents.maximum_volume/4)
 				hit_check(speed)
 				error -= dist_y
 				dist_travelled++
@@ -177,6 +189,10 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
+				if (istype(src, /obj/item/weapon/reagent_containers) && src.is_open_container())
+					if(!firstStep) //i figured i wanted to start splashing one turf ahead and not directly next to the player
+						firstStep = 1
+					else src.reagents.splash(loc, src.reagents.maximum_volume/4)
 				hit_check(speed)
 				error += dist_y
 				dist_travelled++
@@ -189,6 +205,10 @@
 				if(!step) // going off the edge of the map makes get_step return null, don't let things go off the edge
 					break
 				src.Move(step)
+				if (istype(src, /obj/item/weapon/reagent_containers) && src.is_open_container())
+					if(!firstStep) //i figured i wanted to start splashing one turf ahead and not directly next to the player
+						firstStep = 1
+					else src.reagents.splash(loc, src.reagents.maximum_volume/4)
 				hit_check(speed)
 				error -= dist_x
 				dist_travelled++
@@ -205,6 +225,9 @@
 	src.thrower = null
 	src.throw_source = null
 	fall()
+
+/atom/movable/proc/get_mass()
+	return mass
 
 //Overlays
 /atom/movable/overlay
@@ -229,6 +252,49 @@
 		return src.master.attack_hand(a, b, c)
 	return
 
+/mob/touch_map_edge()
+	..()
+	inertia_dir = last_move
+
+/atom/movable/proc/touch_map_edge()
+	#define worldWidth 5
+	#define worldLength 5
+	#define worldHeight 2
+
+	var/new_x = x
+	var/new_y = y
+	var/new_z = z
+	if(new_z)
+		if(x <= TRANSITIONEDGE-1) 						// West
+			new_x = TRANSITIONEDGE + 1
+			var/datum/zlevel_data/data = SSmazemap.map_data["[z]"]
+			if(data && data.W_connect)
+				new_z = data.W_connect
+				new_x = world.maxx - TRANSITIONEDGE - 1
+		else if (x >= (world.maxx + 1 - TRANSITIONEDGE))	// East
+			new_x = world.maxx - TRANSITIONEDGE - 1
+			var/datum/zlevel_data/data = SSmazemap.map_data["[z]"]
+			if(data && data.E_connect)
+				new_x = TRANSITIONEDGE + 1
+				new_z = data.E_connect
+
+		else if (y <= TRANSITIONEDGE-1) 					// South
+			new_y = world.maxy - TRANSITIONEDGE - 1
+			var/datum/zlevel_data/data = SSmazemap.map_data["[z]"]
+			if(data && data.S_connect)
+				new_z = data.S_connect
+		else if (y >= (world.maxy + 1 - TRANSITIONEDGE))	// North
+			new_y = TRANSITIONEDGE + 1
+			var/datum/zlevel_data/data = SSmazemap.map_data["[z]"]
+			if(data && data.N_connect)
+				new_z = data.N_connect
+				new_y = TRANSITIONEDGE + 1
+		var/turf/T = locate(new_x, new_y, new_z)
+		if(T)
+			forceMove(T)
+
+
+/**
 /atom/movable/proc/touch_map_edge()
 	if(!simulated)
 		return
@@ -254,7 +320,7 @@
 		if(x <= TRANSITIONEDGE) 						// West
 			new_x = world.maxx - TRANSITIONEDGE - 1
 			new_z -= worldHeight
-			if(new_z % (worldHeight * worldWidth) <= 0 || new_z % (worldHeight * worldWidth) >= (worldWidth - 1) * worldHeight) 
+			if(new_z % (worldHeight * worldWidth) <= 0 || new_z % (worldHeight * worldWidth) > (worldWidth - 1) * worldHeight)
 				new_z += worldWidth * worldHeight
 
 		else if (x >= (world.maxx - TRANSITIONEDGE))	// East
@@ -278,7 +344,17 @@
 		var/turf/T = locate(new_x, new_y, new_z)
 		if(T)
 			forceMove(T)
-
+**/
 #undef worldWidth
 #undef worldLength
 #undef worldHeight
+
+//Called by a weapon's "afterattack" proc when an attack has succeeded. Returns blocked damage
+/atom/movable/proc/hit_with_weapon(obj/item/I, mob/living/user, var/effective_force)
+	visible_message(SPAN_DANGER("[src] has been [I.attack_verb.len? pick(I.attack_verb) : "attacked"] with [I.name] by [user]!"))
+	return 0
+
+// called when movable is expelled from a disposal pipe or outlet
+// by default does nothing, override for special behaviour
+/atom/movable/proc/pipe_eject(var/direction)
+	return

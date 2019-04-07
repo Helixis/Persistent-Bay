@@ -38,7 +38,12 @@
 		programs.Add(list(program))
 
 	data["programs"] = programs
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+
+	data["updating"] = updating
+	data["update_progress"] = update_progress
+	data["updates"] = updates
+
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "laptop_mainscreen.tmpl", "NTOS Main Menu", 400, 500)
 		ui.auto_update_layout = 1
@@ -62,6 +67,12 @@
 		var/obj/item/weapon/computer_hardware/H = find_hardware_by_name(href_list["PC_disable_component"])
 		if(H && istype(H) && H.enabled)
 			H.enabled = 0
+		. = 1
+	if( href_list["PC_enable_update"] )
+		receives_updates = TRUE
+		. = 1
+	if( href_list["PC_disable_update"] )
+		receives_updates = FALSE
 		. = 1
 	if( href_list["PC_shutdown"] )
 		shutdown_computer()
@@ -92,6 +103,9 @@
 			return
 		set_autorun(href_list["PC_setautorun"])
 
+	if( href_list["PC_terminal"] )
+		open_terminal(usr)
+		return 1
 	if(.)
 		update_uis()
 

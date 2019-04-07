@@ -5,6 +5,7 @@
 	icon = 'icons/obj/machines/floodlight.dmi'
 	icon_state = "flood00"
 	density = 1
+	max_health = 100
 	var/on = 0
 	var/obj/item/weapon/cell/cell = null
 	var/use = 200 // 200W light
@@ -13,7 +14,8 @@
 	var/brightness_on = 8		//can't remember what the maxed out value is
 
 /obj/machinery/floodlight/New()
-	cell = new/obj/item/weapon/cell/crap(src)
+	if(!map_storage_loaded)
+		cell = new/obj/item/weapon/cell/apc(src)
 	..()
 
 /obj/machinery/floodlight/update_icon()
@@ -25,7 +27,7 @@
 		return
 
 	if(!cell || (cell.charge < (use * CELLRATE)))
-		turn_off(1)
+		turn_off()
 		return
 
 	// If the cell is almost empty rarely "flicker" the light. Aesthetic only.
@@ -39,7 +41,7 @@
 
 
 // Returns 0 on failure and 1 on success
-/obj/machinery/floodlight/proc/turn_on(var/loud = 0)
+/obj/machinery/floodlight/turn_on(var/loud = 0)
 	if(!cell)
 		return 0
 	if(cell.charge < (use * CELLRATE))
@@ -52,7 +54,7 @@
 		visible_message("\The [src] turns on.")
 	return 1
 
-/obj/machinery/floodlight/proc/turn_off(var/loud = 0)
+/obj/machinery/floodlight/turn_off(var/loud = 0)
 	on = 0
 	set_light(0, 0)
 	update_icon()
@@ -64,9 +66,9 @@
 		return attack_hand(user)
 
 	if(on)
-		turn_off(1)
+		turn_off()
 	else
-		if(!turn_on(1))
+		if(!turn_on())
 			to_chat(user, "You try to turn on \the [src] but it does not work.")
 
 
@@ -90,10 +92,12 @@
 		return
 
 	if(on)
-		turn_off(1)
+		turn_off()
 	else
-		if(!turn_on(1))
+		if(!turn_on())
 			to_chat(user, "You try to turn on \the [src] but it does not work.")
+			return
+	playsound(src, "sound/machines/switch-big-power.ogg", 30)
 
 	update_icon()
 
@@ -107,6 +111,8 @@
 			else
 				unlocked = 1
 				to_chat(user, "You unscrew the battery panel.")
+			update_icon()
+			return
 
 	if(isCrowbar(W))
 		if(unlocked)
@@ -118,7 +124,10 @@
 				if(unlocked)
 					open = 1
 					to_chat(user, "You remove the battery panel.")
-
+			update_icon()
+			return
+	if(default_wrench_floor_bolts(user,W))
+		return
 	if (istype(W, /obj/item/weapon/cell))
 		if(open)
 			if(cell)
@@ -128,4 +137,6 @@
 				W.loc = src
 				cell = W
 				to_chat(user, "You insert the power cell.")
-	update_icon()
+		update_icon()
+		return
+	return ..()

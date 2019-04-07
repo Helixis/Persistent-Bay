@@ -35,11 +35,16 @@
 	anchored = 1
 	state = 2
 
+/obj/machinery/power/emitter/AltClick()
+	rotate()
 /obj/machinery/power/emitter/verb/rotate()
 	set name = "Rotate"
 	set category = "Object"
 	set src in oview(1)
 
+	if(!usr || !Adjacent(usr))
+		return
+	
 	if(usr.incapacitated())
 		return
 
@@ -143,7 +148,7 @@
 
 		var/obj/item/projectile/beam/emitter/A = get_emitter_beam()
 		playsound(src.loc, A.fire_sound, 25, 1)
-		A.damage = round(power_per_shot/EMITTER_DAMAGE_POWER_TRANSFER)
+		A.force = round(power_per_shot/EMITTER_DAMAGE_POWER_TRANSFER)
 		A.launch( get_step(src.loc, src.dir) )
 
 /obj/machinery/power/emitter/attackby(obj/item/W, mob/user)
@@ -172,7 +177,7 @@
 		return
 
 	if(isWelder(W))
-		var/obj/item/weapon/weldingtool/WT = W
+		var/obj/item/weapon/tool/weldingtool/WT = W
 		if(active)
 			to_chat(user, "Turn off [src] first.")
 			return

@@ -29,6 +29,7 @@
 #define COLD_GAS_DAMAGE_LEVEL_3 3 //Amount of damage applied when the current breath's temperature passes the 120K point
 
 #define RADIATION_SPEED_COEFFICIENT 0.025
+#define PHORONATION_SPEED_COEFFICIENT 0.0025
 
 /mob/living/carbon/human
 	var/oxygen_alert = 0
@@ -44,7 +45,8 @@
 	set background = BACKGROUND_ENABLED
 	if(!loc)
 		return
-	if (transforming)
+
+	if (HAS_TRANSFORMATION_MOVEMENT_HANDLER(src))
 		return
 	if(last_hud_update < world.time)
 		last_hud_update = world.time + 15 SECONDS
@@ -118,7 +120,7 @@
 
 	var/pressure_adjustment_coefficient = 1 // Assume no protection at first.
 
-	if(wear_suit && (wear_suit.item_flags & STOPPRESSUREDAMAGE) && head && (head.item_flags & STOPPRESSUREDAMAGE)) // Complete set of pressure-proof suit worn, assume fully sealed.
+	if(wear_suit && (wear_suit.item_flags & ITEM_FLAG_STOPPRESSUREDAMAGE) && head && (head.item_flags & ITEM_FLAG_STOPPRESSUREDAMAGE)) // Complete set of pressure-proof suit worn, assume fully sealed.
 		pressure_adjustment_coefficient = 0
 
 		// Handles breaches in your space suit. 10 suit damage equals a 100% loss of pressure protection.
@@ -254,7 +256,7 @@
 			radiation -= 3 * RADIATION_SPEED_COEFFICIENT
 			if(!isSynthetic())
 				if(prob(5))
-					take_overall_damage(0, 5 * RADIATION_SPEED_COEFFICIENT, used_weapon = "Radiation Burns")
+					take_overall_damage(5 * RADIATION_SPEED_COEFFICIENT, DAM_BURN, used_weapon = "Radiation Burns")
 				if(prob(1))
 					to_chat(src, "<span class='warning'>You feel strange!</span>")
 					adjustCloneLoss(5 * RADIATION_SPEED_COEFFICIENT)
@@ -271,14 +273,48 @@
 				var/obj/item/organ/external/O = pick(organs)
 				if(istype(O)) O.add_autopsy_data("Radiation Poisoning", damage)
 
+		// Engagement is forever.
+		if (phoronation > 20)
+			if(prob(0.01 * phoronation))
+				if(chem_effects[CE_MIND] > 0)
+					to_chat(src, pick(
+						 "You feel calm.",
+						"You feel pleasantly enagaged.",
+						"You feel fine."))
+				else
+					to_chat(src, pick(
+						"<span class='warning'>You feel shame.</span>",
+						"<span class='warning'>You feel anxious.</span>",
+						"<span class='warning'>You feel regret.</span>",
+						"<span class='warning'>The ground beneath you feels unsteady.</span>",
+						"<span class='warning'>The world flashes orange for a second.</span>"))
+		if (phoronation > 40)
+			if(prob(0.01 * phoronation))
+				if(chem_effects[CE_MIND] > 0)
+					to_chat(src, pick (
+						"You feel calm.",
+						"You feel quite engaged.",
+						"You briefly think about the Rock."))
+				else
+					to_chat(src, pick(
+						"<span class='warning'>The floor rattles under you, you struggle to maintain balance!</span>",
+						"<span class='warning'>A whisper in your head... pain...</span>",
+						"<span class='warning'>The silence of the Rock echoes in your mind.</span>",
+						"<span class='warning'>You hear a mining drill in the distance.</span>",
+						"<span class='warning'>You hear the squeal of a mining cyborg's gears.</span>",
+						"<span class='warning'>The creature in your mind has thousands of teeth.</span>",
+						"<span class='warning'>The ground angrily trembles beneath your feet.</span>",
+						"<span class='warning'>You can see slugs, for a brief moment, as far as the eye can see.</span>"))
+					src.hallucination(50, 50)
+
 	/** breathing **/
 
 /mob/living/carbon/human/handle_chemical_smoke(var/datum/gas_mixture/environment)
-	if(wear_mask && (wear_mask.item_flags & BLOCK_GAS_SMOKE_EFFECT))
+	if(wear_mask && (wear_mask.item_flags & ITEM_FLAG_BLOCK_GAS_SMOKE_EFFECT))
 		return
-	if(glasses && (glasses.item_flags & BLOCK_GAS_SMOKE_EFFECT))
+	if(glasses && (glasses.item_flags & ITEM_FLAG_BLOCK_GAS_SMOKE_EFFECT))
 		return
-	if(head && (head.item_flags & BLOCK_GAS_SMOKE_EFFECT))
+	if(head && (head.item_flags & ITEM_FLAG_BLOCK_GAS_SMOKE_EFFECT))
 		return
 	..()
 
@@ -299,7 +335,7 @@
 			if(!rig.offline && (rig.air_supply && internal == rig.air_supply))
 				rig_supply = rig.air_supply
 
-		if (!rig_supply && (!contents.Find(internal) || !((wear_mask && (wear_mask.item_flags & AIRTIGHT)) || (head && (head.item_flags & AIRTIGHT)))))
+		if (!rig_supply && (!contents.Find(internal) || !((wear_mask && (wear_mask.item_flags & ITEM_FLAG_AIRTIGHT)) || (head && (head.item_flags & ITEM_FLAG_AIRTIGHT)))))
 			internal = null
 
 		if(internal)
@@ -383,7 +419,7 @@
 			burn_dam = HEAT_DAMAGE_LEVEL_2
 		else
 			burn_dam = HEAT_DAMAGE_LEVEL_3
-		take_overall_damage(burn=burn_dam, used_weapon = "High Body Temperature")
+		take_overall_damage(burn_dam, DAM_BURN, used_weapon = "High Body Temperature")
 		fire_alert = max(fire_alert, 2)
 
 	else if(bodytemperature <= getSpeciesOrSynthTemp(COLD_LEVEL_1))
@@ -400,7 +436,7 @@
 			burn_dam = COLD_DAMAGE_LEVEL_3
 		SetStasis(getCryogenicFactor(bodytemperature), STASIS_COLD)
 		if(!chem_effects[CE_CRYO])
-			take_overall_damage(burn=burn_dam, used_weapon = "Low Body Temperature")
+			take_overall_damage(burn_dam, DAM_BURN, used_weapon = "Low Body Temperature")
 			fire_alert = max(fire_alert, 1)
 
 	// Account for massive pressure differences.  Done by Polymorph
@@ -409,7 +445,7 @@
 
 	if(adjusted_pressure >= species.hazard_high_pressure)
 		var/pressure_damage = min( ( (adjusted_pressure / species.hazard_high_pressure) -1 )*PRESSURE_DAMAGE_COEFFICIENT , MAX_HIGH_PRESSURE_DAMAGE)
-		take_overall_damage(brute=pressure_damage, used_weapon = "High Pressure")
+		take_overall_damage(pressure_damage, DAM_BLUNT, used_weapon = "High Pressure")
 		pressure_alert = 2
 	else if(adjusted_pressure >= species.warning_high_pressure)
 		pressure_alert = 1
@@ -418,7 +454,7 @@
 	else if(adjusted_pressure >= species.hazard_low_pressure)
 		pressure_alert = -1
 	else
-		take_overall_damage(brute=LOW_PRESSURE_DAMAGE, used_weapon = "Low Pressure")
+		take_overall_damage(LOW_PRESSURE_DAMAGE, DAM_BLUNT, used_weapon = "Low Pressure")
 		if(getOxyLoss() < 55) // 11 OxyLoss per 4 ticks when wearing internals;    unconsciousness in 16 ticks, roughly half a minute
 			adjustOxyLoss(4)  // 16 OxyLoss per 4 ticks when no internals present; unconsciousness in 13 ticks, roughly twenty seconds
 		pressure_alert = -2
@@ -797,35 +833,34 @@
 					else					bodytemp.icon_state = "temp-4"
 			else
 				//TODO: precalculate all of this stuff when the species datum is created
-				var/base_temperature = species.body_temperature
-				if(base_temperature == null) //some species don't have a set metabolic temperature
-					base_temperature = (getSpeciesOrSynthTemp(HEAT_LEVEL_1) + getSpeciesOrSynthTemp(COLD_LEVEL_1))/2
+				if(species.base_temperature == null) //some species don't have a set metabolic temperature
+					species.base_temperature = (getSpeciesOrSynthTemp(HEAT_LEVEL_1) + getSpeciesOrSynthTemp(COLD_LEVEL_1))/2
 
 				var/temp_step
-				if (bodytemperature >= base_temperature)
-					temp_step = (getSpeciesOrSynthTemp(HEAT_LEVEL_1) - base_temperature)/4
+				if (bodytemperature >= species.base_temperature)
+					temp_step = (getSpeciesOrSynthTemp(HEAT_LEVEL_1) - species.base_temperature)/4
 
 					if (bodytemperature >= getSpeciesOrSynthTemp(HEAT_LEVEL_1))
 						bodytemp.icon_state = "temp4"
-					else if (bodytemperature >= base_temperature + temp_step*3)
+					else if (bodytemperature >= species.base_temperature + temp_step*3)
 						bodytemp.icon_state = "temp3"
-					else if (bodytemperature >= base_temperature + temp_step*2)
+					else if (bodytemperature >= species.base_temperature + temp_step*2)
 						bodytemp.icon_state = "temp2"
-					else if (bodytemperature >= base_temperature + temp_step*1)
+					else if (bodytemperature >= species.base_temperature + temp_step*1)
 						bodytemp.icon_state = "temp1"
 					else
 						bodytemp.icon_state = "temp0"
 
-				else if (bodytemperature < base_temperature)
-					temp_step = (base_temperature - getSpeciesOrSynthTemp(COLD_LEVEL_1))/4
+				else if (bodytemperature < species.base_temperature)
+					temp_step = (species.base_temperature - getSpeciesOrSynthTemp(COLD_LEVEL_1))/4
 
 					if (bodytemperature <= getSpeciesOrSynthTemp(COLD_LEVEL_1))
 						bodytemp.icon_state = "temp-4"
-					else if (bodytemperature <= base_temperature - temp_step*3)
+					else if (bodytemperature <= species.base_temperature - temp_step*3)
 						bodytemp.icon_state = "temp-3"
-					else if (bodytemperature <= base_temperature - temp_step*2)
+					else if (bodytemperature <= species.base_temperature - temp_step*2)
 						bodytemp.icon_state = "temp-2"
-					else if (bodytemperature <= base_temperature - temp_step*1)
+					else if (bodytemperature <= species.base_temperature - temp_step*1)
 						bodytemp.icon_state = "temp-1"
 					else
 						bodytemp.icon_state = "temp0"
@@ -837,7 +872,7 @@
 	for(var/tag in list(BP_LIVER,BP_KIDNEYS))
 		var/obj/item/organ/internal/I = internal_organs_by_name[tag]
 		if(I)
-			vomit_score += I.damage
+			vomit_score += I.get_damages()
 		else if (should_have_organ(tag))
 			vomit_score += 45
 	if(chem_effects[CE_TOXIN] || radiation)
@@ -1030,7 +1065,7 @@
 
 		var/datum/world_faction/faction = get_faction(src.GetFaction())
 		if(faction)
-			var/datum/computer_file/crew_record/E = faction.get_record(perpname)
+			var/datum/computer_file/report/crew_record/E = faction.get_record(perpname)
 			if(E)
 				switch(E.get_criminalStatus())
 					if("Arrest")
@@ -1113,7 +1148,7 @@
 
 	for(var/obj/item/organ/external/E in organs)
 		if(!(E.body_part & protected_limbs) && prob(20))
-			E.take_damage(burn = round(species_heat_mod * log(10, (burn_temperature + 10)), 0.1), used_weapon = fire)
+			E.take_damage(burn = round(species_heat_mod * log(10, (burn_temperature + 10)), 0.1), damsrc = fire)
 
 /mob/living/carbon/human/rejuvenate()
 	restore_blood()

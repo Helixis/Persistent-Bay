@@ -163,7 +163,7 @@ This saves us from having to call add_fingerprint() any time something is put in
 				update_inv_wear_mask(0)
 		if(src)
 			var/obj/item/clothing/mask/wear_mask = src.get_equipped_item(slot_wear_mask)
-			if(!(wear_mask && (wear_mask.item_flags & AIRTIGHT)))
+			if(!(wear_mask && (wear_mask.item_flags & ITEM_FLAG_AIRTIGHT)))
 				REMOVE_INTERNALS
 		update_inv_head()
 	else if (W == l_ear)
@@ -494,5 +494,12 @@ This saves us from having to call add_fingerprint() any time something is put in
 		if(r_store)    . += r_store
 		if(handcuffed) . += handcuffed
 		if(s_store)    . += s_store
+
+/mob/living/carbon/human/proc/has_item_equipped(var/itemtype)
+	var/list/equipped = get_equipped_items()
+	for(var/obj/item/E in equipped)
+		if(istype(E, itemtype))
+			return E
+	return null
 
 #undef REMOVE_INTERNALS

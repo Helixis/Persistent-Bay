@@ -4,13 +4,14 @@
 	extended_desc = "This program allows access to the crew's various records."
 	program_icon_state = "generic"
 	size = 14
-	requires_ntnet = 1
-	available_on_ntnet = 1
+	requires_ntnet = TRUE
+	available_on_ntnet = TRUE
 	nanomodule_path = /datum/nano_module/program/records
+	usage_flags = PROGRAM_ALL
 
 /datum/nano_module/program/records
 	name = "Crew Records"
-	var/datum/computer_file/crew_record/active_record
+	var/datum/computer_file/report/crew_record/active_record
 	var/message = null
 
 /datum/nano_module/program/records/ui_interact(mob/user, ui_key = "main", datum/nanoui/ui = null, force_open = 1, state = GLOB.default_state)
@@ -28,7 +29,7 @@
 	if(active_record)
 		user << browse_rsc(active_record.photo_front, "front_[active_record.uid].png")
 		user << browse_rsc(active_record.photo_side, "side_[active_record.uid].png")
-		data["pic_edit"] = check_access(user, core_access_command_programs) 
+		data["pic_edit"] = check_access(user, core_access_reassignment)
 		data["uid"] = active_record.uid
 		var/list/fields = list()
 		var/assignment = "Unassigned"
@@ -40,25 +41,25 @@
 			assignment = active_record.custom_title	//can be alt title or the actual job
 			rank = active_record.rank
 		else
-			if(connected_faction) 
-				var/datum/assignment/job = connected_faction.get_assignment(active_record.assignment_uid)
+			if(connected_faction)
+				var/datum/assignment/job = connected_faction.get_assignment(active_record.assignment_uid, active_record.get_name())
 				if(!job)
 					assignment = "Unassigned"
 					rank = 0
-				if(active_record.rank > 1  && (active_record.rank-1) <= job.ranks.len) 
+				if(active_record.rank > 1  && (active_record.rank-1) <= job.ranks.len)
 					assignment = job.ranks[active_record.rank-1]
 					rank = active_record.rank
 		fields.Add(list(list(
-			"key" = "assignment", 
-			"name" = "Assignment", 
-			"val" = assignment, 
+			"key" = "assignment",
+			"name" = "Assignment",
+			"val" = assignment,
 			"editable" = 0,
 			"large" = 0
 		)))
 		fields.Add(list(list(
-			"key" = "rank", 
-			"name" = "Rank", 
-			"val" = rank, 
+			"key" = "rank",
+			"name" = "Rank",
+			"val" = rank,
 			"editable" = 0,
 			"large" = 0
 		)))
@@ -67,9 +68,9 @@
 				continue
 			if(F.can_see(user_access))
 				fields.Add(list(list(
-					"key" = F.type, 
-					"name" = F.name, 
-					"val" = F.get_display_value(), 
+					"key" = F.type,
+					"name" = F.name,
+					"val" = F.get_display_value(),
 					"editable" = F.can_edit(user_access),
 					"large" = (F.valtype == EDIT_LONGTEXT)
 				)))
@@ -77,7 +78,7 @@
 	else
 		var/list/all_records = list()
 		if(faction_records)
-			for(var/datum/computer_file/crew_record/R in faction_records)
+			for(var/datum/computer_file/report/crew_record/R in faction_records)
 				var/assignment = "Unassigned"
 				var/rank = 0
 				if(R.terminated)
@@ -87,8 +88,8 @@
 					assignment = R.custom_title	//can be alt title or the actual job
 					rank = R.rank
 				else
-					if(connected_faction) 
-						var/datum/assignment/job = connected_faction.get_assignment(R.assignment_uid)
+					if(connected_faction)
+						var/datum/assignment/job = connected_faction.get_assignment(R.assignment_uid, R.get_name())
 						if(!job)
 							assignment = "Unassigned"
 							rank = 0
@@ -102,11 +103,11 @@
 					"id" = R.uid
 				)))
 			data["all_records"] = all_records
-			data["creation"] = check_access(user, core_access_command_programs)
+			data["creation"] = check_access(user, core_access_reassignment)
 			data["dnasearch"] = check_access(user, core_access_medical_programs)
 			data["fingersearch"] = check_access(user, core_access_security_programs)
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "crew_records.tmpl", name, 700, 540, state = state)
 		ui.auto_update_layout = 1
@@ -121,11 +122,11 @@
 	if(istype(PC) && PC.computer_emagged)
 		user_access = user_access.Copy()
 		user_access |= access_syndicate
-	
+
 	return user_access
 
 /datum/nano_module/program/records/proc/edit_field(var/mob/user, var/field)
-	var/datum/computer_file/crew_record/R = active_record
+	var/datum/computer_file/report/crew_record/R = active_record
 	if(!R)
 		return
 	var/record_field/F = locate(field) in R.fields
@@ -177,16 +178,16 @@
 		return 1
 	if(href_list["set_active"])
 		var/ID = text2num(href_list["set_active"])
-		for(var/datum/computer_file/crew_record/R in faction_records)
+		for(var/datum/computer_file/report/crew_record/R in faction_records)
 			if(R.uid == ID)
 				active_record = R
 				break
 		return 1
 	if(href_list["new_record"])
-		if(!check_access(usr, core_access_command_programs))
+		if(!check_access(usr, core_access_reassignment))
 			to_chat(usr, "Access Denied.")
 			return
-		active_record = new/datum/computer_file/crew_record()
+		active_record = new/datum/computer_file/report/crew_record()
 		faction_records.Add(active_record)
 		return 1
 	if(href_list["print_active"])
@@ -199,14 +200,14 @@
 		var/search = sanitize(input("Enter the value for search for.") as null|text)
 		if(!search)
 			return
-		for(var/datum/computer_file/crew_record/R in faction_records)
+		for(var/datum/computer_file/report/crew_record/R in faction_records)
 			if(lowertext(R.get_field(field)) == lowertext(search))
 				active_record = R
 				return 1
 		message = "Unable to find record containing '[search]'"
 		return 1
 
-	var/datum/computer_file/crew_record/R = active_record
+	var/datum/computer_file/report/crew_record/R = active_record
 	if(!istype(R))
 		return 1
 	if(href_list["edit_photo_front"])

@@ -6,8 +6,8 @@
 	program_menu_icon = "cart"
 	extended_desc = "A management tool that allows for ordering of various supplies through the facility's cargo system. Some features may require additional access."
 	size = 21
-	available_on_ntnet = 1
-	requires_ntnet = 1
+	available_on_ntnet = TRUE
+	requires_ntnet = TRUE
 
 /datum/computer_file/program/supply/process_tick()
 	..()
@@ -46,8 +46,8 @@
 			data["total_credits"] = supply_controller.point_sources["total"] ? supply_controller.point_sources["total"] : 0
 			data["credits_passive"] = supply_controller.point_sources["time"] ? supply_controller.point_sources["time"] : 0
 			data["credits_crates"] = supply_controller.point_sources["crate"] ? supply_controller.point_sources["crate"] : 0
-			data["credits_phoron"] = supply_controller.point_sources["phoron"] ? supply_controller.point_sources["phoron"] : 0
-			data["credits_platinum"] = supply_controller.point_sources["platinum"] ? supply_controller.point_sources["platinum"] : 0
+			data["credits_phoron"] = supply_controller.point_sources[MATERIAL_PHORON] ? supply_controller.point_sources[MATERIAL_PHORON] : 0
+			data["credits_platinum"] = supply_controller.point_sources[MATERIAL_PLATINUM] ? supply_controller.point_sources[MATERIAL_PLATINUM] : 0
 			data["credits_paperwork"] = supply_controller.point_sources["manifest"] ? supply_controller.point_sources["manifest"] : 0
 			data["credits_virology"] = supply_controller.point_sources["virology"] ? supply_controller.point_sources["virology"] : 0
 			data["can_print"] = can_print()
@@ -84,7 +84,7 @@
 			data["cart"] = cart
 			data["requests"] = requests
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "supply.tmpl", name, 1050, 800, state = state)
 		ui.set_auto_update(1)
@@ -161,7 +161,7 @@
 				shuttle.launch(user)
 		else
 			shuttle.launch(user)
-			var/datum/radio_frequency/frequency = radio_controller.return_frequency(1435)
+			var/datum/radio_frequency/frequency = radio_controller.return_frequency(STATUS_FREQ)
 			if(!frequency)
 				return
 

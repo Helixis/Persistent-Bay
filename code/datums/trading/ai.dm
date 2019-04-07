@@ -71,7 +71,7 @@ They sell generic supplies and ask for generic supplies.
 /datum/trader/trading_beacon/mine
 	origin = "Mining Beacon"
 
-	possible_trading_items = list(/obj/item/weapon/ore                    = TRADER_SUBTYPES_ONLY,
+	possible_trading_items = list(/obj/item/stack/ore                    = TRADER_SUBTYPES_ONLY,
 								/obj/item/stack/material/glass            = TRADER_ALL,
 								/obj/item/stack/material/glass/fifty      = TRADER_BLACKLIST,
 								/obj/item/stack/material/iron             = TRADER_THIS_TYPE,
@@ -114,6 +114,6 @@ They sell generic supplies and ask for generic supplies.
 								/obj/structure/plushie              = TRADER_SUBTYPES_ONLY,
 								/obj/structure/sign                 = TRADER_SUBTYPES_ONLY,
 								/obj/structure/sign/double          = TRADER_BLACKLIST_ALL,
-								/obj/structure/sign/goldenplaque    = TRADER_BLACKLIST_ALL,
+								/obj/item/sign/goldenplaque    		= TRADER_BLACKLIST_ALL,
 								/obj/structure/sign/poster          = TRADER_BLACKLIST
 								)

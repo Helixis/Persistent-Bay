@@ -34,30 +34,47 @@ var/global/photo_count = 0
 	var/icon/img	//Big photo image
 	var/scribble	//Scribble on the back.
 	var/image/tiny
+	var/image/render
 	var/photo_size = 3
 
 /obj/item/weapon/photo/New()
 	id = photo_count++
-//	/obj/item/weapon/photo/after_load()
-//		..()
-//		update_icon()
+	
+/obj/item/weapon/photo/after_load()		
+	..()
+	update_icon()
 /obj/item/weapon/photo/attack_self(mob/user as mob)
 	user.examinate(src)
 
 /obj/item/weapon/photo/update_icon()
-	overlays.Cut()
-	var/scale = 8/(photo_size*32)
-	var/image/small_img = image(img.icon)
-	small_img.transform *= scale
-	small_img.pixel_x = -32*(photo_size-1)/2 - 3
-	small_img.pixel_y = -32*(photo_size-1)/2
-	overlays |= small_img
+	if(!img && tiny)
+		render = image(tiny.icon)
+		overlays.Cut()
+		var/scale = 8/(photo_size*32)
+		var/image/small_img = image(tiny.icon)
+		small_img.transform *= scale
+		small_img.pixel_x = -32*(photo_size-1)/2 - 3
+		small_img.pixel_y = -32*(photo_size-1)/2
+		overlays |= small_img
 
-	tiny = image(img.icon)
-	tiny.transform *= 0.5*scale
-	tiny.underlays += image('icons/obj/bureaucracy.dmi',"photo")
-	tiny.pixel_x = -32*(photo_size-1)/2 - 3
-	tiny.pixel_y = -32*(photo_size-1)/2 + 3
+		tiny.transform *= 0.5*scale
+		tiny.underlays += image('icons/obj/bureaucracy.dmi',"photo")
+		tiny.pixel_x = -32*(photo_size-1)/2 - 3
+		tiny.pixel_y = -32*(photo_size-1)/2 + 3
+	else
+		overlays.Cut()
+		var/scale = 8/(photo_size*32)
+		var/image/small_img = image(img.icon)
+		small_img.transform *= scale
+		small_img.pixel_x = -32*(photo_size-1)/2 - 3
+		small_img.pixel_y = -32*(photo_size-1)/2
+		overlays |= small_img
+
+		tiny = image(img.icon)
+		tiny.transform *= 0.5*scale
+		tiny.underlays += image('icons/obj/bureaucracy.dmi',"photo")
+		tiny.pixel_x = -32*(photo_size-1)/2 - 3
+		tiny.pixel_y = -32*(photo_size-1)/2 + 3
 
 /obj/item/weapon/photo/attackby(obj/item/weapon/P as obj, mob/user as mob)
 	if(istype(P, /obj/item/weapon/pen))
@@ -74,14 +91,24 @@ var/global/photo_count = 0
 		to_chat(user, "<span class='notice'>It is too far away.</span>")
 
 /obj/item/weapon/photo/proc/show(mob/user as mob)
-	user << browse_rsc(img.icon, "tmp_photo_[id].png")
-	user << browse("<html><head><title>[name]</title></head>" \
-		+ "<body style='overflow:hidden;margin:0;text-align:center'>" \
-		+ "<img src='tmp_photo_[id].png' width='[64*photo_size]' style='-ms-interpolation-mode:nearest-neighbor' />" \
-		+ "[scribble ? "<br>Written on the back:<br><i>[scribble]</i>" : ""]"\
-		+ "</body></html>", "window=book;size=[64*photo_size]x[scribble ? 400 : 64*photo_size]")
-	onclose(user, "[name]")
-	return
+	if(img)
+		user << browse_rsc(img.icon, "tmp_photo_[id].png")
+		user << browse("<html><head><title>[name]</title></head>" \
+			+ "<body style='overflow:hidden;margin:0;text-align:center'>" \
+			+ "<img src='tmp_photo_[id].png' width='[64*photo_size]' style='-ms-interpolation-mode:nearest-neighbor' />" \
+			+ "[scribble ? "<br>Written on the back:<br><i>[scribble]</i>" : ""]"\
+			+ "</body></html>", "window=book;size=[64*photo_size]x[scribble ? 400 : 64*photo_size]")
+		onclose(user, "[name]")
+		return
+	else if(render)
+		user << browse_rsc(render.icon, "tmp_photo_[id].png")
+		user << browse("<html><head><title>[name]</title></head>" \
+			+ "<body style='overflow:hidden;margin:0;text-align:center'>" \
+			+ "<img src='tmp_photo_[id].png' width='[64*photo_size]' style='-ms-interpolation-mode:nearest-neighbor' />" \
+			+ "[scribble ? "<br>Written on the back:<br><i>[scribble]</i>" : ""]"\
+			+ "</body></html>", "window=book;size=[64*photo_size]x[scribble ? 400 : 64*photo_size]")
+		onclose(user, "[name]")
+		return
 
 /obj/item/weapon/photo/verb/rename()
 	set name = "Rename photo"
@@ -135,6 +162,9 @@ var/global/photo_count = 0
 /*********
 * camera *
 *********/
+/obj/item/device/camera/empty
+	pictures_left = 0
+
 /obj/item/device/camera
 	name = "camera"
 	icon = 'icons/obj/items.dmi'
@@ -142,9 +172,9 @@ var/global/photo_count = 0
 	icon_state = "camera"
 	item_state = "electropack"
 	w_class = ITEM_SIZE_SMALL
-	flags = CONDUCT
+	obj_flags = OBJ_FLAG_CONDUCTIBLE
 	slot_flags = SLOT_BELT
-	matter = list(DEFAULT_WALL_MATERIAL = 2000)
+	matter = list(MATERIAL_STEEL = 2000)
 	var/pictures_max = 10
 	var/pictures_left = 10
 	var/on = 1
@@ -282,14 +312,15 @@ var/global/photo_count = 0
 	p.name = name
 	p.icon = icon(icon, icon_state)
 	p.tiny = icon(tiny)
-	p.img = icon(img)
 	p.desc = desc
 	p.pixel_x = pixel_x
 	p.pixel_y = pixel_y
 	p.photo_size = photo_size
 	p.scribble = scribble
-
 	if(copy_id)
 		p.id = id
-
+	if(img)
+		p.img = icon(img)
+	else
+		p.update_icon()
 	return p

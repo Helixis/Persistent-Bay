@@ -3,18 +3,35 @@
 	desc = "A strong door."
 	icon = 'icons/obj/doors/windoor.dmi'
 	icon_state = "left"
-	var/base_state = "left"
-	min_force = 4
-	hitsound = 'sound/effects/Glasshit.ogg'
-	maxhealth = 150 //If you change this, consiter changing ../door/window/brigdoor/ health at the bottom of this .dm file
-	health = 150
 	visible = 0.0
-	use_power = 0
-	flags = ON_BORDER
+	use_power = POWER_USE_OFF
+	atom_flags = ATOM_FLAG_CHECKS_BORDER
 	opacity = 0
-	var/obj/item/weapon/airlock_electronics/electronics = null
 	explosion_resistance = 5
 	air_properties_vary_with_direction = 1
+
+	sound_hit = 'sound/effects/Glasshit.ogg'
+	sound_destroyed = "shatter"
+	max_health = 150 //If you change this, consiter changing ../door/window/brigdoor/ health at the bottom of this .dm file
+	armor = list(
+		DAM_BLUNT  	= 50,
+		DAM_PIERCE 	= 50,
+		DAM_CUT 	= 80,
+		DAM_BULLET 	= 10,
+		DAM_ENERGY 	= 10,
+		DAM_BURN 	= 5,
+		DAM_BOMB 	= 5,
+		DAM_EMP 	= 50,
+		DAM_BIO 	= MaxArmorValue,
+		DAM_RADS 	= MaxArmorValue,
+		DAM_STUN 	= MaxArmorValue,
+		DAM_PAIN	= MaxArmorValue,
+		DAM_CLONE   = MaxArmorValue)
+	damthreshold_brute 	= 5
+	damthreshold_burn	= 5
+
+	var/base_state = "left"
+	var/obj/item/weapon/airlock_electronics/electronics = null
 
 /obj/machinery/door/window/New()
 	..()
@@ -30,7 +47,7 @@
 	else
 		icon_state = "[base_state]open"
 
-/obj/machinery/door/window/proc/shatter(var/display_message = 1)
+/obj/machinery/door/window/destroyed(var/display_message = 1)
 	new /obj/item/weapon/material/shard(src.loc)
 	var/obj/item/stack/cable_coil/CC = new /obj/item/stack/cable_coil(src.loc)
 	CC.amount = 2
@@ -59,7 +76,7 @@
 	qdel(src)
 
 /obj/machinery/door/window/deconstruct(mob/user, var/moved = FALSE)
-	shatter()
+	destroyed()
 
 /obj/machinery/door/window/Destroy()
 	set_density(0)
@@ -83,8 +100,7 @@
 					close()
 		return
 	var/mob/M = AM // we've returned by here if M is not a mob
-	if (!( ticker ))
-		return
+
 	if (src.operating)
 		return
 	if (src.density && (!issmall(M) || ishuman(M)) && src.allowed(AM))
@@ -97,7 +113,7 @@
 	return
 
 /obj/machinery/door/window/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
-	if(istype(mover) && mover.checkpass(PASSGLASS))
+	if(istype(mover) && mover.checkpass(PASS_FLAG_GLASS))
 		return 1
 	if(get_dir(loc, target) == dir) //Make sure looking at appropriate border
 		if(air_group) return 0
@@ -106,7 +122,7 @@
 		return 1
 
 /obj/machinery/door/window/CheckExit(atom/movable/mover as mob|obj, turf/target as turf)
-	if(istype(mover) && mover.checkpass(PASSGLASS))
+	if(istype(mover) && mover.checkpass(PASS_FLAG_GLASS))
 		return 1
 	if(get_dir(loc, target) == dir)
 		return !density
@@ -115,8 +131,6 @@
 
 /obj/machinery/door/window/open()
 	if (operating == 1) //doors can still open when emag-disabled
-		return 0
-	if (!ticker)
 		return 0
 	if (!src.operating) //in case of emag
 		src.operating = 1
@@ -149,11 +163,6 @@
 	src.operating = 0
 	return 1
 
-/obj/machinery/door/window/take_damage(var/damage)
-	src.health = max(0, src.health - damage)
-	if (src.health <= 0)
-		shatter()
-		return
 
 /obj/machinery/door/window/attack_ai(mob/user as mob)
 	return src.attack_hand(user)
@@ -199,9 +208,8 @@
 			playsound(src.loc, 'sound/weapons/blade1.ogg', 50, 1)
 			visible_message("<span class='warning'>The glass door was sliced open by [user]!</span>")
 		return 1
-
-	//If it's emagged, crowbar can pry electronics out.
-	if (src.operating == -1 && isCrowbar(I))
+	//If it's emagged, crowbar can pry electronics out. Now deconstructable!
+	if (isCrowbar(I) && p_open)
 		playsound(src.loc, 'sound/items/Crowbar.ogg', 100, 1)
 		user.visible_message("[user] removes the electronics from the windoor.", "You start to remove electronics from the windoor.")
 		if (do_after(user,40,src))
@@ -219,6 +227,8 @@
 			wa.state = "02"
 			wa.update_icon()
 
+			qdel(src)
+
 			var/obj/item/weapon/airlock_electronics/ae
 			if(!electronics)
 				ae = new/obj/item/weapon/airlock_electronics( src.loc )
@@ -230,25 +240,11 @@
 					ae.conf_access = src.req_one_access
 					ae.one_access = 1
 				ae.req_access_faction = req_access_faction
-			else
-				ae = electronics
-				electronics = null
-				ae.loc = src.loc
-			ae.icon_state = "door_electronics_smoked"
-
-			operating = 0
-			shatter(src)
 			return
 
 	//If it's a weapon, smash windoor. Unless it's an id card, agent card, ect.. then ignore it (Cards really shouldnt damage a door anyway)
 	if(src.density && istype(I, /obj/item/weapon) && !istype(I, /obj/item/weapon/card))
-		user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
-		var/aforce = I.force
-		playsound(src.loc, 'sound/effects/Glasshit.ogg', 75, 1)
-		visible_message("<span class='danger'>[src] was hit by [I].</span>")
-		if(I.damtype == BRUTE || I.damtype == BURN)
-			take_damage(aforce)
-		return
+		return ..()
 
 
 	src.add_fingerprint(user)
@@ -273,9 +269,23 @@
 	base_state = "leftsecure"
 	req_access = list(access_security)
 	var/id = null
-	maxhealth = 300
-	health = 300.0 //Stronger doors for prison (regular window door health is 150)
-
+	max_health = 300 //Stronger doors for prison (regular window door health is 150)
+	armor = list(
+		DAM_BLUNT  	= 95,
+		DAM_PIERCE 	= 80,
+		DAM_CUT 	= 95,
+		DAM_BULLET 	= 70,
+		DAM_ENERGY 	= 70,
+		DAM_BURN 	= 70,
+		DAM_BOMB 	= 60,
+		DAM_EMP 	= 80,
+		DAM_BIO 	= MaxArmorValue,
+		DAM_RADS 	= MaxArmorValue,
+		DAM_STUN 	= MaxArmorValue,
+		DAM_PAIN	= MaxArmorValue,
+		DAM_CLONE   = MaxArmorValue)
+	damthreshold_brute 	= 10
+	damthreshold_burn	= 10
 
 /obj/machinery/door/window/northleft
 	dir = NORTH

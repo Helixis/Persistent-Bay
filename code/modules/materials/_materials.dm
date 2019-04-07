@@ -16,12 +16,21 @@
 			stone
 			metal
 			solid
+			comp_solid
 			cult
+			reinf_stone
+			jaggy
+			curvy
 		DOORS
 			stone
 			metal
 			resin
 			wood
+		TABLES
+			stone
+			metal
+			solid
+			carpet
 */
 
 //Returns the material the object is made of, if applicable.
@@ -41,30 +50,33 @@
 	var/display_name                      // Prettier name for display.
 	var/adjective_name
 	var/use_name
-	var/flags = 0                         // Various status modifiers.
+	var/flags = 0							// Various status modifiers.
 	var/sheet_singular_name = "sheet"
 	var/sheet_plural_name = "sheets"
 	var/is_fusion_fuel
-	var/list/chem_products				  // Used with the grinder to produce chemicals
+	var/list/chem_products					// Used with the grinder to produce chemicals
 
 	// Shards/tables/structures
-	var/shard_type = SHARD_SHRAPNEL       // Path of debris object.
-	var/shard_icon                        // Related to above.
-	var/shard_can_repair = 1              // Can shards be turned into sheets with a welder?
-	var/list/recipes                      // Holder for all recipes usable with a sheet of this material.
-	var/destruction_desc = "breaks apart" // Fancy string for barricades/tables/objects exploding.
+	var/shard_type = SHARD_SHRAPNEL			// Path of debris object.
+	var/shard_icon							// Related to above.
+	var/shard_can_repair = 1				// Can shards be turned into sheets with a welder?
+	var/list/recipes						// Holder for all recipes usable with a sheet of this material.
+	var/destruction_desc = "breaks apart"	// Fancy string for barricades/tables/objects exploding.
 
 	// Icons
-	var/icon_colour                                      // Colour applied to products of this material.
-	var/icon_base = "solid"                              // Wall and table base icon tag. See header.
-	var/door_icon_base = "metal"                         // Door base icon tag. See header.
-	var/icon_reinf = "metal"                       // Overlay used
+	var/icon_colour							// Colour applied to products of this material.
+	var/icon_base = "comp_solid"			// Regular wall icon tag. See header for valid icons.
+	var/icon_reinf = "comp_solid"				// Reinforced wall icon tag. See header for valid icons.
+	var/icon_door = "metal"					// Door icon tag. See header for valid icons.
+	var/icon_table = "solid"				// Table icon tag. See header for valid icons.
+
 	var/list/stack_origin_tech = list(TECH_MATERIAL = 1) // Research level for stacks.
 
 	// Attributes
 	var/cut_delay = 0            // Delay in ticks when cutting through this wall.
 	var/radioactivity            // Radiation var. Used in wall and object processing to irradiate surroundings.
 	var/ignition_point           // K, point at which the material catches on fire.
+	var/energy_combustion = 8    // MJ/kilo-unit Basically the heat energy given off for burning 1,000 units of said material(8 is given for generic trash on wikipedia)
 	var/melting_point = 1800     // K, walls will take damage if they're next to a fire hotter than this
 	var/brute_armor = 2	 		 // Brute damage to a wall is divided by this value if the wall is reinforced by this material.
 	var/burn_armor				 // Same as above, but for Burn damage type. If blank brute_armor's value is used.
@@ -107,9 +119,11 @@
 	var/ore_spread_chance
 	var/ore_scan_icon
 	var/ore_icon_overlay
+	var/list/ore_matter = list() //material contained in the ore itself
+
  	// Xenoarch behavior.
 	var/list/xarch_ages = list("thousand" = 999, "million" = 999)
-	var/xarch_source_mineral = "iron"
+	var/xarch_source_mineral = MATERIAL_IRON
 
 // Placeholders for light tiles and rglass.
 /material/proc/build_rod_product(var/mob/user, var/obj/item/stack/used_stack, var/obj/item/stack/target_stack)
@@ -208,3 +222,7 @@
 
 /material/proc/combustion_effect(var/turf/T, var/temperature)
 	return
+
+//Returns the material content of the ore for this material if available
+/material/proc/get_ore_matter()
+	return ore_matter

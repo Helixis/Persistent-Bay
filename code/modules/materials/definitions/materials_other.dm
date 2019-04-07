@@ -1,31 +1,32 @@
 /material/waste
-	name = "waste"
+	name = MATERIAL_SLAG
 	stack_type = null
 	icon_colour = "#2e3a07"
-	ore_name = "slag"
+	ore_name = MATERIAL_SLAG
 	ore_desc = "Someone messed up..."
 	ore_icon_overlay = "lump"
+	energy_combustion = 8
 
 /material/cult
-	name = "cult"
+	name = MATERIAL_CULT
 	display_name = "disturbing stone"
 	icon_base = "cult"
 	icon_colour = "#402821"
-	icon_reinf = "reinf_cult"
+	icon_reinf = "cult"
 	shard_type = SHARD_STONE_PIECE
 	sheet_singular_name = "brick"
 	sheet_plural_name = "bricks"
 	conductive = 0
 
 /material/cult/reinf
-	name = "cult2"
+	name = MATERIAL_REINFORCED_CULT
 	display_name = "runic inscriptions"
 
 /material/resin
-	name = "resin"
+	name = MATERIAL_RESIN
 	icon_colour = "#e85dd8"
 	dooropen_noise = 'sound/effects/attackblob.ogg'
-	door_icon_base = "resin"
+	icon_door = "resin"
 	melting_point = T0C+300
 	sheet_singular_name = "blob"
 	sheet_plural_name = "blobs"

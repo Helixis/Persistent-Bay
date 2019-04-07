@@ -6,16 +6,17 @@
 	desc = "Made of nothing. How does this even exist?" // set based on material, if this desc is visible it's a bug (shards default to being made of glass)
 	icon_state = "large"
 	randpixel = 8
-	sharp = 1
-	edge = 1
+	sharpness = 1
 	w_class = ITEM_SIZE_SMALL
 	force_divisor = 0.2 // 6 with hardness 30 (glass)
 	thrown_force_divisor = 0.4 // 4 with weight 15 (glass)
 	item_state = "shard-glass"
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
-	default_material = "glass"
+	default_material = MATERIAL_GLASS
 	unbreakable = 1 //It's already broken.
 	drops_debris = 0
+	damtype = DAM_CUT
+	mass = 0.250
 
 /obj/item/weapon/material/shard/set_material(var/new_material)
 	..(new_material)
@@ -47,7 +48,7 @@
 
 /obj/item/weapon/material/shard/attackby(obj/item/weapon/W as obj, mob/user as mob)
 	if(isWelder(W) && material.shard_can_repair)
-		var/obj/item/weapon/weldingtool/WT = W
+		var/obj/item/weapon/tool/weldingtool/WT = W
 		if(WT.remove_fuel(0, user))
 			material.place_sheet(loc)
 			qdel(src)
@@ -66,7 +67,7 @@
 		if(ishuman(M))
 			var/mob/living/carbon/human/H = M
 
-			if(H.species.siemens_coefficient<0.5 || (H.species.flags & (NO_EMBED|NO_MINOR_CUT))) //Thick skin.
+			if(H.species.siemens_coefficient<0.5 || (H.species.species_flags & (SPECIES_FLAG_NO_EMBED|SPECIES_FLAG_NO_MINOR_CUT))) //Thick skin.
 				return
 
 			if( H.shoes || ( H.wear_suit && (H.wear_suit.body_parts_covered & FEET) ) )
@@ -79,7 +80,7 @@
 				var/picked = pick(check)
 				var/obj/item/organ/external/affecting = H.get_organ(picked)
 				if(affecting)
-					if(affecting.robotic >= ORGAN_ROBOT)
+					if(BP_IS_ROBOTIC(affecting))
 						return
 					affecting.take_damage(5, 0)
 					H.updatehealth()
@@ -92,14 +93,14 @@
 // Preset types - left here for the code that uses them
 /obj/item/weapon/material/shrapnel
 	name = "shrapnel"
-	default_material = DEFAULT_WALL_MATERIAL
+	default_material = MATERIAL_STEEL
 	w_class = ITEM_SIZE_TINY	//it's real small
 
 /obj/item/weapon/material/shard/shrapnel/New(loc)
-	..(loc, DEFAULT_WALL_MATERIAL)
+	..(loc, MATERIAL_STEEL)
 
 /obj/item/weapon/material/shard/phoron/New(loc)
-	..(loc, "phglass")
+	..(loc, MATERIAL_PHORON_GLASS)
 
 /obj/item/weapon/material/shard/fiberglass/New(loc)
 	..(loc, "fiberglass")

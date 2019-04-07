@@ -71,7 +71,7 @@
 
 /*
 	/* ----- Deconstruction ----- */
-		if (istype(W, /obj/item/weapon/wirecutters))
+		if (istype(W, /obj/item/weapon/tool/wirecutters))
 			if (src.d_state == 0)
 				playsound(src.loc, "sound/items/Wirecutter.ogg", 100, 1)
 				src.d_state = 1
@@ -79,10 +79,10 @@
 				if (src.material)
 					A.setMaterial(src.material)
 				else
-					A.setMaterial(getCachedMaterial("steel"))
+					A.setMaterial(getCachedMaterial(MATERIAL_SANDSTONE))
 				src.update_icon()
 
-		else if (istype(W, /obj/item/weapon/screwdriver))
+		else if (istype(W, /obj/item/weapon/tool/screwdriver))
 			if (src.d_state == 1)
 				var/turf/T = user.loc
 				playsound(src.loc, "sound/items/Screwdriver.ogg", 100, 1)
@@ -95,7 +95,7 @@
 					src.d_state = 2
 					to_chat(user, "<span style=\"color:blue\">You removed the support lines.</span>")
 
-		else if (istype(W, /obj/item/weapon/weldingtool) && W:welding)
+		else if (istype(W, /obj/item/weapon/tool/weldingtool) && W:welding)
 			var/obj/item/weldingtool/Weld = W
 			var/turf/T = user.loc
 			if (!(istype(T, /turf)))
@@ -122,7 +122,7 @@
 					if (src.material)
 						A.setMaterial(src.material)
 					else
-						A.setMaterial(getCachedMaterial("steel"))
+						A.setMaterial(getCachedMaterial(MATERIAL_SANDSTONE))
 					to_chat(user, "<span style=\"color:blue\">You removed the support rods.</span>")
 				else if ((istype(user, /mob/living/silicon/robot) && (user.loc == T)))
 					src.d_state = 6
@@ -130,10 +130,10 @@
 					if (src.material)
 						A.setMaterial(src.material)
 					else
-						A.setMaterial(getCachedMaterial("steel"))
+						A.setMaterial(getCachedMaterial(MATERIAL_SANDSTONE))
 					to_chat(user, "<span style=\"color:blue\">You removed the support rods.</span>")
 
-		else if (istype(W, /obj/item/weapon/crowbar))
+		else if (istype(W, /obj/item/weapon/tool/crowbar))
 			if (src.d_state == 3)
 				var/turf/T = user.loc
 				to_chat(user, "<span style=\"color:blue\">Prying cover off.</span>")
@@ -202,7 +202,7 @@
 				if (S.material)
 					src.setMaterial(S.material)
 				else
-					var/datum/material/M = getCachedMaterial("steel")
+					var/datum/material/M = getCachedMaterial(MATERIAL_SANDSTONE)
 					src.setMaterial(M)
 				to_chat(user, "<span style=\"color:blue\">You repaired the wall.</span>")
 				if (S.amount > 1)

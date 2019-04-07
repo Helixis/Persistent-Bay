@@ -27,3 +27,5 @@ Save.txt
 
 # ignore saved vars
 saved_vars/
+*.exe.stackdump
+.vscode

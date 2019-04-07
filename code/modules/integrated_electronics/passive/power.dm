@@ -37,7 +37,7 @@
 	var/is_charge = FALSE
 
 /obj/item/integrated_circuit/passive/power/starter/make_energy()
-	if(assembly.battery)
+	if(assembly && assembly.battery)
 		if(assembly.battery.charge)
 			if(!is_charge)
 				activate_pin(1)
@@ -90,7 +90,7 @@
 	icon_state = "chemical_cell"
 	extended_desc = "This is effectively an internal beaker. It will consume and produce power from plasma, slime jelly, welding fuel, carbon,\
 	 ethanol, nutriment, and blood in order of decreasing efficiency. It will consume fuel only if the battery can take more energy."
-	flags = OPENCONTAINER
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 	complexity = 4
 	inputs = list()
 	outputs = list("volume used" = IC_PINTYPE_NUMBER, "self reference" = IC_PINTYPE_REF)

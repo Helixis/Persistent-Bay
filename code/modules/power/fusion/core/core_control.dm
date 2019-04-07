@@ -1,10 +1,14 @@
 /obj/machinery/computer/fusion_core_control
 	name = "\improper R-UST Mk. 8 core control"
-	icon = 'icons/obj/machines/power/fusion.dmi'
-	icon_state = "core_control"
+	icon_keyboard = "power_key"
+	icon_screen = "rust_screen"
 	light_color = COLOR_ORANGE
-
-	var/id_tag
+	idle_power_usage = 250
+	active_power_usage = 500
+	id_tag = null
+	// frequency = ENGINE_FREQ
+	// radio_filter_in = RADIO_ENGI
+	// radio_filter_out = RADIO_ENGI
 	var/scan_range = 25
 	var/list/connected_devices = list()
 	var/obj/machinery/power/fusion_core/cur_viewed_device

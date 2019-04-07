@@ -5,7 +5,7 @@
 	spawn() //to stop the secrets panel hanging
 		var/turf/T = pick_subarea_turf(/area/hallway , list(/proc/is_station_turf, /proc/not_turf_contains_dense_objects))
 		if(T)
-			var/datum/seed/seed = plant_controller.create_random_seed(1)
+			var/datum/seed/seed = SSplants.create_random_seed(1)
 			seed.set_trait(TRAIT_SPREAD,2)             // So it will function properly as vines.
 			seed.set_trait(TRAIT_POTENCY,rand(potency_min, potency_max)) // 70-100 potency will help guarantee a wide spread and powerful effects.
 			seed.set_trait(TRAIT_MATURATION,rand(maturation_min, maturation_max))
@@ -46,11 +46,11 @@
 	icon_state = ""
 	plane = OBJ_PLANE
 	layer = OBJ_LAYER
-	pass_flags = PASSTABLE
+	pass_flags = PASS_FLAG_TABLE
 	mouse_opacity = 1
 
-	var/health = 10
-	var/max_health = 100
+	health = 10
+	max_health = 100
 	var/growth_threshold = 0
 	var/growth_type = 0
 	var/max_growth = 0
@@ -80,16 +80,16 @@
 	if(start_matured)
 		mature_time = 0
 		health = max_health
-	..()
+
 
 /obj/effect/vine/Initialize()
 	. = ..()
 
-	if(!plant_controller)
+	if(!SSplants)
 		log_error("<span class='danger'>Plant controller does not exist and [src] requires it. Aborting.</span>")
 		return INITIALIZE_HINT_QDEL
 	if(!istype(seed))
-		seed = plant_controller.seeds[DEFAULT_SEED]
+		seed = SSplants.seeds[DEFAULT_SEED]
 	if(!seed)
 		return INITIALIZE_HINT_QDEL
 	name = seed.display_name
@@ -142,9 +142,9 @@
 	growth = max(1,max_growth)
 
 	var/ikey = "\ref[seed]-plant-[growth]"
-	if(!plant_controller.plant_icon_cache[ikey])
-		plant_controller.plant_icon_cache[ikey] = seed.get_icon(growth)
-	overlays += plant_controller.plant_icon_cache[ikey]
+	if(!SSplants.plant_icon_cache[ikey])
+		SSplants.plant_icon_cache[ikey] = seed.get_icon(growth)
+	overlays += SSplants.plant_icon_cache[ikey]
 
 	if(growth > 2 && growth == max_growth)
 		layer = (seed && seed.force_layer) ? seed.force_layer : ABOVE_OBJ_LAYER
@@ -222,7 +222,7 @@
 	user.setClickCooldown(DEFAULT_ATTACK_COOLDOWN)
 	START_PROCESSING(SSvines, src)
 
-	if(isWirecutter(W) || istype(W, /obj/item/weapon/scalpel))
+	if(isWirecutter(W) || istype(W, /obj/item/weapon/scalpel) || isScissors(W))
 		if(sampled)
 			to_chat(user, "<span class='warning'>You cannot take another sample from \the [src].</span>")
 			return

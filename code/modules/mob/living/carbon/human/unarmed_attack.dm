@@ -17,6 +17,7 @@ var/global/list/sparring_attack_cache = list()
 
 	var/eye_attack_text
 	var/eye_attack_text_victim
+	var/damtype = DAM_BLUNT
 
 /datum/unarmed_attack/proc/get_sparring_variant()
 	if(sparring_variant_type)
@@ -97,15 +98,15 @@ var/global/list/sparring_attack_cache = list()
 /datum/unarmed_attack/proc/handle_eye_attack(var/mob/living/carbon/human/user, var/mob/living/carbon/human/target)
 	var/obj/item/organ/internal/eyes/eyes = target.internal_organs_by_name[BP_EYES]
 	if(eyes)
-		eyes.take_damage(rand(3,4), 1)
+		eyes.take_damage(rand(3,4))
 		user.visible_message("<span class='danger'>[user] presses \his [eye_attack_text] into [target]'s [eyes.name]!</span>")
 		var/eye_pain = eyes.can_feel_pain()
 		to_chat(target, "<span class='danger'>You experience[(eye_pain) ? "" : " immense pain as you feel" ] [eye_attack_text_victim] being pressed into your [eyes.name][(eye_pain)? "." : "!"]</span>")
 		return
 	user.visible_message("<span class='danger'>[user] attempts to press \his [eye_attack_text] into [target]'s eyes, but they don't have any!</span>")
 
-/datum/unarmed_attack/proc/damage_flags()
-	return (src.sharp? DAM_SHARP : 0)|(src.edge? DAM_EDGE : 0)
+/datum/unarmed_attack/proc/damage_type()
+	return damtype
 
 /datum/unarmed_attack/bite
 	attack_verb = list("bit")
@@ -120,7 +121,7 @@ var/global/list/sparring_attack_cache = list()
 	if(istype(user.wear_mask, /obj/item/clothing/mask/muzzle))
 		return 0
 	for(var/obj/item/clothing/C in list(user.wear_mask, user.head, user.wear_suit))
-		if(C && (C.body_parts_covered & FACE) && (C.item_flags & THICKMATERIAL))
+		if(C && (C.body_parts_covered & FACE) && (C.item_flags & ITEM_FLAG_THICKMATERIAL))
 			return 0 //prevent biting through a space helmet or similar
 	if (user == target && (zone == BP_HEAD || zone == BP_EYES || zone == BP_MOUTH))
 		return 0 //how do you bite yourself in the head?

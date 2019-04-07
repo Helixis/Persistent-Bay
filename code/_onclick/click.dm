@@ -145,6 +145,11 @@
 
 			trigger_aiming(TARGET_CAN_CLICK)
 	return 1
+	
+/mob/living/ClickOn()
+	if(SSautosave.saving)
+		return
+	. = ..()
 
 /mob/proc/setClickCooldown(var/timeout)
 	next_move = max(world.time + timeout, next_move)
@@ -172,10 +177,6 @@
 	return
 
 /mob/living/UnarmedAttack(var/atom/A, var/proximity_flag)
-
-	if(!ticker)
-		to_chat(src, "You cannot attack people before the game has started.")
-		return 0
 
 	if(stat)
 		return 0
@@ -288,6 +289,16 @@
 	return
 
 /*
+	Control+Alt click
+*/
+/mob/proc/CtrlAltClickOn(var/atom/A)
+	A.CtrlAltClick(src)
+	return
+
+/atom/proc/CtrlAltClick(var/mob/user)
+	return
+
+/*
 	Misc helpers
 
 	Laser Eyes: as the name implies, handles this since nothing else does currently
@@ -336,6 +347,9 @@
 	plane = CLICKCATCHER_PLANE
 	mouse_opacity = 2
 	screen_loc = "CENTER-7,CENTER-7"
+
+/obj/screen/click_catcher/Destroy()
+	return QDEL_HINT_LETMELIVE
 
 /proc/create_click_catcher()
 	. = list()

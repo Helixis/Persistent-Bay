@@ -13,7 +13,7 @@
 	icon = DRINK_ICON_FILE
 	base_icon = "square" // Base icon name
 	volume = 30
-	matter = list("glass" = 65)
+	matter = list(MATERIAL_GLASS = 65)
 
 	var/list/extras = list() // List of extras. Two extras maximum
 
@@ -23,7 +23,7 @@
 
 	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = "5;10;15;30"
-	flags = OPENCONTAINER
+	atom_flags = ATOM_FLAG_OPEN_CONTAINER
 
 /obj/item/weapon/reagent_containers/food/drinks/glass2/examine(mob/M as mob)
 	. = ..()

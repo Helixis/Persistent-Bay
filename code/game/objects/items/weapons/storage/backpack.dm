@@ -10,6 +10,7 @@
 		slot_l_hand_str = 'icons/mob/items/lefthand_backpacks.dmi',
 		slot_r_hand_str = 'icons/mob/items/righthand_backpacks.dmi',
 		)
+	icon = 'icons/obj/items/storage/backpacks.dmi'
 	icon_state = "backpack"
 	item_state = null
 	//most backpacks use the default backpack state for inhand overlays
@@ -42,8 +43,8 @@
  */
 
 /obj/item/weapon/storage/backpack/holding
-	name = "bag of holding"
-	desc = "A backpack that opens into a localized pocket of Blue Space."
+	name = "quantum bag"
+	desc = "A backpack that uses phoron reaction to allow matter to overlap in the bag."
 	origin_tech = list(TECH_BLUESPACE = 4)
 	icon_state = "holdingpack"
 	max_w_class = ITEM_SIZE_NORMAL
@@ -66,14 +67,15 @@
 			return 1
 		return ..()
 
-/obj/item/weapon/storage/backpack/santabag
-	name = "\improper Santa's gift bag"
-	desc = "Space Santa uses this to deliver toys to all the nice children in space for Christmas! Wow, it's pretty big!"
+/obj/item/weapon/storage/backpack/leathersack
+	name = "leather bag"
+	desc = "A large leather bag capable of storing alot of gear!"
+	icon = 'icons/obj/items/storage/bags.dmi'
 	icon_state = "giftbag0"
 	item_state = "giftbag"
 	w_class = ITEM_SIZE_HUGE
-	max_w_class = ITEM_SIZE_NORMAL
-	max_storage_space = 400 // can store a ton of shit!
+	slot_flags = null
+	max_storage_space = DEFAULT_BACKPACK_STORAGE + 10	//dufflebag storage
 	item_state_slots = null
 
 /obj/item/weapon/storage/backpack/cultpack
@@ -141,13 +143,43 @@
 	name = "chemistry backpack"
 	desc = "It's an orange backpack which was designed to hold beakers, pill bottles and bottles."
 	icon_state = "chempack"
-	
+
+/*
+ * Rucksacks
+ */
+/obj/item/weapon/storage/backpack/rucksack
+	name = "black rucksack"
+	desc = "A sturdy military-grade backpack with low-profile straps. Designed to work well with armor."
+	icon = 'icons/obj/items/storage/rucksacks.dmi'
+	icon_state = "rucksack"
+	item_state_slots = list(slot_l_hand_str = "rucksack", slot_r_hand_str = "rucksack",)
+
+/obj/item/weapon/storage/backpack/rucksack/blue
+	name = "blue rucksack"
+	icon_state = "rucksack_blue"
+	item_state_slots = list(slot_l_hand_str = "rucksack_blue", slot_r_hand_str = "rucksack_blue",)
+
+/obj/item/weapon/storage/backpack/rucksack/green
+	name = "green rucksack"
+	icon_state = "rucksack_green"
+	item_state_slots = list(slot_l_hand_str = "rucksack_green", slot_r_hand_str = "rucksack_green",)
+
+/obj/item/weapon/storage/backpack/rucksack/navy
+	name = "navy rucksack"
+	icon_state = "rucksack_navy"
+	item_state_slots = list(slot_l_hand_str = "rucksack_navy", slot_r_hand_str = "rucksack_navy",)
+
+/obj/item/weapon/storage/backpack/rucksack/tan
+	name = "tan rucksack"
+	icon_state = "rucksack_tan"
+	item_state_slots = list(slot_l_hand_str = "rucksack_tan", slot_r_hand_str = "rucksack_tan",)
+/*
 /obj/item/weapon/storage/backpack/fed
 	name = "\improper Federation backpack"
 	desc = "A backpack made out of tough fibers for use in the field."
 	icon_state = "federation_backpack"
 	item_state = "federation_backpack"
-	
+
 /obj/item/weapon/storage/backpack/fed/cqb
 	name = "\improper Federation CQB backpack"
 	icon_state = "federation_backpack_cqb"
@@ -172,7 +204,7 @@
 	name = "\improper Federation squad leader backpack"
 	icon_state = "federation_backpack_squad_leader"
 	item_state = "federation_backpack_squad_leader"
-
+*/
 /*
  * Duffle Types
  */
@@ -180,6 +212,7 @@
 /obj/item/weapon/storage/backpack/dufflebag
 	name = "dufflebag"
 	desc = "A large dufflebag for holding extra things."
+	icon = 'icons/obj/items/storage/dufflebags.dmi'
 	icon_state = "duffle"
 	item_state_slots = null
 	w_class = ITEM_SIZE_HUGE
@@ -237,6 +270,7 @@
 /obj/item/weapon/storage/backpack/satchel
 	name = "satchel"
 	desc = "A trendy looking satchel."
+	icon = 'icons/obj/items/storage/satchels.dmi'
 	icon_state = "satchel-norm"
 
 /obj/item/weapon/storage/backpack/satchel/grey
@@ -366,6 +400,7 @@
 	name = "messenger bag"
 	desc = "A sturdy backpack worn over one shoulder."
 	icon_state = "courierbag"
+	icon = 'icons/obj/items/storage/messengerbags.dmi'
 
 /obj/item/weapon/storage/backpack/messenger/chem
 	name = "chemistry messenger bag"

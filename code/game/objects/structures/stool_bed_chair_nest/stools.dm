@@ -4,12 +4,15 @@ var/global/list/stool_cache = list() //haha stool
 /obj/item/weapon/stool
 	name = "stool"
 	desc = "Apply butt."
-	icon = 'icons/obj/furniture.dmi'
+	icon = 'icons/obj/structures/stools.dmi'
 	icon_state = "stool_preview" //set for the map
 	item_state = "stool"
 	randpixel = 0
 	force = 10
 	throwforce = 10
+	mass = 4
+	max_health = 60
+	damthreshold_brute 	= 4
 	w_class = ITEM_SIZE_HUGE
 	var/base_icon = "stool"
 	var/material/material
@@ -21,7 +24,7 @@ var/global/list/stool_cache = list() //haha stool
 /obj/item/weapon/stool/New(var/newloc, var/new_material, var/new_padding_material)
 	..(newloc)
 	if(!new_material)
-		new_material = DEFAULT_WALL_MATERIAL
+		new_material = MATERIAL_STEEL
 	material = SSmaterials.get_material_by_name(new_material)
 	if(new_padding_material)
 		padding_material = SSmaterials.get_material_by_name(new_padding_material)
@@ -32,7 +35,7 @@ var/global/list/stool_cache = list() //haha stool
 	update_icon()
 
 /obj/item/weapon/stool/padded/New(var/newloc, var/new_material)
-	..(newloc, "steel", "carpet")
+	..(newloc, MATERIAL_STEEL, MATERIAL_CARPET)
 
 /obj/item/weapon/stool/bar
 	name = "bar stool"
@@ -44,7 +47,7 @@ var/global/list/stool_cache = list() //haha stool
 	icon_state = "bar_stool_padded_preview"
 
 /obj/item/weapon/stool/bar/padded/New(var/newloc, var/new_material)
-	..(newloc, "steel", "carpet")
+	..(newloc, MATERIAL_STEEL, MATERIAL_CARPET)
 
 /obj/item/weapon/stool/update_icon()
 	// Prep icon.
@@ -93,9 +96,9 @@ var/global/list/stool_cache = list() //haha stool
 		dismantle()
 		qdel(src)
 
-		var/blocked = target.run_armor_check(hit_zone, "melee")
+		var/blocked = target.run_armor_check(hit_zone, DAM_BLUNT)
 		target.Weaken(10 * blocked_mult(blocked))
-		target.apply_damage(20, BRUTE, hit_zone, blocked, src)
+		target.apply_damage(20, DAM_BLUNT, hit_zone, blocked, used_weapon = src)
 		return
 
 	..()
@@ -137,7 +140,7 @@ var/global/list/stool_cache = list() //haha stool
 			return
 		var/padding_type //This is awful but it needs to be like this until tiles are given a material var.
 		if(istype(W,/obj/item/stack/tile/carpet))
-			padding_type = "carpet"
+			padding_type = MATERIAL_CARPET
 		else if(istype(W,/obj/item/stack/material))
 			var/obj/item/stack/material/M = W
 			if(M.material && (M.material.flags & MATERIAL_PADDING))

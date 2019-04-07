@@ -3,47 +3,83 @@
 	desc = "Used to separate things with different weights. Spin 'em round, round, right round."
 	icon = 'icons/obj/virology.dmi'
 	icon_state = "centrifuge"
-	var/curing
-	var/isolating
-
+	density = 1
+	var/curing = FALSE
+	var/isolating = FALSE
 	var/obj/item/weapon/reagent_containers/glass/beaker/vial/sample = null
 	var/datum/disease2/disease/virus2 = null
+	var/time_curing_end
+	var/time_isolating_end
 
 /obj/machinery/centrifuge/New()
 	..()
-	component_parts = list()
-	component_parts += new /obj/item/weapon/circuitboard/centrifuge(src)
-	component_parts += new /obj/item/weapon/stock_parts/scanning_module(src)
-	component_parts += new /obj/item/weapon/stock_parts/console_screen(src)
-	component_parts += new /obj/item/weapon/computer_hardware/hard_drive/portable(src)
-	component_parts += new /obj/item/stack/material/glass(src)
+	ADD_SAVED_VAR(curing)
+	ADD_SAVED_VAR(isolating)
+	ADD_SAVED_VAR(sample)
+	ADD_SAVED_VAR(virus2)
+	ADD_SAVED_VAR(time_curing_end)
+	ADD_SAVED_VAR(time_isolating_end)
+
+	ADD_SKIP_EMPTY(sample)
+	ADD_SKIP_EMPTY(virus2)
+	ADD_SKIP_EMPTY(time_curing_end)
+	ADD_SKIP_EMPTY(time_isolating_end)
+
+/obj/machinery/centrifuge/Initialize()
+	. = ..()
+	if(!map_storage_loaded)
+		component_parts = list()
+		component_parts += new /obj/item/weapon/circuitboard/centrifuge(src)
+		component_parts += new /obj/item/weapon/stock_parts/scanning_module(src)
+		component_parts += new /obj/item/weapon/stock_parts/console_screen(src)
+		component_parts += new /obj/item/weapon/computer_hardware/hard_drive/portable(src)
+		component_parts += new /obj/item/stack/material/glass(src)
 	RefreshParts()
 
-/obj/machinery/centrifuge/attackby(var/obj/O as obj, var/mob/user as mob)
-	if(isScrewdriver(O))
-		return ..(O,user)
+/obj/machinery/centrifuge/before_save()
+	. = ..()
+	//Convert to absolute time
+	if(curing && time_curing_end)
+		time_curing_end = world.time - time_curing_end
+	if(isolating && time_isolating_end)
+		time_isolating_end = world.time - time_isolating_end
 
-	if(istype(O,/obj/item/weapon/reagent_containers/glass/beaker/vial))
+/obj/machinery/centrifuge/after_load()
+	. = ..()
+	//Convert to relative time
+	if(curing && time_curing_end)
+		time_curing_end = world.time + time_curing_end
+	if(isolating && time_isolating_end)
+		time_isolating_end = world.time + time_isolating_end
+
+/obj/machinery/centrifuge/attackby(var/obj/O as obj, var/mob/user as mob)
+	if(default_deconstruction_screwdriver(user, O))
+		return 1
+	else if(default_deconstruction_crowbar(user, O))
+		return 1
+	else if(istype(O,/obj/item/weapon/reagent_containers/glass/beaker/vial))
 		if(sample)
 			to_chat(user, "\The [src] is already loaded.")
 			return
 
 		sample = O
-		user.drop_item()
-		O.loc = src
+		user.drop_from_inventory(O)
+		O.forceMove(src)
 
 		user.visible_message("[user] adds \a [O] to \the [src]!", "You add \a [O] to \the [src]!")
-		GLOB.nanomanager.update_uis(src)
-
-	src.attack_hand(user)
+		SSnano.update_uis(src)
+		return 1
+	else
+		return ..()
 
 /obj/machinery/centrifuge/update_icon()
 	..()
-	if(! (stat & (BROKEN|NOPOWER)) && (isolating || curing))
+	if(operable() && (isolating || curing))
 		icon_state = "centrifuge_moving"
 
 /obj/machinery/centrifuge/attack_hand(var/mob/user as mob)
-	if(..()) return
+	if(..()) 
+		return
 	ui_interact(user)
 
 /obj/machinery/centrifuge/ui_interact(mob/user, ui_key = "main", var/datum/nanoui/ui = null, var/force_open = 1)
@@ -81,7 +117,7 @@
 					data["antibodies"] = antigens2string(A.data["antibodies"], none=null)
 				data["is_antibody_sample"] = 1
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 	if (!ui)
 		ui = new(user, src, ui_key, "isolation_centrifuge.tmpl", src.name, 400, 500)
 		ui.set_initial_data(data)
@@ -89,21 +125,22 @@
 
 /obj/machinery/centrifuge/Process()
 	..()
-	if (stat & (NOPOWER|BROKEN)) return
+	if (inoperable())
+		return
 
-	if (curing)
-		curing -= 1
-		if (curing == 0)
-			cure()
+	if (curing && world.time > time_curing_end)
+		curing = FALSE
+		time_curing_end = null
+		cure()
 
-	if (isolating)
-		isolating -= 1
-		if(isolating == 0)
-			isolate()
+	if (isolating && world.time > time_isolating_end)
+		isolating = FALSE
+		time_isolating_end = null
+		isolate()
 
 /obj/machinery/centrifuge/OnTopic(user, href_list)
 	if (href_list["close"])
-		GLOB.nanomanager.close_user_uis(user, src, "main")
+		SSnano.close_user_uis(user, src, "main")
 		return TOPIC_HANDLED
 
 	if (href_list["print"])
@@ -115,7 +152,8 @@
 		if (B)
 			var/datum/disease2/disease/virus = locate(href_list["isolate"])
 			virus2 = virus.getcopy()
-			isolating = 40
+			isolating = TRUE
+			time_curing_end = world.time + 40 SECONDS
 			update_icon()
 		return TOPIC_REFRESH
 
@@ -136,7 +174,8 @@
 				if (has_radium)
 					delay = delay/2
 
-			curing = round(delay)
+			curing = TRUE
+			time_curing_end = world.time + round(delay) SECONDS
 			playsound(src.loc, 'sound/machines/juicer.ogg', 50, 1)
 			update_icon()
 			return TOPIC_REFRESH
@@ -157,7 +196,7 @@
 	sample.reagents.remove_reagent(/datum/reagent/blood, amt)
 	sample.reagents.add_reagent(/datum/reagent/antibodies, amt, data)
 
-	GLOB.nanomanager.update_uis(src)
+	SSnano.update_uis(src)
 	update_icon()
 	ping("\The [src] pings, \"Antibody isolated.\"")
 
@@ -167,7 +206,7 @@
 	dish.virus2 = virus2
 	virus2 = null
 
-	GLOB.nanomanager.update_uis(src)
+	SSnano.update_uis(src)
 	update_icon()
 	ping("\The [src] pings, \"Pathogen isolated.\"")
 

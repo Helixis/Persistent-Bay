@@ -61,8 +61,8 @@ var/list/ai_verbs_default = list(
 	var/obj/item/device/pda/ai/aiPDA = null
 	var/obj/item/device/multitool/aiMulti = null
 
-	silicon_camera = /obj/item/device/camera/siliconcam/ai_camera
-	silicon_radio = /obj/item/device/radio/headset/heads/ai_integrated
+	silicon_camera = new /obj/item/device/camera/siliconcam/ai_camera
+	silicon_radio = new /obj/item/device/radio/headset/heads/ai_integrated
 	var/obj/item/device/radio/headset/heads/ai_integrated/ai_radio
 
 	var/camera_light_on = 0	//Defines if the AI toggled the light on the camera it's looking through.
@@ -133,7 +133,6 @@ var/list/ai_verbs_default = list(
 	aiPDA = new/obj/item/device/pda/ai(src)
 	fully_replace_character_name(pickedName)
 	anchored = 1
-	canmove = 0
 	set_density(1)
 
 	holo_icon = getHologramIcon(icon('icons/mob/hologram.dmi',"Face"))
@@ -155,7 +154,6 @@ var/list/ai_verbs_default = list(
 	add_language(LANGUAGE_EAL, 1)
 	add_language(LANGUAGE_SOL_COMMON, 1)
 	add_language(LANGUAGE_UNATHI, 1)
-	//add_language(LANGUAGE_SIIK_MAAS, 1)
 	add_language(LANGUAGE_SKRELLIAN, 1)
 	add_language(LANGUAGE_LUNAR, 1)
 	add_language(LANGUAGE_GUTTER, 1)
@@ -540,7 +538,7 @@ var/list/ai_verbs_default = list(
 
 		var/personnel_list[] = list()
 
-		for(var/datum/computer_file/crew_record/t in GLOB.all_crew_records)//Look in data core locked.
+		for(var/datum/computer_file/report/crew_record/t in GLOB.all_crew_records)//Look in data core locked.
 			personnel_list["[t.get_name()]: [t.get_rank()]"] = t.photo_front//Pull names, rank, and image.
 
 		if(personnel_list.len)
@@ -715,7 +713,7 @@ var/list/ai_verbs_default = list(
 
 // Pass lying down or getting up to our pet human, if we're in a rig.
 /mob/living/silicon/ai/lay_down()
-	set name = "Rest"
+	set name = "Lay down"
 	set category = "IC"
 
 	resting = 0

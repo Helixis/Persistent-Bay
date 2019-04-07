@@ -1,12 +1,12 @@
 /obj/item/weapon/gun/energy/ionrifle
 	name = "ion rifle"
-	desc = "The NT Mk60 EW Halicon is a man portable anti-armor weapon designed to disable mechanical threats, produced by NT. Not the best of its type."
+	desc = "The NT Mk60 EW Halicon is a man portable anti-armor weapon designed to disable Faeren mechanical threats. Not the best of its type."
 	icon_state = "ionrifle"
 	item_state = "ionrifle"
 	origin_tech = list(TECH_COMBAT = 2, TECH_MAGNET = 4)
 	w_class = ITEM_SIZE_HUGE
 	force = 10
-	flags =  CONDUCT
+	obj_flags =  OBJ_FLAG_CONDUCTIBLE
 	slot_flags = SLOT_BACK
 	one_hand_penalty = 4
 	charge_cost = 30
@@ -39,6 +39,7 @@
 	origin_tech = list(TECH_COMBAT = 5, TECH_MATERIAL = 4, TECH_POWER = 3)
 	max_shots = 10
 	projectile_type = /obj/item/projectile/energy/declone
+	load_method = ENERGY_LOAD_FIXED_CELL
 
 /obj/item/weapon/gun/energy/floragun
 	name = "floral somatoray"
@@ -58,6 +59,7 @@
 		list(mode_name="increase yield", projectile_type=/obj/item/projectile/energy/florayield, modifystate="florayield"),
 		list(mode_name="induce specific mutations", projectile_type=/obj/item/projectile/energy/floramut/gene, modifystate="floramut"),
 		)
+	load_method = ENERGY_LOAD_FIXED_CELL
 
 /obj/item/weapon/gun/energy/floragun/afterattack(obj/target, mob/user, adjacent_flag)
 	//allow shooting into adjacent hydrotrays regardless of intent
@@ -72,12 +74,12 @@
 	set category = "Object"
 	set src in view(1)
 
-	var/genemask = input("Choose a gene to modify.") as null|anything in plant_controller.plant_gene_datums
+	var/genemask = input("Choose a gene to modify.") as null|anything in SSplants.plant_gene_datums
 
 	if(!genemask)
 		return
 
-	gene = plant_controller.plant_gene_datums[genemask]
+	gene = SSplants.plant_gene_datums[genemask]
 
 	to_chat(usr, "<span class='info'>You set the [src]'s targeted genetic area to [genemask].</span>")
 
@@ -102,6 +104,7 @@
 	self_recharge = 1
 	recharge_time = 5 //Time it takes for shots to recharge (in ticks)
 	charge_meter = 0
+	load_method = ENERGY_LOAD_FIXED_CELL
 
 /obj/item/weapon/gun/energy/meteorgun/pen
 	name = "meteor pen"
@@ -111,6 +114,7 @@
 	item_state = "pen"
 	w_class = ITEM_SIZE_TINY
 	slot_flags = SLOT_BELT
+	load_method = ENERGY_LOAD_FIXED_CELL
 
 
 /obj/item/weapon/gun/energy/mindflayer
@@ -118,7 +122,7 @@
 	desc = "A custom-built weapon of some kind."
 	icon_state = "xray"
 	projectile_type = /obj/item/projectile/beam/mindflayer
-/*
+	load_method = ENERGY_LOAD_FIXED_CELL
 /obj/item/weapon/gun/energy/toxgun
 	name = "phoron pistol"
 	desc = "A specialized firearm designed to fire lethal bolts of phoron."
@@ -126,7 +130,7 @@
 	w_class = ITEM_SIZE_NORMAL
 	origin_tech = list(TECH_COMBAT = 5, TECH_PHORON = 4)
 	projectile_type = /obj/item/projectile/energy/phoron
-*/
+	load_method = ENERGY_LOAD_FIXED_CELL
 /* Staves */
 
 /obj/item/weapon/gun/energy/staff
@@ -137,7 +141,7 @@
 	icon_state = "staffofchange"
 	item_state = "staffofchange"
 	fire_sound = 'sound/weapons/emitter.ogg'
-	flags =  CONDUCT
+	obj_flags =  OBJ_FLAG_CONDUCTIBLE
 	slot_flags = SLOT_BACK
 	w_class = ITEM_SIZE_HUGE
 	max_shots = 5
@@ -145,6 +149,7 @@
 	origin_tech = null
 	self_recharge = 1
 	charge_meter = 0
+	load_method = ENERGY_LOAD_FIXED_CELL
 
 /obj/item/weapon/gun/energy/staff/special_check(var/mob/user)
 	if((user.mind && !wizards.is_antagonist(user.mind)))
@@ -165,6 +170,7 @@
 	desc = "An artefact that spits bolts of life-force which causes objects which are hit by it to animate and come to life! This magic doesn't affect machines."
 	projectile_type = /obj/item/projectile/animate
 	max_shots = 10
+	load_method = ENERGY_LOAD_FIXED_CELL
 
 obj/item/weapon/gun/energy/staff/focus
 	name = "mental focus"
@@ -174,6 +180,7 @@ obj/item/weapon/gun/energy/staff/focus
 	item_state = "focus"
 	slot_flags = SLOT_BACK
 	projectile_type = /obj/item/projectile/forcebolt
+	load_method = ENERGY_LOAD_FIXED_CELL
 	/*
 	attack_self(mob/living/user as mob)
 		if(projectile_type == /obj/item/projectile/forcebolt)
@@ -192,7 +199,8 @@ obj/item/weapon/gun/energy/staff/focus
 	icon_state = "plasmacutter"
 	item_state = "plasmacutter"
 	w_class = ITEM_SIZE_NORMAL
-	damtype = "fire"
+	damtype = DAM_BLUNT
+	cell_type = /obj/item/weapon/cell/device/high
 	charge_meter = 0
 	attack_verb = list("attacked", "slashed", "cut", "sliced")
 	force = 15
@@ -200,21 +208,8 @@ obj/item/weapon/gun/energy/staff/focus
 	fire_sound = 'sound/weapons/pulse.ogg'
 	fire_sound_text = "plasma blast"
 	projectile_type= /obj/item/projectile/plasma
-	charge_cost = 10 //How much energy is needed to fire.
-	max_shots = 30 //Determines the capacity of the weapon's power cell. Specifying a cell_type overrides this value.
-	sharp=1
-	edge=1
-
-
-/obj/item/weapon/gun/energy/plasmacutter/attackby(obj/item/A, mob/user)
-	if(istype(A, /obj/item/stack/material/phoron))
-		var/obj/item/stack/material/S = A
-
-		if(power_supply.charge==300)
-			return 0
-		S.use(1)
-		power_supply.give(150)
-		to_chat(user, "<span class='notice'>You insert [A] in [src], recharging it.</span>")
-
-	else
-		..()
+	charge_cost = 5 //How much energy is needed to fire.
+	max_shots = 20 //Determines the capacity of the weapon's power cell. Specifying a cell_type overrides this value.
+	sharpness = 1
+	load_method = ENERGY_LOAD_HOTSWAP_CELL
+	mass = 0.8

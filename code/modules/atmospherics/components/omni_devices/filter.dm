@@ -21,6 +21,16 @@
 
 /obj/machinery/atmospherics/omni/filter/New()
 	..()
+	do_init()
+
+/obj/machinery/atmospherics/omni/filter/after_load()
+	rebuild_filtering_list()
+	for(var/datum/omni_port/P in ports)
+		handle_port_change(P)
+	..()
+
+
+/obj/machinery/atmospherics/omni/filter/proc/do_init()
 	rebuild_filtering_list()
 	for(var/datum/omni_port/P in ports)
 		P.air.volume = ATMOS_DEFAULT_VOLUME_FILTER
@@ -99,7 +109,7 @@
 
 	data = build_uidata()
 
-	ui = GLOB.nanomanager.try_update_ui(user, src, ui_key, ui, data, force_open)
+	ui = SSnano.try_update_ui(user, src, ui_key, ui, data, force_open)
 
 	if (!ui)
 		ui = new(user, src, ui_key, "omni_filter.tmpl", "Omni Filter Control", 330, 330)
@@ -191,7 +201,7 @@
 				switch_filter(dir_flag(href_list["dir"]), mode_return_switch(new_filter))
 
 	update_icon()
-	GLOB.nanomanager.update_uis(src)
+	SSnano.update_uis(src)
 	return
 
 /obj/machinery/atmospherics/omni/filter/proc/mode_return_switch(var/mode)
